@@ -5,7 +5,7 @@ import UIKit
 /// UINavigation stack coordinator with auto finish
 open class NavigationCoordinator<M: CoordinationMeta>: Coordinator<M>, UINavigationControllerDelegate, UIAdaptivePresentationControllerDelegate {
     open var navigationController: UINavigationController
-
+    
     public enum NavigationAction {
         case present(UIViewController)
         case push(UIViewController)
@@ -16,23 +16,31 @@ open class NavigationCoordinator<M: CoordinationMeta>: Coordinator<M>, UINavigat
         case root
         case pop
     }
-
+    
     public internal(set) var viewControllers: [UIViewController] = []
     public internal(set) var presentedViewControllers: [UIViewController] = []
     
     private var transitioning: UIViewControllerAnimatedTransitioning?
-
+    
     public init(navigationController: UINavigationController) {
         self.navigationController = navigationController
         super.init()
     }
-
+    
+    open override var rootViewController: UIViewController {
+        return navigationController
+    }
+    
     override open func start(with meta: M) {
         super.start(with: meta)
-
         navigationController.delegate = self
     }
-
+    
+    open override func start() {
+        super.start()
+        navigationController.delegate = self
+    }
+    
     override open func finish() {
         navigationController.delegate = nil
         navigationController.viewControllers.removeAll { viewControllers.contains($0) }

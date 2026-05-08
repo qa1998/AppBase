@@ -1,5 +1,5 @@
 //
-//  SplashViewController.swift
+//  OnBoardViewController.swift
 //  AppBase
 //
 //  Created by QuangAnh on 8/5/26.
@@ -7,15 +7,23 @@
 
 import UIKit
 import SwiftUI
-import BaseMVVM
-class SplashViewController<VM: SplashViewModel> : TIOViewController<VM> {
+class OnBoardViewController: UIViewController {
     
     private lazy var hostingController = UIHostingController(
-        rootView: SplashView()
+        rootView: OnBoardView { [weak self] in
+            AppStateEvent.set(state: .main)
+        }
     )
     
-    override func setupUI() {
-        super.setupUI()
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        setupUI()
+    }
+    
+    func setupUI() {
+        view.backgroundColor = .white
+        
         addChild(hostingController)
         view.addSubview(hostingController.view)
         
@@ -27,8 +35,8 @@ class SplashViewController<VM: SplashViewModel> : TIOViewController<VM> {
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        
         hostingController.didMove(toParent: self)
     }
-    
 }
 

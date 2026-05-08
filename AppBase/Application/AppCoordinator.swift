@@ -8,33 +8,21 @@
 import Combine
 import Foundation
 import UIKit
+import BaseMVVM
 
 struct VoidMeta: CoordinationMeta {}
 
 class AppCoordinator: Coordinator<VoidMeta> {
     
-    private lazy var loginCoor: Coordinator = {
-        let loginCoor = LoginCoordinator()
-        return loginCoor
-    }()
-    
-    private lazy var mainCoor: Coordinator = {
-        let mainCoor = MainCoordinator()
-        return mainCoor
-    }()
-    
-    private lazy var maintanceCoor: Coordinator = {
-        let maintanceCoor = MaintanceCoordinator()
-        return maintanceCoor
-    }()
-    
-    private lazy var rootVC: UIViewController = {
+    private func createSplashVC() -> UIViewController {
         let vc = SplashViewController()
+        let vm = SplashViewModel()
+        vc.invoke(viewModel: vm)
         return vc
-    }()
+    }
     
     override var rootViewController: UIViewController {
-        return rootVC
+        return createSplashVC()
     }
     
     private let window: UIWindow
@@ -53,17 +41,21 @@ class AppCoordinator: Coordinator<VoidMeta> {
         AppStateEvent.default.state
             .receive(on: DispatchQueue.main)
             .sink { [weak self] appState in
-            self?.trigger(state: appState)
-        }.store(in: &cancelBag)
+                self?.trigger(state: appState)
+            }.store(in: &cancelBag)
     }
     
     private func trigger(state: AppState) {
+        self.removeAll()
         switch state {
         case .main: runMainFlow()
         case .login: runSignInFlow()
         case .maintain: runMaintainFlow()
+        case .welcome: runWellCome()
         default: break
         }
+        print("APPCoor count \(self.coordinators.count)")
+        
     }
     
     override func start() {
@@ -74,18 +66,27 @@ class AppCoordinator: Coordinator<VoidMeta> {
 
 extension AppCoordinator {
     private func runMainFlow() {
-        self.add(mainCoor)
-        self.replaceRoot(mainCoor.rootViewController)
+        let main = mainCoor()
+        self.add(main)
+        self.replaceRoot(main.rootViewController)
     }
     
     private func runSignInFlow() {
-        self.add(loginCoor)
-        self.replaceRoot(loginCoor.rootViewController)
+        let login = loginCoor()
+        self.add(login)
+        self.replaceRoot(login.rootViewController)
     }
     
     private func runMaintainFlow() {
-        self.add(maintanceCoor)
-        self.replaceRoot(maintanceCoor.rootViewController)
+        let maitance = maintanceCoor()
+        self.add(maitance)
+        self.replaceRoot(maitance.rootViewController)
+    }
+    
+    private func runWellCome() {
+        let onBoard = onBoardCoor()
+        self.add(onBoard)
+        self.replaceRoot(onBoard.rootViewController)
     }
 }
 
@@ -109,5 +110,27 @@ extension AppCoordinator {
             
             UIView.setAnimationsEnabled(oldState)
         }
+    }
+    
+    private func mainCoor() -> Coordinator<VoidMeta> {
+        let mainCoor = MainCoordinator()
+        return mainCoor
+    }
+    
+    private func onBoardCoor() -> Coordinator<VoidMeta> {
+        let onBoardCoor = OnBoardCoordinator()
+        return onBoardCoor
+    }
+    
+    private func loginCoor() -> Coordinator<VoidMeta> {
+        let nav = UINavigationController()
+        let loginCoor = LoginCoordinator(navigationController: nav)
+        loginCoor.start()
+        return loginCoor
+    }
+    
+    private func maintanceCoor() -> Coordinator<VoidMeta> {
+        let maintanceCoor = MaintanceCoordinator()
+        return maintanceCoor
     }
 }
