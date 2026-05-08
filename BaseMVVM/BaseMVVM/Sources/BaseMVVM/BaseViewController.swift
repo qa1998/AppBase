@@ -1,10 +1,9 @@
 //
 //  BaseViewController.swift
-//  AppBase
+//  BaseMVVM
 //
-//  Created by QuangAnh on 7/5/26.
+//  Created by QuangAnh on 8/5/26.
 //
-
 import UIKit
 
 open class BaseViewController<VM: BaseViewModel>: UIViewController {
@@ -81,6 +80,4 @@ open class BaseViewController<VM: BaseViewModel>: UIViewController {
         self.view.endEditing(true)
     }
 }
-
-
 

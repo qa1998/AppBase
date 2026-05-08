@@ -1,12 +1,14 @@
 //
 //  BaseViewModel.swift
-//  AppBase
+//  BaseMVVM
 //
-//  Created by QuangAnh on 7/5/26.
+//  Created by QuangAnh on 8/5/26.
 //
+
 
 import Foundation
 
+@MainActor
 open class BaseViewModel: NSObject {
     public override init() {
         super.init()
