@@ -1,0 +1,47 @@
+//
+//  AppData.swift
+//  AppBase
+//
+//  Created by QuangAnh on 8/5/26.
+//
+
+import Foundation
+import Combine
+class AppData: ObservableObject {
+    
+    static let shared = AppData()
+    
+    @Published var token: String {
+        didSet {
+            DataStore.shared.set(
+                token,
+                forKey: .token
+            )
+        }
+    }
+    
+    @Published var isFirstLaunch: Bool {
+        didSet {
+            DataStore.shared.set(
+                isFirstLaunch,
+                forKey: .isFirstLaunch
+            )
+        }
+    }
+    
+    var isLogin: Bool {
+        !token.isEmpty
+    }
+    
+    private init() {
+        self.token = DataStore.shared.value(
+            forKey: .token,
+            type: String.self
+        ) ?? ""
+        
+        self.isFirstLaunch = DataStore.shared.value(
+            forKey: .isFirstLaunch,
+            type: Bool.self
+        ) ?? true
+    }
+}

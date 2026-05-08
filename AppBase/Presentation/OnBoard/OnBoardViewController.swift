@@ -11,6 +11,7 @@ class OnBoardViewController: UIViewController {
     
     private lazy var hostingController = UIHostingController(
         rootView: OnBoardView { [weak self] in
+            AppData.shared.isFirstLaunch = false
             AppStateEvent.set(state: .main)
         }
     )

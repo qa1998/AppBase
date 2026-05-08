@@ -11,9 +11,12 @@ class SplashViewModel: TIOViewModel {
     
     override func viewModelDidReady() {
         super.viewModelDidReady()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            AppStateEvent.set(state: .welcome)
+        DispatchQueue.main.async {
+            if AppData.shared.isFirstLaunch {
+                AppStateEvent.set(state: .welcome)
+            } else {
+                AppStateEvent.set(state: .main)
+            }
         }
     }
 }
