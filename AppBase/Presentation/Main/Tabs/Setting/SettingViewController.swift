@@ -12,7 +12,7 @@ class SettingViewController: UIViewController {
         super.viewDidLoad()
         self.title = "Setting"
         
-        let swiftUIView = Sett()
+        let swiftUIView = SettingView()
         
         let hostingController = UIHostingController(
             rootView: swiftUIView

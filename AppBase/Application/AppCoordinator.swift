@@ -54,11 +54,12 @@ class AppCoordinator: Coordinator<VoidMeta> {
         case .welcome: runWellCome()
         default: break
         }
-        print("APPCoor count \(self.coordinators.count)")
-        
     }
     
     override func start() {
+        ThemeManager.shared.apply()
+        AppAppearance.shared.apply()
+        
         bind()
         bindAppState()
     }

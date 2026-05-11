@@ -55,15 +55,4 @@ enum FontSize {
         }
     }
 }
-extension UIFont {
-    static func appDefault(size: FontSize) -> UIFont {
-        return UIFont(name: "Lato-Regular", size: size.value) ?? .systemFont(ofSize: size.value)
-    }
-    static func appBold(size: FontSize) -> UIFont {
-        return UIFont(name: "Lato-Bold", size: size.value) ?? .systemFont(ofSize: size.value)
-    }
-    static func appDefaultItalic(size: FontSize) -> UIFont {
-        return UIFont(name: "Lato-Italic", size: size.value) ?? .systemFont(ofSize: size.value)
-    }
-}
 

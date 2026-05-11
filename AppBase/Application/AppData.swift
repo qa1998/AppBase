@@ -35,6 +35,12 @@ class AppData: ObservableObject {
         !token.isEmpty
     }
     
+    static var appVersion: String {
+        Bundle.main.object(
+            forInfoDictionaryKey: "CFBundleShortVersionString"
+        ) as? String ?? ""
+    }
+    
     private init() {
         self.token = DataStore.shared.value(forKey: .token,type: String.self) ?? ""
         self.isFirstLaunch = DataStore.shared.value(forKey: .isFirstLaunch,type: Bool.self) ?? true
