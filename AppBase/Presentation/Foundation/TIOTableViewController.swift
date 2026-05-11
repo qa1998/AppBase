@@ -9,10 +9,14 @@ import TIOPagingKit
 import UIKit
 import BaseMVVM
 
-class TIOTableViewController<VM: TIOListViewModel>: TIOListViewController<VM> {
+class TIOTableViewController<VM: TIOListViewModel>: TIOListViewController<VM>,
+                                                    UITableViewDelegate,
+                                                    UITableViewDataSource {
     
     lazy var tableView: TIOPagingTableView = {
         let tableView = TIOPagingTableView()
+        tableView.delegate = self
+        tableView.dataSource = self
         return tableView
     }()
     

@@ -34,6 +34,7 @@ class TIOListViewController<VM: TIOListViewModel>: TIOViewController<VM>,
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.title = "TIOViewCotroller"
         view.addSubview(containerView)
         containerView.snp.makeConstraints { make in
             make.edges.equalToSuperview()

@@ -30,7 +30,6 @@ class MainViewController: ESTabBarController {
             self.homeCoor.rootViewController,
             self.settingCoor.rootViewController
         ]
-        
     }
 }
 

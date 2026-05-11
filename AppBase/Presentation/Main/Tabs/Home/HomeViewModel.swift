@@ -8,5 +8,4 @@
 import BaseMVVM
 
 class HomeViewModel: TIOListViewModel {
-    
 }
