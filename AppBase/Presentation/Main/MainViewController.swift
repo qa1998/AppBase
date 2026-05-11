@@ -6,16 +6,17 @@
 //
 
 import UIKit
+import BaseMVVM
+
 class MainViewController: ESTabBarController {
     
-    private var homeCoor: Coordinator = {
+    var homeCoor: Coordinator = {
         let nav = UINavigationController()
         let homeCoor = HomeCoordinator(navigationController: nav)
         homeCoor.start()
         return homeCoor
     }()
-    
-    private var settingCoor: Coordinator = {
+    var settingCoor: Coordinator = {
         let nav = UINavigationController()
         let settingCoor = SettingCoordinator(navigationController: nav)
         settingCoor.start()
@@ -24,11 +25,13 @@ class MainViewController: ESTabBarController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        tabBar.backgroundColor = .white
-        viewControllers = [
-            homeCoor.rootViewController,
-            settingCoor.rootViewController
-        ]
+        DispatchQueue.main.async {
+            self.viewControllers = [
+                self.homeCoor.rootViewController,
+                self.settingCoor.rootViewController
+            ]
+        }
+        
     }
 }
 

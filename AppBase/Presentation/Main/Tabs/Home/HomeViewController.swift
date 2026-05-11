@@ -6,10 +6,12 @@
 //
 
 import UIKit
-class HomeViewController: UIViewController {
+class HomeViewController<VM: TIOListViewModel>: TIOTableViewController<VM> {
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Home"
+        view.backgroundColor = .red
     }
+    
 }
 

@@ -46,9 +46,9 @@ class AppCoordinator: Coordinator<VoidMeta> {
     }
     
     private func trigger(state: AppState) {
-        self.removeAll()
+//        self.removeAll()
         switch state {
-        case .main: runMainFlow()
+        case .main: runSignInFlow()
         case .login: runSignInFlow()
         case .maintain: runMaintainFlow()
         case .welcome: runWellCome()
@@ -57,9 +57,9 @@ class AppCoordinator: Coordinator<VoidMeta> {
     }
     
     override func start() {
-        ThemeManager.shared.apply()
-        AppAppearance.shared.apply()
-        
+//        ThemeManager.shared.apply()
+//        AppAppearance.shared.apply()
+
         bind()
         bindAppState()
     }

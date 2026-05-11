@@ -6,9 +6,13 @@
 //
 
 import UIKit
+import BaseMVVM
+
 class HomeCoordinator: NavigationCoordinator<VoidMeta> {
-    private lazy var rootVC:  UIViewController = {
-        let vc = HomeViewController()
+    private var rootVC:  UIViewController = {
+        let vc = TIOViewController()
+        let vm = TIOViewModel()
+        vc.invoke(viewModel: vm)
         return vc
     }()
     
