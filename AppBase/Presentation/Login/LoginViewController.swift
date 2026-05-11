@@ -50,7 +50,7 @@ class RegisterViewController: UIViewController {
     }
     
     @objc private func didTapAdd() {
-        AppStateEvent.set(state: .main)
+//        AppStateEvent.set(state: .main)
     }
     
 }

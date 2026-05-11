@@ -6,7 +6,7 @@
 //
 
 import UIKit
-class HomeViewController<VM: TIOListViewModel>: TIOTableViewController<VM> {
+class HomeViewController<VM: HomeViewModel>: TIOTableViewController<VM> {
     
     override func viewDidLoad() {
         super.viewDidLoad()

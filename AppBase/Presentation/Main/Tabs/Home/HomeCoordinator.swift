@@ -9,9 +9,10 @@ import UIKit
 import BaseMVVM
 
 class HomeCoordinator: NavigationCoordinator<VoidMeta> {
+    
     private var rootVC:  UIViewController = {
-        let vc = TIOViewController()
-        let vm = TIOViewModel()
+        let vc = HomeViewController()
+        let vm = HomeViewModel()
         vc.invoke(viewModel: vm)
         return vc
     }()

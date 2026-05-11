@@ -7,12 +7,12 @@
 
 import UIKit
 import SwiftUI
-class OnBoardViewController: UIViewController {
+class OnBoardViewController<VM: TIOViewModel>: TIOViewController<VM> {
     
     private lazy var hostingController = UIHostingController(
         rootView: OnBoardView { [weak self] in
             AppData.shared.isFirstLaunch = false
-            AppStateEvent.set(state: .main)
+//            AppStateEvent.set(state: .main)
         }
     )
     
@@ -22,7 +22,7 @@ class OnBoardViewController: UIViewController {
         setupUI()
     }
     
-    func setupUI() {
+    override func setupUI() {
         view.backgroundColor = .white
         
         addChild(hostingController)

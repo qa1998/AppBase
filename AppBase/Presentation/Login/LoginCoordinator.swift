@@ -12,11 +12,11 @@ import Combine
 class LoginCoordinator: NavigationCoordinator<VoidMeta> {
     
     private lazy var rootVc: UIViewController = {
-        let vc = HomeViewController()
-        let vm = TIOListViewModel()
-//        vc.navToRegister.sink { [weak self] in
-//            self?.navToRegíter()
-//        }.store(in: &cancelBag)
+        let vc = LoginViewController()
+        let vm = LoginViewModel()
+        vc.navToRegister.sink { [weak self] in
+            self?.navToRegíter()
+        }.store(in: &cancelBag)
         vc.invoke(viewModel: vm)
         return vc
     }()

@@ -29,7 +29,7 @@ open class BaseViewModel: NSObject {
     
     deinit {
         #if DEBUG
-        print("✅\(type(of: self)) deinit")
+        print("🟥\(type(of: self)) deinit")
         #endif
     }
 }

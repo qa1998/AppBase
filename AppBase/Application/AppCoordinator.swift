@@ -14,15 +14,16 @@ struct VoidMeta: CoordinationMeta {}
 
 class AppCoordinator: Coordinator<VoidMeta> {
     
-    private func createSplashVC() -> UIViewController {
+    private lazy var splashVC: UIViewController = {
         let vc = SplashViewController()
         let vm = SplashViewModel()
         vc.invoke(viewModel: vm)
         return vc
-    }
+    }()
+    
     
     override var rootViewController: UIViewController {
-        return createSplashVC()
+        return splashVC
     }
     
     private let window: UIWindow
@@ -46,20 +47,30 @@ class AppCoordinator: Coordinator<VoidMeta> {
     }
     
     private func trigger(state: AppState) {
-//        self.removeAll()
+        print("TRIGGER:", state)
+        self.removeAll()
         switch state {
-        case .main: runSignInFlow()
-        case .login: runSignInFlow()
-        case .maintain: runMaintainFlow()
-        case .welcome: runWellCome()
-        default: break
+            case .main:
+                runMainFlow()
+                break
+            case .login:
+                runSignInFlow()
+                break
+            case .maintain:
+                runMaintainFlow()
+                break
+            case .welcome:
+                runWellCome()
+                break
+            default: break
         }
     }
     
     override func start() {
+        super.start()
+        print("APP COORDINATOR START")
 //        ThemeManager.shared.apply()
 //        AppAppearance.shared.apply()
-
         bind()
         bindAppState()
     }

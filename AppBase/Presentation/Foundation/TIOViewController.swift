@@ -18,17 +18,16 @@ class TIOViewController<VM: TIOViewModel>: BaseViewController<VM> {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        if let contentView = view.subviews.first(where: { $0 is IFSContentView }) {
-//            contentView.removeFromSuperview()
-//            view.addSubview(contentView)
-//            contentView.snp.makeConstraints { make in
-//                make.leading.equalTo(view.snp.leading)
-//                make.trailing.equalTo(view.snp.trailing)
-//                make.top.equalTo(view.snp.top)
-//                make.bottom.equalTo(view.snp.bottom)
-//            }
-//        }
-        super.viewDidLoad()
+        if let contentView = view.subviews.first(where: { $0 is IFSContentView }) {
+            contentView.removeFromSuperview()
+            view.addSubview(contentView)
+            contentView.snp.makeConstraints { make in
+                make.leading.equalTo(view.snp.leading)
+                make.trailing.equalTo(view.snp.trailing)
+                make.top.equalTo(view.snp.top)
+                make.bottom.equalTo(view.snp.bottom)
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {

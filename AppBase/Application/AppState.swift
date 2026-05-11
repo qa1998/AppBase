@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Foundation
 
 enum AppState: Equatable {
     case welcome

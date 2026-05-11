@@ -16,6 +16,7 @@ class MainViewController: ESTabBarController {
         homeCoor.start()
         return homeCoor
     }()
+    
     var settingCoor: Coordinator = {
         let nav = UINavigationController()
         let settingCoor = SettingCoordinator(navigationController: nav)
@@ -25,12 +26,10 @@ class MainViewController: ESTabBarController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        DispatchQueue.main.async {
-            self.viewControllers = [
-                self.homeCoor.rootViewController,
-                self.settingCoor.rootViewController
-            ]
-        }
+        self.viewControllers = [
+            self.homeCoor.rootViewController,
+            self.settingCoor.rootViewController
+        ]
         
     }
 }
