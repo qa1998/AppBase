@@ -6,9 +6,29 @@
 //
 
 import UIKit
-class MainViewController: UIViewController {
+class MainViewController: ESTabBarController {
+    
+    private var homeCoor: Coordinator = {
+        let nav = UINavigationController()
+        let homeCoor = HomeCoordinator(navigationController: nav)
+        homeCoor.start()
+        return homeCoor
+    }()
+    
+    private var settingCoor: Coordinator = {
+        let nav = UINavigationController()
+        let settingCoor = SettingCoordinator(navigationController: nav)
+        settingCoor.start()
+        return settingCoor
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .red
+        tabBar.backgroundColor = .white
+        viewControllers = [
+            homeCoor.rootViewController,
+            settingCoor.rootViewController
+        ]
     }
 }
+

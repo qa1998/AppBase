@@ -7,6 +7,8 @@
 
 import Foundation
 import Combine
+import UIKit
+
 class AppData: ObservableObject {
     
     static let shared = AppData()
@@ -34,14 +36,8 @@ class AppData: ObservableObject {
     }
     
     private init() {
-        self.token = DataStore.shared.value(
-            forKey: .token,
-            type: String.self
-        ) ?? ""
-        
-        self.isFirstLaunch = DataStore.shared.value(
-            forKey: .isFirstLaunch,
-            type: Bool.self
-        ) ?? true
+        self.token = DataStore.shared.value(forKey: .token,type: String.self) ?? ""
+        self.isFirstLaunch = DataStore.shared.value(forKey: .isFirstLaunch,type: Bool.self) ?? true
     }
 }
+
