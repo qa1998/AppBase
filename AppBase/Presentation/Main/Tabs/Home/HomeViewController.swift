@@ -7,6 +7,8 @@
 
 import UIKit
 import TIOPagingKit
+import BaseMVVM
+
 class HomeViewController<VM: HomeViewModel>: TIOTableViewController<VM> {
     
     override func viewDidLoad() {
@@ -14,7 +16,7 @@ class HomeViewController<VM: HomeViewModel>: TIOTableViewController<VM> {
         view.backgroundColor = .red
     }
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return viewModel.numOfItemsInSection(section)
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

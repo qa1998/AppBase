@@ -7,7 +7,10 @@
 
 import UIKit
 import SwiftUI
-class SettingViewController: UIViewController {
+import BaseMVVM
+
+class SettingViewController<VM: SettingViewModel>: TIOViewController<VM> {
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "Setting"

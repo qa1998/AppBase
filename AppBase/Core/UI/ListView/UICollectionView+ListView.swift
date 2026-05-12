@@ -7,7 +7,7 @@
 
 import UIKit
 extension UICollectionView: TIOListView {
-    func performBathUpdate(_ update: ((TIOListView) -> Void)?, completion: ((TIOListView) -> Void)?) {
+    func performBatchUpdates(_ update: ((TIOListView) -> Void)?, completion: ((TIOListView) -> Void)?) {
         self.performBatchUpdates { [weak self] in
             guard let this = self else { return }
             update?(this)
@@ -17,7 +17,7 @@ extension UICollectionView: TIOListView {
         }
     }
     
-    func notiInsertItems(at indexPaths: [IndexPath]) {
+    func notifyInsertItems(at indexPaths: [IndexPath]) {
         var total: Int = 0
         for section in 0..<self.numberOfSections {
             total += numberOfItems(inSection: section)

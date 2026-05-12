@@ -8,6 +8,8 @@
 import UIKit
 import BaseMVVM
 import SnapKit
+import Combine
+import MJRefresh
 
 class TIOListViewController<VM: TIOListViewModel>: TIOViewController<VM>,
                                                    UIScrollViewDelegate,
@@ -48,6 +50,39 @@ class TIOListViewController<VM: TIOListViewModel>: TIOViewController<VM>,
     
     override func onBind() {
         super.onBind()
+        listView?.mj_header?.refreshingBlock = { [weak self] in
+            self?.viewModel.refreshAndGetListData()
+        }
+        listView?.mj_footer?.refreshingBlock = {[weak self] in
+            self?.viewModel.loadMoreData()
+        }
+        viewModel.dataDidChange.sink { [weak self] in
+            guard let lv = self?.listView else {return}
+            lv.reloadData()
+            if lv.isRefresh {
+                lv.endRefreshing()
+                lv.resetNoMoreData()
+            }
+            if self?.viewModel.canLoadMore() ?? false {
+                lv.endLoadMoreWithNoData()
+            }
+        }.store(in: &cancelBag)
+        
+        viewModel.dataDidInsert.sink { [weak self] in
+            let indexPaths = ($0.start..<($0.start + $0.count))
+                .map { idx in IndexPath(item: idx, section: 0) }
+            self?.listView?.performBatchUpdates {
+                $0.notifyInsertItems(at: indexPaths)
+            } completion: {
+                if $0.isLoadMore {
+                    $0.endLoadMore()
+                }
+                if self?.viewModel.canLoadMore() ?? false {
+                    $0.endLoadMoreWithNoData()
+                }
+                  
+            }
+        }.store(in: &cancelBag)
     }
     
     func showListLoading() {

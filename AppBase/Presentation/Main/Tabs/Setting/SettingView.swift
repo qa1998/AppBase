@@ -9,7 +9,7 @@ import SwiftUI
 struct SettingView: View {
     var body: some View {
         ScrollView {
-            VStack(spacing: 28) {
+            VStack(spacing: Spacing.s24) {
                 
                 settingsSection(
                     title: "PREFERENCES",
@@ -105,7 +105,7 @@ extension SettingView {
             items: [SettingItem]
         ) -> some View {
             
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: Spacing.s12) {
                 
                 Text(title)
                     .font(.caption)
@@ -121,14 +121,14 @@ extension SettingView {
                         
                         if idx != items.count - 1 {
                             Divider()
-                                .padding(.leading, 56)
+                                .padding(.leading, Spacing.s32)
                         }
                     }
                 }
                 .background(.white)
                 .clipShape(
                     RoundedRectangle(
-                        cornerRadius: 20,
+                        cornerRadius: Radius.s20,
                         style: .continuous
                     )
                 )
@@ -143,7 +143,7 @@ struct SettingsRow: View {
         HStack(spacing: 16) {
             
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: Radius.s12)
                     .fill(item.iconColor.opacity(0.15))
                     .frame(width: 36, height: 36)
                 

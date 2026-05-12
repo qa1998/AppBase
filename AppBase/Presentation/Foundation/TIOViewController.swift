@@ -13,7 +13,7 @@ import SnapKit
 
 class TIOViewController<VM: TIOViewModel>: BaseViewController<VM> {
     
-    let cancelBag = Set<AnyCancellable>()
+    var cancelBag = Set<AnyCancellable>()
     
     override func viewDidLoad() {
         super.viewDidLoad()

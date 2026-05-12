@@ -7,8 +7,12 @@
 
 import UIKit
 import BaseMVVM
-
+import Combine
 class TIOListViewModel: TIOViewModel {
+    
+    let dataDidChange = PassthroughSubject<Void, Never>()
+    let dataDidInsert = PassthroughSubject<(start: Int, count: Int), Never>()
+    
     func numberOfSections() -> Int {
         return 1
     }

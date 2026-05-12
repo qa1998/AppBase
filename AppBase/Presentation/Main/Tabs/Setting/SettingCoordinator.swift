@@ -6,9 +6,12 @@
 //
 
 import UIKit
+import BaseMVVM
 class SettingCoordinator: NavigationCoordinator<VoidMeta> {
     private lazy var rootVC: UIViewController = {
         let vc = SettingViewController()
+        let vm = SettingViewModel()
+        vc.invoke(viewModel: vm)
         return vc
     }()
     
