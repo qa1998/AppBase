@@ -8,3 +8,61 @@
 "Helllo" = "Xin chào";
 "Goodbye" = "Tạm biệt";
 "Hi" = "Xin chào";
+
+"common.cancel" = "キャンセル";
+"common.ok" = "OK";
+
+"speech.export.error.already_exporting" = "音声ファイルを書き出しています。";
+"speech.export.error.empty_text" = "書き出すスクリプト本文がありません。";
+"speech.export.error.unsupported_buffer" = "システムから音声データを読み取れませんでした。";
+"speech.voice.quality.premium" = "プレミアム";
+"speech.voice.quality.enhanced" = "高品質";
+"speech.voice.quality.default" = "標準";
+"speech.voice.name_language_format" = "%@ (%@)";
+
+"teleprompter.settings.title" = "読み上げ設定";
+"teleprompter.settings.done" = "完了";
+"teleprompter.settings.speech_rate.title" = "読み上げ速度";
+"teleprompter.settings.speech_rate.caption" = "ドラッグして速度を調整";
+"teleprompter.settings.font_size.title" = "文字サイズ";
+"teleprompter.settings.font_size.caption" = "ドラッグして文字サイズを調整";
+"teleprompter.settings.percent_format" = "%.0f%%";
+"teleprompter.settings.font_point_format" = "%.0f pt";
+"teleprompter.settings.accessibility" = "スクリプト読み上げ設定";
+
+"teleprompter.voice.accessibility" = "音声 %@";
+"teleprompter.voice.select_accessibility" = "音声を選択";
+"teleprompter.voice.empty.title" = "音声がありません";
+"teleprompter.voice.empty.message" = "このデバイスではAppleの音声ライブラリから音声が返されませんでした。";
+"teleprompter.voice.picker.title" = "音声を選択";
+"teleprompter.voice.picker.message" = "この一覧は、このデバイスのApple音声ライブラリから取得しています。";
+"teleprompter.voice.picker.selected_format" = "使用中 - %@ · %@";
+"teleprompter.voice.picker.option_format" = "%@ · %@";
+
+"teleprompter.export.error.title" = "書き出せません";
+"teleprompter.export.default_filename" = "Script";
+"teleprompter.export.directory_name" = "Teleprompter Exports";
+
+"record.read_mode.manual" = "自分で読む";
+"record.read_mode.auto" = "自動読み上げ";
+"record.read_mode.accessibility" = "スクリプト読み上げモード";
+"record.done" = "完了";
+"record.video.action" = "動画を録画";
+"record.import_video.action" = "動画をインポート";
+"record.processing_voice" = "音声を合成中...";
+"record.import_processing" = "動画をインポート中...";
+"record.trim_processing" = "動画をトリミング中...";
+"record.import_video.error" = "選択した動画をインポートできませんでした。";
+"record.pause.accessibility" = "録画を一時停止";
+"record.resume.accessibility" = "録画を再開";
+"record.speed_wpm" = "速度: 100 wpm";
+"record.empty_script" = "(本文がありません)";
+"record.video_error.title" = "動画を録画できません";
+
+"elevenlabs.error.missing_api_key" = "ElevenLabs APIキーが設定されていません。";
+"elevenlabs.error.invalid_url" = "ElevenLabs URLが無効です。";
+"elevenlabs.error.empty_text" = "読み上げるテキストがありません。";
+"elevenlabs.error.empty_audio_data" = "ElevenLabsから音声データが返されませんでした。";
+"elevenlabs.error.status" = "ElevenLabsエラー %d。";
+"elevenlabs.error.status_message" = "ElevenLabsエラー %d: %@";
+"keychain.error.status" = "Keychain error: %d";

@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Ứng dụng cần quyền camera để quay video theo script.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ứng dụng cần quyền microphone để thu tiếng trong video theo script.</string>
     <key>UIDesignRequiresCompatibility</key>
     <true/>
 	<key>UIAppFonts</key>

@@ -1,22 +1,19 @@
 //
-//  HomeCoordinator.swift
+//  ScriptCoordinator.swift
 //  AppBase
 //
 
 import BaseMVVM
 import UIKit
 
-final class HomeCoordinator: NavigationCoordinator<VoidMeta> {
+final class ScriptCoordinator: NavigationCoordinator<VoidMeta> {
 
     private let repository = ScriptRepository.shared
 
-    private lazy var rootVC: HomeViewController = {
-        let vc = HomeViewController()
-        let vm = HomeViewModel(repository: repository)
+    private lazy var rootVC: SciptViewController = {
+        let vc = SciptViewController()
+        let vm = ScriptViewModel(repository: repository)
         vc.invoke(viewModel: vm)
-        vc.onTapCreateScript = { [weak self] in
-            self?.openEditor(script: nil)
-        }
         vc.onSelectScript = { [weak self] script in
             self?.openDetail(script: script)
         }
@@ -30,7 +27,6 @@ final class HomeCoordinator: NavigationCoordinator<VoidMeta> {
 
     private func openEditor(script: TeleprompterScript?) {
         let vc = ScriptEditorViewController(repository: repository, script: script)
-        vc.onDidSave = { _ in }
         navigate(to: .push(vc))
     }
 
@@ -42,7 +38,6 @@ final class HomeCoordinator: NavigationCoordinator<VoidMeta> {
         vc.onTapPlay = { [weak self] script in
             self?.openPlay(script: script)
         }
-        vc.onDidDelete = nil
         navigate(to: .push(vc))
     }
 

@@ -11,7 +11,7 @@ import Combine
 
 class TIOViewModel: BaseViewModel {
     
-    let cancelBag = Set<AnyCancellable>()
+    var cancelBag = Set<AnyCancellable>()
     
     open override func viewModelDidReady() {
         super.viewModelDidReady()

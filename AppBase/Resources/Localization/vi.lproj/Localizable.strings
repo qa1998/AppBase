@@ -6,3 +6,61 @@
   
 */
 
+"common.cancel" = "Hủy";
+"common.ok" = "OK";
+
+"speech.export.error.already_exporting" = "Đang export file giọng đọc.";
+"speech.export.error.empty_text" = "Script chưa có nội dung để export.";
+"speech.export.error.unsupported_buffer" = "Không đọc được dữ liệu âm thanh từ hệ thống.";
+"speech.voice.quality.premium" = "Premium";
+"speech.voice.quality.enhanced" = "Enhanced";
+"speech.voice.quality.default" = "Default";
+"speech.voice.name_language_format" = "%@ (%@)";
+
+"teleprompter.settings.title" = "Cài đặt đọc";
+"teleprompter.settings.done" = "Xong";
+"teleprompter.settings.speech_rate.title" = "Tốc độ đọc";
+"teleprompter.settings.speech_rate.caption" = "Kéo để chỉnh nhanh/chậm";
+"teleprompter.settings.font_size.title" = "Cỡ chữ";
+"teleprompter.settings.font_size.caption" = "Kéo để chỉnh kích thước chữ";
+"teleprompter.settings.percent_format" = "%.0f%%";
+"teleprompter.settings.font_point_format" = "%.0f pt";
+"teleprompter.settings.accessibility" = "Cài đặt đọc script";
+
+"teleprompter.voice.accessibility" = "Giọng đọc %@";
+"teleprompter.voice.select_accessibility" = "Chọn giọng đọc";
+"teleprompter.voice.empty.title" = "Không có giọng đọc";
+"teleprompter.voice.empty.message" = "Thiết bị chưa trả về giọng đọc nào từ thư viện Apple.";
+"teleprompter.voice.picker.title" = "Chọn giọng đọc";
+"teleprompter.voice.picker.message" = "Danh sách lấy từ thư viện giọng đọc Apple trên thiết bị.";
+"teleprompter.voice.picker.selected_format" = "Đang dùng - %@ · %@";
+"teleprompter.voice.picker.option_format" = "%@ · %@";
+
+"teleprompter.export.error.title" = "Không export được";
+"teleprompter.export.default_filename" = "Script";
+"teleprompter.export.directory_name" = "Teleprompter Exports";
+
+"record.read_mode.manual" = "Tự đọc";
+"record.read_mode.auto" = "Auto đọc";
+"record.read_mode.accessibility" = "Chế độ đọc script";
+"record.done" = "Xong";
+"record.video.action" = "Quay video";
+"record.import_video.action" = "Import video";
+"record.processing_voice" = "Đang ghép giọng đọc...";
+"record.import_processing" = "Đang import video...";
+"record.trim_processing" = "Đang trim video...";
+"record.import_video.error" = "Không thể import video đã chọn.";
+"record.pause.accessibility" = "Tạm dừng quay";
+"record.resume.accessibility" = "Tiếp tục quay";
+"record.speed_wpm" = "Tốc độ: 100 wpm";
+"record.empty_script" = "(Chưa có nội dung)";
+"record.video_error.title" = "Không thể quay video";
+
+"elevenlabs.error.missing_api_key" = "Chưa cấu hình ElevenLabs API key.";
+"elevenlabs.error.invalid_url" = "URL ElevenLabs không hợp lệ.";
+"elevenlabs.error.empty_text" = "Nội dung cần đọc đang trống.";
+"elevenlabs.error.empty_audio_data" = "ElevenLabs không trả về dữ liệu audio.";
+"elevenlabs.error.status" = "ElevenLabs lỗi %d.";
+"elevenlabs.error.status_message" = "ElevenLabs lỗi %d: %@";
+"keychain.error.status" = "Keychain error: %d";
+

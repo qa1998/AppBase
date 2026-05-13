@@ -2,42 +2,40 @@
 //  HomeViewModel.swift
 //  AppBase
 //
-//  Created by Quang Anh Le on 11/5/26.
-//
 
 import BaseMVVM
 import Foundation
 import Combine
+final class HomeViewModel: TIOListViewModel {
 
-class HomeViewModel: TIOListViewModel {
-    var items: [Int] = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    var page: Int = 1
-    
+    private let repository: ScriptRepository
+
+    private(set) var recentScripts: [TeleprompterScript] = []
+
+    init(repository: ScriptRepository = .shared) {
+        self.repository = repository
+        super.init()
+    }
+
+    override func viewModelDidReady() {
+        super.viewModelDidReady()
+        reload()
+    }
+
     override func numOfItemsInSection(_ section: Int) -> Int {
-        return items.count
+        recentScripts.count
     }
-    
-    override func refreshAndGetListData() {
-        self.page = 1
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.items = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-            self.dataDidChange.send()
-        }
+
+    func reload() {
+        recentScripts = Array(repository.fetchSortedByDate().prefix(10))
+        dataDidChange.send()
     }
-    
-    override func loadMoreData() {
-        let itemsLoaMore: [Int] = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.page += 1
-            let startIndex = self.items.count
-            let countInsert = itemsLoaMore.count
-            self.items.append(contentsOf: itemsLoaMore)
-            self.dataDidInsert.send((startIndex, countInsert))
-        }
+
+    func script(at index: Int) -> TeleprompterScript? {
+        recentScripts.indices.contains(index) ? recentScripts[index] : nil
     }
-    
-    override func canLoadMore() -> Bool {
-        return page == 3
+
+    override func didSelectItem(at indexPath: IndexPath) {
+        // HomeViewController overrides tableView didSelect; kept for consistency.
     }
 }

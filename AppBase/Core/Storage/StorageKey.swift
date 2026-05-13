@@ -12,4 +12,6 @@ enum StorageKey: String {
     case token = "token"
     case isFirstLaunch = "isFirstLaunch"
     case theme = "Theme"
+    case teleprompterScripts = "teleprompterScripts"
+    case scriptRecordings = "scriptRecordings"
 }

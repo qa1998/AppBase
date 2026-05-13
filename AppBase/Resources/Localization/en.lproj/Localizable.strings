@@ -8,3 +8,61 @@
 "Helllo" = "Xin chào";
 "Goodbye" = "Tạm biệt";
 "Hi" = "Xin chào";
+
+"common.cancel" = "Cancel";
+"common.ok" = "OK";
+
+"speech.export.error.already_exporting" = "Exporting speech audio.";
+"speech.export.error.empty_text" = "This script has no content to export.";
+"speech.export.error.unsupported_buffer" = "Could not read audio data from the system.";
+"speech.voice.quality.premium" = "Premium";
+"speech.voice.quality.enhanced" = "Enhanced";
+"speech.voice.quality.default" = "Default";
+"speech.voice.name_language_format" = "%@ (%@)";
+
+"teleprompter.settings.title" = "Reading Settings";
+"teleprompter.settings.done" = "Done";
+"teleprompter.settings.speech_rate.title" = "Reading Speed";
+"teleprompter.settings.speech_rate.caption" = "Drag to make reading slower or faster";
+"teleprompter.settings.font_size.title" = "Font Size";
+"teleprompter.settings.font_size.caption" = "Drag to change text size";
+"teleprompter.settings.percent_format" = "%.0f%%";
+"teleprompter.settings.font_point_format" = "%.0f pt";
+"teleprompter.settings.accessibility" = "Script reading settings";
+
+"teleprompter.voice.accessibility" = "Voice %@";
+"teleprompter.voice.select_accessibility" = "Select voice";
+"teleprompter.voice.empty.title" = "No voices available";
+"teleprompter.voice.empty.message" = "This device did not return any voices from Apple's voice library.";
+"teleprompter.voice.picker.title" = "Select Voice";
+"teleprompter.voice.picker.message" = "This list comes from Apple's voice library on this device.";
+"teleprompter.voice.picker.selected_format" = "Current - %@ · %@";
+"teleprompter.voice.picker.option_format" = "%@ · %@";
+
+"teleprompter.export.error.title" = "Could Not Export";
+"teleprompter.export.default_filename" = "Script";
+"teleprompter.export.directory_name" = "Teleprompter Exports";
+
+"record.read_mode.manual" = "Self read";
+"record.read_mode.auto" = "Auto read";
+"record.read_mode.accessibility" = "Script reading mode";
+"record.done" = "Done";
+"record.video.action" = "Record video";
+"record.import_video.action" = "Import video";
+"record.processing_voice" = "Merging voice...";
+"record.import_processing" = "Importing video...";
+"record.trim_processing" = "Trimming video...";
+"record.import_video.error" = "Could not import the selected video.";
+"record.pause.accessibility" = "Pause recording";
+"record.resume.accessibility" = "Resume recording";
+"record.speed_wpm" = "Speed: 100 wpm";
+"record.empty_script" = "(No content)";
+"record.video_error.title" = "Could Not Record Video";
+
+"elevenlabs.error.missing_api_key" = "ElevenLabs API key is not configured.";
+"elevenlabs.error.invalid_url" = "Invalid ElevenLabs URL.";
+"elevenlabs.error.empty_text" = "There is no text to synthesize.";
+"elevenlabs.error.empty_audio_data" = "ElevenLabs did not return audio data.";
+"elevenlabs.error.status" = "ElevenLabs error %d.";
+"elevenlabs.error.status_message" = "ElevenLabs error %d: %@";
+"keychain.error.status" = "Keychain error: %d";
