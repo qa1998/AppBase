@@ -9,68 +9,118 @@ import UIKit
 import BaseMVVM
 import Combine
 
-class MainViewController: ESTabBarController {
+/// Tab bar chính — coordinator từng tab chỉ khởi tạo khi user chọn tab lần đầu (lazy).
+final class MainViewController: ESTabBarController {
+
+    private enum Tab: Int, CaseIterable {
+        case home
+        case scripts
+        case record
+        case library
+        case settings
+
+        var title: String {
+            switch self {
+            case .home: return L10n.Tab.home
+            case .scripts: return L10n.Tab.scripts
+            case .record: return L10n.Tab.record
+            case .library: return L10n.Tab.library
+            case .settings: return L10n.Tab.settings
+            }
+        }
+
+        var iconName: String {
+            switch self {
+            case .home: return "house.fill"
+            case .scripts: return "doc.text.fill"
+            case .record: return "record.circle.fill"
+            case .library: return "folder.fill"
+            case .settings: return "gearshape.fill"
+            }
+        }
+    }
 
     private var themeCancel: AnyCancellable?
     private var localizationCancel: AnyCancellable?
 
-    var homeCoor: Coordinator = {
-        let nav = UINavigationController()
-        let homeCoor = HomeCoordinator(navigationController: nav)
-        homeCoor.start()
-        return homeCoor
-    }()
-
-    var scriptsCoor: Coordinator = {
-        let nav = UINavigationController()
-        let scriptsCoor = ScriptsCoordinator(navigationController: nav)
-        scriptsCoor.start()
-        return scriptsCoor
-    }()
-
-    var recordCoor: Coordinator = {
-        let nav = UINavigationController()
-        let recordCoor = RecordCoordinator(navigationController: nav)
-        recordCoor.start()
-        return recordCoor
-    }()
-
-    var libraryCoor: Coordinator = {
-        let nav = UINavigationController()
-        let libraryCoor = LibraryCoordinator(navigationController: nav)
-        libraryCoor.start()
-        return libraryCoor
-    }()
-
-    var settingCoor: Coordinator = {
-        let nav = UINavigationController()
-        let settingCoor = SettingCoordinator(navigationController: nav)
-        settingCoor.start()
-        return settingCoor
-    }()
+    private var coordinators: [Int: Coordinator<VoidMeta>] = [:]
+    private var placeholderViewControllers: [UIViewController] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        delegate = self
+
         bindThemeUpdates()
         bindLocalizationUpdates()
 
-        viewControllers = [
-            homeCoor.rootViewController,
-            scriptsCoor.rootViewController,
-            recordCoor.rootViewController,
-            libraryCoor.rootViewController,
-            settingCoor.rootViewController
-        ]
+        placeholderViewControllers = Tab.allCases.map { _ in makePlaceholderViewController() }
+        viewControllers = placeholderViewControllers
+
+        loadTab(at: Tab.home.rawValue)
+        selectedIndex = Tab.home.rawValue
 
         applyTabBarItems()
         applyTabBarTheme()
     }
+
+    // MARK: - Lazy tab loading
+
+    private func loadTab(at index: Int) {
+        guard coordinators[index] == nil,
+              index >= 0,
+              index < (viewControllers?.count ?? 0) else { return }
+
+        let coordinator = makeCoordinator(for: index)
+        coordinators[index] = coordinator
+
+        var controllers = viewControllers ?? []
+        controllers[index] = coordinator.rootViewController
+        controllers[index].tabBarItem = makeTabBarItem(for: index)
+        viewControllers = controllers
+    }
+
+    private func makeCoordinator(for index: Int) -> Coordinator<VoidMeta> {
+        let navigationController = UINavigationController()
+        switch Tab(rawValue: index) {
+        case .home:
+            let coordinator = HomeCoordinator(navigationController: navigationController)
+            coordinator.start()
+            return coordinator
+        case .scripts:
+            let coordinator = ScriptsCoordinator(navigationController: navigationController)
+            coordinator.start()
+            return coordinator
+        case .record:
+            let coordinator = RecordCoordinator(navigationController: navigationController)
+            coordinator.start()
+            return coordinator
+        case .library:
+            let coordinator = LibraryCoordinator(navigationController: navigationController)
+            coordinator.start()
+            return coordinator
+        case .settings:
+            let coordinator = SettingCoordinator(navigationController: navigationController)
+            coordinator.start()
+            return coordinator
+        case .none:
+            fatalError("Invalid tab index: \(index)")
+        }
+    }
+
+    private func makePlaceholderViewController() -> UIViewController {
+        let controller = UIViewController()
+        controller.view.backgroundColor = ThemeManager.shared.palette.backgroundSecondary
+        return controller
+    }
+
+    // MARK: - Tab bar UI
 
     private func bindThemeUpdates() {
         themeCancel = ThemeManager.shared.$palette
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.applyTabBarTheme()
+                self?.updatePlaceholderBackgrounds()
             }
     }
 
@@ -82,33 +132,31 @@ class MainViewController: ESTabBarController {
             }
     }
 
+    private func updatePlaceholderBackgrounds() {
+        let color = ThemeManager.shared.palette.backgroundSecondary
+        placeholderViewControllers.forEach { $0.view.backgroundColor = color }
+    }
+
     private func applyTabBarItems() {
-        let configs: [(Coordinator, String, String, Int)] = [
-            (homeCoor, L10n.Tab.home, "house.fill", 0),
-            (scriptsCoor, L10n.Tab.scripts, "doc.text.fill", 1),
-            (recordCoor, L10n.Tab.record, "record.circle.fill", 2),
-            (libraryCoor, L10n.Tab.library, "folder.fill", 3),
-            (settingCoor, L10n.Tab.settings, "gearshape.fill", 4)
-        ]
+        guard let controllers = viewControllers else { return }
 
-        let titles = configs.map(\.1)
-
-        for (coordinator, title, imageName, tag) in configs {
-            coordinator.rootViewController.tabBarItem = makeTabBarItem(
-                title: title,
-                imageName: imageName,
-                tag: tag
-            )
+        for index in controllers.indices {
+            controllers[index].tabBarItem = makeTabBarItem(for: index)
         }
+        viewControllers = controllers
 
+        let titles = Tab.allCases.map(\.title)
         ESTabBarAppearance.updateTitles(on: tabBar, titles: titles)
     }
 
-    private func makeTabBarItem(title: String, imageName: String, tag: Int) -> ESTabBarItem {
-        ESTabBarItem(
-            title: title,
-            image: UIImage(systemName: imageName),
-            tag: tag
+    private func makeTabBarItem(for index: Int) -> ESTabBarItem {
+        guard let tab = Tab(rawValue: index) else {
+            return ESTabBarItem()
+        }
+        return ESTabBarItem(
+            title: tab.title,
+            image: UIImage(systemName: tab.iconName),
+            tag: index
         )
     }
 
@@ -116,5 +164,27 @@ class MainViewController: ESTabBarController {
         let colors = ThemeManager.shared.palette
         TabBarAppearance().apply(to: tabBar)
         ESTabBarAppearance.apply(to: tabBar, colors: colors)
+    }
+}
+
+// MARK: - UITabBarControllerDelegate
+
+extension MainViewController: UITabBarControllerDelegate {
+
+    func tabBarController(
+        _ tabBarController: UITabBarController,
+        shouldSelect viewController: UIViewController
+    ) -> Bool {
+        guard let index = viewControllers?.firstIndex(of: viewController) else {
+            return true
+        }
+
+        if coordinators[index] != nil {
+            return true
+        }
+
+        loadTab(at: index)
+        tabBarController.selectedIndex = index
+        return false
     }
 }

@@ -53,6 +53,17 @@ class TIOTableViewController<VM: TIOListViewModel>: TIOListViewController<VM>,
         fatalError("func cellForRowAt require override at instance")
     }
 
+    /// Subclass gọi sau `dequeue` nếu không override `cellForRowAt` với shimmer (optional helper).
+    func dequeueListCell<T: TIOTableViewCell>(
+        _ type: T.Type,
+        from tableView: UITableView,
+        for indexPath: IndexPath
+    ) -> T {
+        let cell = tableView.dequeueReusableCell(type: type, for: indexPath)
+        applyListCellShimmerIfNeeded(cell)
+        return cell
+    }
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }

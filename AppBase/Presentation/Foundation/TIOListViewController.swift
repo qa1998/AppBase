@@ -31,8 +31,8 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
     override func handleTrackLoading(_ track: TrackLoading<TIOLoadingTarget>) {
         guard case .screen = track.event else { return }
         viewModel.setListCellLoading(track.isLoading)
+        // Skeleton qua `displayItemCount` + `cellForRowAt` → `applyListShimmer` (không shimmer 2 lần).
         listView?.reloadData()
-        applyShimmerToVisibleListCells(track.isLoading)
     }
 
     override func viewDidLoad() {
@@ -161,18 +161,9 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
         }
     }
 
+    /// Gọi trong `cellForRowAt` / `cellForItemAt` sau dequeue.
     func applyListCellShimmerIfNeeded(_ cell: UIView) {
         guard let shimmerCell = cell as? TIOListCellShimmerApplicable else { return }
         shimmerCell.applyListShimmer(viewModel.isListCellLoading)
-    }
-
-    private func applyShimmerToVisibleListCells(_ isLoading: Bool) {
-        if let tableView = listView as? UITableView {
-            tableView.visibleCells.forEach { applyListCellShimmerIfNeeded($0) }
-            return
-        }
-        if let collectionView = listView as? UICollectionView {
-            collectionView.visibleCells.forEach { applyListCellShimmerIfNeeded($0) }
-        }
     }
 }

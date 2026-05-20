@@ -10,7 +10,7 @@ import BaseMVVM
 
 class HomeCoordinator: NavigationCoordinator<VoidMeta> {
     
-    private var rootVC:  UIViewController = {
+    private lazy var rootVC: UIViewController = {
         let vc = HomeViewController()
         let vm = HomeViewModel()
         vc.invoke(viewModel: vm)
