@@ -1,0 +1,51 @@
+/*
+  Localizable.strings
+  AppBase
+*/
+
+/* App */
+"app.name" = "MC Teleprompter";
+"app.tagline.prompting" = "Nhắc chữ dễ dàng.";
+"app.tagline.focus" = "Tập trung vào nội dung của bạn.";
+
+/* Tab bar */
+"tab.home" = "Trang chủ";
+"tab.scripts" = "Kịch bản";
+"tab.record" = "Ghi hình";
+"tab.library" = "Thư viện";
+"tab.settings" = "Cài đặt";
+
+/* Onboarding */
+"onboard.start" = "Bắt đầu";
+
+/* Login */
+"login.title" = "Đăng nhập";
+"login.register.title" = "Đăng ký";
+
+/* Settings */
+"settings.title" = "Cài đặt";
+"settings.section.preferences" = "TÙY CHỌN";
+"settings.theme" = "Giao diện";
+"settings.theme.system" = "Hệ thống";
+"settings.language" = "Ngôn ngữ";
+"settings.notifications" = "Thông báo";
+"settings.appearance" = "Hiển thị";
+"settings.section.general" = "CHUNG";
+"settings.privacy" = "Quyền riêng tư";
+"settings.security" = "Bảo mật";
+"settings.backup" = "Sao lưu & Đồng bộ";
+"settings.storage" = "Bộ nhớ";
+"settings.section.about" = "GIỚI THIỆU";
+"settings.appVersion" = "Phiên bản";
+"settings.appVersion.value" = "1.2.3 (123)";
+"settings.rateUs" = "Đánh giá";
+"settings.help" = "Trợ giúp";
+"settings.terms" = "Điều khoản dịch vụ";
+
+/* Language */
+"language.english" = "English";
+"language.vietnamese" = "Tiếng Việt";
+"language.japanese" = "日本語";
+
+/* Common */
+"common.loading" = "Đang tải...";

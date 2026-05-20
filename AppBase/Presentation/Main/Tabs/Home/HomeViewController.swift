@@ -14,6 +14,7 @@ class HomeViewController<VM: HomeViewModel>: TIOCollectionViewController<VM> {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .red
+        title = L10n.Tab.home
     }
     override func registerCells() -> [TIOCollectionViewCell.Type] {
         return [TIOCollectionViewCell.self]

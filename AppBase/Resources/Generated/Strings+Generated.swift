@@ -88,6 +88,18 @@ internal enum L10n {
       internal static var system: String { return L10n.tr("Localizable", "settings.theme.system", fallback: "System") }
     }
   }
+  internal enum Tab {
+    /// Tab bar
+    internal static var home: String { return L10n.tr("Localizable", "tab.home", fallback: "Home") }
+    /// Library
+    internal static var library: String { return L10n.tr("Localizable", "tab.library", fallback: "Library") }
+    /// Record
+    internal static var record: String { return L10n.tr("Localizable", "tab.record", fallback: "Record") }
+    /// Scripts
+    internal static var scripts: String { return L10n.tr("Localizable", "tab.scripts", fallback: "Scripts") }
+    /// Settings
+    internal static var settings: String { return L10n.tr("Localizable", "tab.settings", fallback: "Settings") }
+  }
 }
 // swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:enable nesting type_body_length type_name vertical_whitespace_opening_braces

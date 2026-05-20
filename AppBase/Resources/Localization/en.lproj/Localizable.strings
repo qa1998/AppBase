@@ -8,6 +8,13 @@
 "app.tagline.prompting" = "Easy teleprompter.";
 "app.tagline.focus" = "Focus on your content.";
 
+/* Tab bar */
+"tab.home" = "Home";
+"tab.scripts" = "Scripts";
+"tab.record" = "Record";
+"tab.library" = "Library";
+"tab.settings" = "Settings";
+
 /* Onboarding */
 "onboard.start" = "Get Started";
 
