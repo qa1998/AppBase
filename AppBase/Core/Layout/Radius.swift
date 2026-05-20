@@ -6,6 +6,7 @@
 //
 
 import UIKit
+/// Bo góc chuẩn — `layer.cornerRadius`, SwiftUI `cornerRadius`, `RoundedRectangle`.
 enum Radius {
     static let s8: CGFloat = 8
     static let s12: CGFloat = 12

@@ -20,26 +20,6 @@ class TIOViewModel<Event: Hashable>: BaseViewModel {
     func stopLoading(_ event: Event) {
         trackLoading.send(.stop(event))
     }
-
-    open override func viewModelDidReady() {
-        super.viewModelDidReady()
-    }
-
-    open override func viewModelWillActive() {
-        super.viewModelWillActive()
-    }
-
-    open override func viewModelDidActive() {
-        super.viewModelDidActive()
-    }
-
-    open override func viewModelWillInactive() {
-        super.viewModelWillInactive()
-    }
-
-    open override func viewModelDidInactive() {
-        super.viewModelDidInactive()
-    }
 }
 
 extension TIOViewModel where Event == TIOLoadingTarget {

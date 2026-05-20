@@ -49,6 +49,19 @@
 "language.vietnamese" = "Tiếng Việt";
 "language.japanese" = "日本語";
 
+/* Maintenance */
+"maintain.title" = "メンテナンス";
+"maintain.message" = "まもなく復旧します。";
+
+/* Library */
+"library.title" = "ライブラリ";
+"library.subtitle.hint" = "ボタンをタップしてシマーをテスト";
+"library.button.testScreen" = "読み込みテスト（画面）";
+"library.button.shimmerTitle" = "タイトルのみシマー";
+"library.button.shimmerSubtitle" = "サブタイトルのみシマー";
+"library.loaded.title" = "ライブラリ読み込み完了";
+"library.loaded.subtitle" = "Fake API · %@";
+
 /* Common */
 "common.loading" = "読み込み中...";
 "common.cancel" = "キャンセル";

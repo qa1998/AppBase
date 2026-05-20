@@ -10,26 +10,25 @@ import BaseMVVM
 import Combine
 
 class LoginCoordinator: NavigationCoordinator<VoidMeta> {
-    
+
     private lazy var rootVc: UIViewController = {
         let vc = LoginViewController()
         let vm = LoginViewModel()
         vc.navToRegister.sink { [weak self] in
-            self?.navToRegíter()
+            self?.navToRegister()
         }.store(in: &cancelBag)
         vc.invoke(viewModel: vm)
         return vc
     }()
-    
+
     override func start() {
-        self.navigate(to: .set([rootVc]), transitioning: .none)
+        navigate(to: .set([rootVc]), transitioning: .none)
     }
-    
-    private func navToRegíter() {
+
+    private func navToRegister() {
         let vc = RegisterViewController()
-        self.navigate(to: .push(vc))
+        let vm = RegisterViewModel()
+        vc.invoke(viewModel: vm)
+        navigate(to: .push(vc))
     }
 }
-
-
-

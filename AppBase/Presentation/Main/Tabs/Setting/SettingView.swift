@@ -102,9 +102,9 @@ struct SettingView: View {
                     ]
                 )
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 40)
+            .padding(.horizontal, Spacing.s20)
+            .padding(.top, Spacing.s16)
+            .padding(.bottom, Spacing.s40)
         }
         .background(Color(uiColor: themeManager.palette.backgroundSecondary))
         .confirmationDialog(
@@ -182,7 +182,7 @@ extension SettingView {
             Text(title)
                 .font(Font.swiftUIFont(.text13, style: .bold))
                 .foregroundStyle(Color(uiColor: themeManager.palette.textSecondary))
-                .padding(.horizontal, 4)
+                .padding(.horizontal, Spacing.s4)
 
             VStack(spacing: 0) {
 
@@ -226,7 +226,7 @@ struct SettingsRow: View {
     }
 
     private var rowContent: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.s16) {
 
             ZStack {
                 RoundedRectangle(cornerRadius: Radius.s12)
@@ -253,7 +253,7 @@ struct SettingsRow: View {
                 .font(Font.swiftUIFont(.text13, style: .bold))
                 .foregroundStyle(Color(uiColor: palette.textSecondary).opacity(0.6))
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Spacing.s16)
         .frame(height: 60)
         .contentShape(Rectangle())
     }

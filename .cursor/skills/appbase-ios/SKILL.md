@@ -7,7 +7,7 @@ description: >-
   review, refactor, optimize, add UI/layout, constraints, or list/screen features
   in AppBase, or mentions TIO, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
   TIOPagingKit, TrackLoading, shimmer, skeleton loading, UIView-Shimmer, Font,
-  FontSize, Lato typography, ThemeManager, TIOThemable, palette, or dark/light mode.
+  FontSize, Lato typography, Spacing, Radius, ThemeManager, TIOThemable, palette, or dark/light mode.
   For UI text and copy, use skill `appbase-localization` (L10n + SwiftGen) — never
   hardcode user-facing strings. **Every new view/screen must apply theme** (see below).
 ---
@@ -78,6 +78,37 @@ Text(tagline)
 - Semibold/medium system weight → map sang Lato **bold** hoặc **default** (không có Lato-Semibold).
 
 Files: `AppBase/Core/Font/Font.swift`, `FontSize.swift`, `Font+SwiftUI.swift`.
+
+## Spacing & Radius (layout tokens)
+
+**Không** magic number cho padding / margin / khoảng cách giữa view / bo góc trong AppBase (trừ `ThirdParty/`).
+
+| Enum | Dùng cho | Tokens |
+|------|----------|--------|
+| `Spacing` | `offset`, `inset`, `VStack`/`HStack` spacing, `UIStackView.spacing`, `.padding` SwiftUI | `s4` … `s40` (`s8`, `s12`, `s16`, `s20`, `s24`, `s28`, `s32`, …) |
+| `Radius` | `layer.cornerRadius`, `.cornerRadius`, `RoundedRectangle(cornerRadius:)` | `s8`, `s12`, `s16`, `s20` |
+
+```swift
+// UIKit + SnapKit
+titleLabel.snp.makeConstraints { make in
+    make.top.equalToSuperview().offset(Spacing.s24)
+    make.leading.trailing.equalToSuperview().inset(Spacing.s20)
+}
+button.layer.cornerRadius = Radius.s12
+stack.spacing = Spacing.s12
+
+// SwiftUI
+VStack(spacing: Spacing.s24) { ... }
+    .padding(.horizontal, Spacing.s20)
+    .padding(.bottom, Spacing.s40)
+RoundedRectangle(cornerRadius: Radius.s20, style: .continuous)
+```
+
+- Cần giá trị mới → **thêm token** vào `Spacing.swift` / `Radius.swift` (đặt tên `sN` theo pt), không hardcode `16`, `12` rải rác.
+- **Không** constraint `height`/`width` từng button trong `UIStackView` — set `stack.spacing = Spacing.*` + height cho stack.
+- Chiều cao row/button cố định (48pt) có thể giữ constant riêng nếu không có token `Spacing` tương ứng.
+
+Files: `AppBase/Core/Layout/Spacing.swift`, `Radius.swift`.
 
 ## Theme (`ThemeManager` + TIO common views) — **bắt buộc mỗi view mới**
 
@@ -163,6 +194,7 @@ Dùng **mỗi lần** tạo ViewController / SwiftUI view / custom `UIView` mớ
 - [ ] SwiftUI: @ObservedObject themeManager + palette colors
 - [ ] title / strings: L10n + override refreshLocalization() (skill appbase-localization)
 - [ ] Font: Font.default / Font.bold + FontSize (không systemFont)
+- [ ] Spacing / Radius cho padding & cornerRadius (không magic 8, 12, 16, 20…)
 ```
 
 ### ViewController template
@@ -387,14 +419,15 @@ make.leading.trailing.bottom.equalToSuperview()
 
 ```swift
 titleLabel.snp.makeConstraints { make in
-    make.top.equalToSuperview().offset(16)
-    make.leading.trailing.equalToSuperview().inset(16)
+    make.top.equalToSuperview().offset(Spacing.s16)
+    make.leading.trailing.equalToSuperview().inset(Spacing.s16)
 }
 button.snp.makeConstraints { make in
-    make.top.equalTo(titleLabel.snp.bottom).offset(12)
+    make.top.equalTo(titleLabel.snp.bottom).offset(Spacing.s12)
     make.centerX.equalToSuperview()
-    make.height.equalTo(44)
+    make.height.equalTo(48)
 }
+button.layer.cornerRadius = Radius.s12
 ```
 
 **Fixed size:**
@@ -418,7 +451,7 @@ make.height.equalTo(44)
 
 - Replace `NSLayoutConstraint.activate([...])` and anchor chains with SnapKit equivalents.
 - Flag Storyboard-only screens only when user adds **new** programmatic subviews — new code still uses SnapKit for those subviews.
-- Prefer `inset` / `offset` over magic numbers; group related spacing in one place when a screen has many constraints.
+- Dùng `Spacing.*` cho `inset` / `offset`; `Radius.*` cho `cornerRadius` — không magic numbers.
 - Do not mix SnapKit and manual constraints on the same view.
 
 ### Anti-patterns
@@ -452,6 +485,7 @@ Copy and track:
 - [ ] No raw `NSLayoutConstraint` / anchor APIs on new or touched code
 - [ ] Typography: `Font` / `FontSize` — no `UIFont.systemFont` / `.font(.system(...))` in AppBase code
 - [ ] Theme: TIO* views or `bindTheme`; no `.systemBackground` / `.white` / `.label` for main UI
+- [ ] Spacing / Radius: no raw `12`, `16`, `20` for padding or corner radius
 - [ ] New screen: `refreshLocalization()` if có `title` / copy
 ```
 
@@ -526,6 +560,7 @@ Typography → **`Font`** + **`FontSize`** (section above); không hardcode `UIF
 
 - Localization: `.cursor/skills/appbase-localization/SKILL.md`
 - Detailed checklist: [checklist.md](checklist.md)
+- Layout tokens: `AppBase/Core/Layout/Spacing.swift`, `Radius.swift`
 - Typography: `AppBase/Core/Font/`
 - Foundation: `AppBase/Presentation/Foundation/`
 - List abstractions: `AppBase/Core/UI/ListView/TIOListView.swift`, `UITableView+ListView.swift`

@@ -10,7 +10,7 @@ import Combine
 
 class LibraryViewController<VM: LibraryViewModel>: TIOViewController<VM, LibraryLoadingEvent> {
 
-    private let contentView = TIOView()
+    private let contentView = TIOContentView()
 
     private let titleLabel = TIOLabel()
     private let subtitleLabel = TIOLabel()
@@ -26,10 +26,12 @@ class LibraryViewController<VM: LibraryViewModel>: TIOViewController<VM, Library
             loadSubtitleButton
         ])
         stack.axis = .vertical
-        stack.spacing = 12
+        stack.spacing = Spacing.s12
         stack.distribution = .fillEqually
         return stack
     }()
+
+    private let buttonRowHeight: CGFloat = 48
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,29 +40,22 @@ class LibraryViewController<VM: LibraryViewModel>: TIOViewController<VM, Library
 
     override func refreshLocalization() {
         title = L10n.Tab.library
+        titleLabel.text = L10n.Library.title
+        subtitleLabel.text = L10n.Library.Subtitle.hint
+        loadTestButton.setTitle(L10n.Library.Button.testScreen, for: .normal)
+        loadTitleButton.setTitle(L10n.Library.Button.shimmerTitle, for: .normal)
+        loadSubtitleButton.setTitle(L10n.Library.Button.shimmerSubtitle, for: .normal)
     }
 
     override func setupUI() {
         super.setupUI()
 
         titleLabel.font = Font.bold(size: .text28)
-        titleLabel.text = "Library"
-        titleLabel.textColor = .label
-
         subtitleLabel.font = Font.default(size: .subtitle)
-        subtitleLabel.textColor = .secondaryLabel
-        subtitleLabel.text = "Tap a button to test shimmer"
-
-        loadTestButton.setTitle("Test loading (screen)", for: .normal)
-        loadTitleButton.setTitle("Shimmer title only", for: .normal)
-        loadSubtitleButton.setTitle("Shimmer subtitle only", for: .normal)
 
         [loadTestButton, loadTitleButton, loadSubtitleButton].forEach {
             $0.usesFilledPrimaryStyle = true
-            $0.layer.cornerRadius = 12
-            $0.snp.makeConstraints { make in
-                make.height.equalTo(48)
-            }
+            $0.layer.cornerRadius = Radius.s12
         }
 
         view.addSubview(contentView)
@@ -68,23 +63,22 @@ class LibraryViewController<VM: LibraryViewModel>: TIOViewController<VM, Library
         contentView.addSubview(subtitleLabel)
         contentView.addSubview(buttonStack)
 
-        contentView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(20)
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(24)
-        }
-
+        // `TIOContentView` (IFSContentView) — pin full màn trong `layoutIFSContentViewsIfNeeded()`, không constraint ở đây.
         titleLabel.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
+            make.top.equalTo(contentView.safeAreaLayoutGuide.snp.top).offset(Spacing.s24)
+            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
         }
 
         subtitleLabel.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(8)
-            make.leading.trailing.equalToSuperview()
+            make.top.equalTo(titleLabel.snp.bottom).offset(Spacing.s8)
+            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
         }
 
+        let stackHeight = buttonRowHeight * 3 + buttonStack.spacing * 2
         buttonStack.snp.makeConstraints { make in
-            make.top.equalTo(subtitleLabel.snp.bottom).offset(32)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.top.equalTo(subtitleLabel.snp.bottom).offset(Spacing.s32)
+            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
+            make.height.equalTo(stackHeight)
         }
     }
 

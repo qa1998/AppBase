@@ -6,12 +6,13 @@
 import BaseMVVM
 import Combine
 import Foundation
+
 class LibraryViewModel: TIOViewModel<LibraryLoadingEvent> {
 
     private let fakeAPI = LibraryFakeAPI.shared
 
-    let titleText = CurrentValueSubject<String, Never>("Library")
-    let subtitleText = CurrentValueSubject<String, Never>("Tap a button to test shimmer")
+    let titleText = CurrentValueSubject<String, Never>(L10n.Library.title)
+    let subtitleText = CurrentValueSubject<String, Never>(L10n.Library.Subtitle.hint)
 
     func runFakeLoad(for target: LibraryLoadingEvent) {
         startLoading(target)

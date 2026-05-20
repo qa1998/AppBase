@@ -20,9 +20,10 @@ final class LibraryFakeAPI {
 
     func fetch(completion: @escaping (LibraryData) -> Void) {
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
+            let code = String(Int(Date().timeIntervalSince1970) % 10_000)
             completion(LibraryData(
-                title: "Library loaded",
-                subtitle: "Fake API · \(Int(Date().timeIntervalSince1970) % 10_000)"
+                title: L10n.Library.Loaded.title,
+                subtitle: L10n.Library.Loaded.subtitle(code)
             ))
         }
     }

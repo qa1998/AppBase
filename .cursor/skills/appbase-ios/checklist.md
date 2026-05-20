@@ -10,6 +10,8 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 - [ ] Subviews added before constraints; layout in `setupUI` or `viewDidLoad` as appropriate
 - [ ] Full-bleed children use `make.edges.equalToSuperview()` (or safe-area variants)
 - [ ] Re-layout uses `remakeConstraints`, not duplicate `makeConstraints` on same view
+- [ ] `offset` / `inset` dùng `Spacing.*` — không magic number
+- [ ] `cornerRadius` / `RoundedRectangle` dùng `Radius.*`
 
 ## TIOViewController
 
@@ -42,6 +44,12 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 - [ ] SwiftUI: `@ObservedObject themeManager` + `themeManager.palette.*`
 - [ ] Shimmer: `palette.backgroundSecondary` làm `viewBackgroundColor`
 - [ ] Cell: `TIOTableViewCell` / `TIOCollectionViewCell` (đã có theme sẵn)
+
+## Spacing & Radius
+
+- [ ] Padding / margin / stack spacing → `Spacing.s*`
+- [ ] Bo góc → `Radius.s*`
+- [ ] Giá trị mới → thêm token trong `Spacing.swift` / `Radius.swift`
 
 ## Typography
 

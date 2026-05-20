@@ -18,7 +18,7 @@ class TIOCollectionViewCell: UICollectionViewCell, ShimmeringViewProtocol, TIOLi
 
     private let shimmerHost: TIOView = {
         let view = TIOView()
-        view.layer.cornerRadius = 8
+        view.layer.cornerRadius = Radius.s8
         view.layer.masksToBounds = true
         view.isHidden = true
         return view

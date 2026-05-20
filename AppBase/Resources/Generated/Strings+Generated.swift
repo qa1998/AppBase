@@ -34,6 +34,30 @@ internal enum L10n {
     /// Vietnamese
     internal static var vietnamese: String { return L10n.tr("Localizable", "language.vietnamese", fallback: "Vietnamese") }
   }
+  internal enum Library {
+    /// Library
+    internal static var title: String { return L10n.tr("Localizable", "library.title", fallback: "Library") }
+    internal enum Button {
+      /// Shimmer subtitle only
+      internal static var shimmerSubtitle: String { return L10n.tr("Localizable", "library.button.shimmerSubtitle", fallback: "Shimmer subtitle only") }
+      /// Shimmer title only
+      internal static var shimmerTitle: String { return L10n.tr("Localizable", "library.button.shimmerTitle", fallback: "Shimmer title only") }
+      /// Test loading (screen)
+      internal static var testScreen: String { return L10n.tr("Localizable", "library.button.testScreen", fallback: "Test loading (screen)") }
+    }
+    internal enum Loaded {
+      /// Fake API · %@
+      internal static func subtitle(_ p1: Any) -> String {
+        return L10n.tr("Localizable", "library.loaded.subtitle", String(describing: p1), fallback: "Fake API · %@")
+      }
+      /// Library loaded
+      internal static var title: String { return L10n.tr("Localizable", "library.loaded.title", fallback: "Library loaded") }
+    }
+    internal enum Subtitle {
+      /// Tap a button to test shimmer
+      internal static var hint: String { return L10n.tr("Localizable", "library.subtitle.hint", fallback: "Tap a button to test shimmer") }
+    }
+  }
   internal enum Login {
     /// Login
     internal static var title: String { return L10n.tr("Localizable", "login.title", fallback: "Login") }
@@ -41,6 +65,12 @@ internal enum L10n {
       /// Register
       internal static var title: String { return L10n.tr("Localizable", "login.register.title", fallback: "Register") }
     }
+  }
+  internal enum Maintain {
+    /// We will be back soon.
+    internal static var message: String { return L10n.tr("Localizable", "maintain.message", fallback: "We will be back soon.") }
+    /// Maintenance
+    internal static var title: String { return L10n.tr("Localizable", "maintain.title", fallback: "Maintenance") }
   }
   internal enum Onboard {
     /// Onboarding

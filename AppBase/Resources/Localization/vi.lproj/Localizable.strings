@@ -49,6 +49,19 @@
 "language.vietnamese" = "Tiếng Việt";
 "language.japanese" = "日本語";
 
+/* Maintenance */
+"maintain.title" = "Bảo trì";
+"maintain.message" = "Ứng dụng sẽ sớm trở lại.";
+
+/* Library */
+"library.title" = "Thư viện";
+"library.subtitle.hint" = "Chạm nút để thử shimmer";
+"library.button.testScreen" = "Test loading (màn hình)";
+"library.button.shimmerTitle" = "Shimmer tiêu đề";
+"library.button.shimmerSubtitle" = "Shimmer phụ đề";
+"library.loaded.title" = "Đã tải thư viện";
+"library.loaded.subtitle" = "Fake API · %@";
+
 /* Common */
 "common.loading" = "Đang tải...";
 "common.cancel" = "Hủy";

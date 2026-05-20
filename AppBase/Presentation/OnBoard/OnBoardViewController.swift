@@ -9,37 +9,21 @@ import UIKit
 import SwiftUI
 import BaseMVVM
 
-class OnBoardViewController<VM: TIOViewModel<TIOLoadingTarget>>: TIOScreenViewController<VM> {
-    
+class OnBoardViewController<VM: OnBoardViewModel>: TIOScreenViewController<VM> {
+
     private lazy var hostingController = UIHostingController(
         rootView: OnBoardView { [weak self] in
-            AppData.shared.isFirstLaunch = false
-//            AppStateEvent.set(state: .main)
+            self?.completeOnboarding()
         }
     )
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        setupUI()
-    }
-    
+
     override func setupUI() {
-        view.backgroundColor = .white
-        
-        addChild(hostingController)
-        view.addSubview(hostingController.view)
-        
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        
-        hostingController.didMove(toParent: self)
+        super.setupUI()
+        embedHostingController(hostingController)
+    }
+
+    private func completeOnboarding() {
+        AppData.shared.isFirstLaunch = false
+        AppStateEvent.set(state: .main)
     }
 }
-

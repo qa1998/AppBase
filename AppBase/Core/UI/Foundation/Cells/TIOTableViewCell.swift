@@ -22,15 +22,11 @@ class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShim
         UINib(nibName: String(describing: self), bundle: .main)
     }
 
-    var selectedColor: UIColor {
-        return .gray
-    }
-
     var shimmeringAnimatedItems: [UIView] { [shimmerHost] }
 
     private let shimmerHost: TIOView = {
         let view = TIOView()
-        view.layer.cornerRadius = 8
+        view.layer.cornerRadius = Radius.s8
         view.layer.masksToBounds = true
         view.isHidden = true
         return view
@@ -71,6 +67,7 @@ class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShim
         textLabel?.textColor = colors.textPrimary
         detailTextLabel?.textColor = colors.textSecondary
         imageView?.tintColor = colors.textSecondary
+        selectedBackgroundView?.backgroundColor = colors.separator.withAlphaComponent(0.25)
     }
 
     func applyListShimmer(_ isLoading: Bool) {
@@ -92,14 +89,12 @@ class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShim
     private func commonInit() {
         separatorInset = .zero
 
-        let selectedView = UIView(frame: .zero)
-        selectedView.backgroundColor = selectedColor
-        selectedBackgroundView = selectedView
+        selectedBackgroundView = UIView(frame: .zero)
 
         contentView.addSubview(shimmerHost)
         shimmerHost.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(16)
-            make.top.bottom.equalToSuperview().inset(8)
+            make.leading.trailing.equalToSuperview().inset(Spacing.s16)
+            make.top.bottom.equalToSuperview().inset(Spacing.s8)
         }
 
         startTheming()

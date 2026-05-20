@@ -34,12 +34,7 @@ class HomeViewController<VM: HomeViewModel>: TIOTableViewController<VM> {
             type: TIOTableViewCell.self,
             for: indexPath
         )
-        if viewModel.isListCellLoading {
-            cell.applyListShimmer(true)
-        } else {
-            cell.applyListShimmer(false)
-            cell.backgroundColor = .orange
-        }
+        cell.applyListShimmer(viewModel.isListCellLoading)
         return cell
     }
 

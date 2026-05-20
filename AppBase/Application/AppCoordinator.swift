@@ -13,62 +13,65 @@ import BaseMVVM
 struct VoidMeta: CoordinationMeta {}
 
 class AppCoordinator: Coordinator<VoidMeta> {
-    
+
     private lazy var splashVC: UIViewController = {
         let vc = SplashViewController()
         let vm = SplashViewModel()
         vc.invoke(viewModel: vm)
         return vc
     }()
-    
-    
+
     override var rootViewController: UIViewController {
-        return splashVC
+        splashVC
     }
-    
+
     private let window: UIWindow
-    
+
     init(window: UIWindow) {
         self.window = window
     }
-    
+
     private func bind() {
-        let vc = rootViewController
-        window.rootViewController = vc
+        window.rootViewController = rootViewController
         window.makeKeyAndVisible()
     }
-    
+
     private func bindAppState() {
         AppStateEvent.default.state
             .receive(on: DispatchQueue.main)
             .sink { [weak self] appState in
                 self?.trigger(state: appState)
-            }.store(in: &cancelBag)
+            }
+            .store(in: &cancelBag)
     }
-    
+
     private func trigger(state: AppState) {
-        print("TRIGGER:", state)
-        self.removeAll()
+        finishAllChildren()
+        removeAll()
+
         switch state {
-            case .main:
-                runMainFlow()
-                break
-            case .login:
-                runSignInFlow()
-                break
-            case .maintain:
-                runMaintainFlow()
-                break
-            case .welcome:
-                runWellCome()
-                break
-            default: break
+        case .main:
+            runMainFlow()
+        case .login, .logout:
+            if state == .logout {
+                AppData.shared.token = ""
+            }
+            runSignInFlow()
+        case .maintain:
+            runMaintainFlow()
+        case .welcome:
+            runWellCome()
         }
     }
-    
+
+    private func finishAllChildren() {
+        coordinators.forEach { wrapper in
+            (wrapper.coordinator as? Coordinator<VoidMeta>)?.finish()
+        }
+    }
+
     override func start() {
         super.start()
-        print("APP COORDINATOR START")
         ThemeManager.shared.apply()
         AppAppearance.shared.apply()
         bind()
@@ -79,26 +82,26 @@ class AppCoordinator: Coordinator<VoidMeta> {
 extension AppCoordinator {
     private func runMainFlow() {
         let main = mainCoor()
-        self.add(main)
-        self.replaceRoot(main.rootViewController)
+        add(main)
+        replaceRoot(main.rootViewController)
     }
-    
+
     private func runSignInFlow() {
         let login = loginCoor()
-        self.add(login)
-        self.replaceRoot(login.rootViewController)
+        add(login)
+        replaceRoot(login.rootViewController)
     }
-    
+
     private func runMaintainFlow() {
-        let maitance = maintanceCoor()
-        self.add(maitance)
-        self.replaceRoot(maitance.rootViewController)
+        let maintance = maintanceCoor()
+        add(maintance)
+        replaceRoot(maintance.rootViewController)
     }
-    
+
     private func runWellCome() {
         let onBoard = onBoardCoor()
-        self.add(onBoard)
-        self.replaceRoot(onBoard.rootViewController)
+        add(onBoard)
+        replaceRoot(onBoard.rootViewController)
     }
 }
 
@@ -115,35 +118,28 @@ extension AppCoordinator {
             options: [.transitionCrossDissolve]
         ) {
             let oldState = UIView.areAnimationsEnabled
-            
             UIView.setAnimationsEnabled(false)
-            
             self.window.rootViewController = viewController
-            
             UIView.setAnimationsEnabled(oldState)
         }
     }
-    
+
     private func mainCoor() -> Coordinator<VoidMeta> {
-        let mainCoor = MainCoordinator()
-        return mainCoor
+        MainCoordinator()
     }
-    
+
     private func onBoardCoor() -> Coordinator<VoidMeta> {
-        let onBoardCoor = OnBoardCoordinator()
-        return onBoardCoor
+        OnBoardCoordinator()
     }
-    
+
     private func loginCoor() -> Coordinator<VoidMeta> {
         let nav = UINavigationController()
         let loginCoor = LoginCoordinator(navigationController: nav)
         loginCoor.start()
         return loginCoor
     }
-    
+
     private func maintanceCoor() -> Coordinator<VoidMeta> {
-        let maintanceCoor = MaintanceCoordinator()
-        return maintanceCoor
+        MaintanceCoordinator()
     }
 }
-

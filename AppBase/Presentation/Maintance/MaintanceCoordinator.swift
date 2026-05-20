@@ -6,15 +6,18 @@
 //
 
 import UIKit
+import BaseMVVM
+
 class MaintanceCoordinator: Coordinator<VoidMeta> {
+
     private lazy var rootVc: UIViewController = {
-        let vc = MainViewController()
+        let vc = MaintanceViewController()
+        let vm = MaintanceViewModel()
+        vc.invoke(viewModel: vm)
         return vc
     }()
-    
+
     override var rootViewController: UIViewController {
-        return rootVc
+        rootVc
     }
 }
-
-

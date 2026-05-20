@@ -49,6 +49,19 @@
 "language.vietnamese" = "Vietnamese";
 "language.japanese" = "Japanese";
 
+/* Maintenance */
+"maintain.title" = "Maintenance";
+"maintain.message" = "We will be back soon.";
+
+/* Library */
+"library.title" = "Library";
+"library.subtitle.hint" = "Tap a button to test shimmer";
+"library.button.testScreen" = "Test loading (screen)";
+"library.button.shimmerTitle" = "Shimmer title only";
+"library.button.shimmerSubtitle" = "Shimmer subtitle only";
+"library.loaded.title" = "Library loaded";
+"library.loaded.subtitle" = "Fake API · %@";
+
 /* Common */
 "common.loading" = "Loading...";
 "common.cancel" = "Cancel";

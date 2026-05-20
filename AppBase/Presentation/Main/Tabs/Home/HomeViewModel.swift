@@ -63,6 +63,7 @@ class HomeViewModel: TIOListViewModel {
                     self.apply(response: response, isLoadMore: isLoadMore)
                 case .failure:
                     if isLoadMore {
+                        self.dataDidChange.send()
                         return
                     }
                     self.page = 0

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct OnBoardView: View {
+
+    @ObservedObject private var themeManager = ThemeManager.shared
     let callbackAction: () -> Void
 
     var body: some View {
@@ -20,44 +22,42 @@ struct OnBoardView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 70, height: 70)
-                .foregroundColor(.black)
+                .foregroundStyle(Color(uiColor: themeManager.palette.textPrimary))
 
             Spacer()
                 .frame(height: 40)
 
             Text(L10n.App.name)
                 .font(Font.swiftUIFont(.text34, style: .bold))
-                .foregroundColor(.black)
+                .foregroundStyle(Color(uiColor: themeManager.palette.textPrimary))
 
             Spacer()
                 .frame(height: 24)
 
-            VStack(spacing: 10) {
+            VStack(spacing: Spacing.s12) {
                 Text(L10n.App.Tagline.prompting)
 
                 Text(L10n.App.Tagline.focus)
             }
             .font(Font.swiftUIFont(.custom(20)))
-            .foregroundColor(.gray)
+            .foregroundStyle(Color(uiColor: themeManager.palette.textSecondary))
             .multilineTextAlignment(.center)
 
             Spacer()
 
-            Button {
-                callbackAction()
-            } label: {
+            Button(action: callbackAction) {
                 Text(L10n.Onboard.start)
                     .font(Font.swiftUIFont(.text22, style: .bold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 64)
-                    .background(Color.black)
-                    .cornerRadius(20)
+                    .background(Color(uiColor: themeManager.palette.textPrimary))
+                    .cornerRadius(Radius.s20)
             }
-            .padding(.horizontal, 28)
-            .padding(.bottom, 40)
+            .padding(.horizontal, Spacing.s28)
+            .padding(.bottom, Spacing.s40)
         }
-        .background(Color.white)
+        .background(Color(uiColor: themeManager.palette.backgroundSecondary))
         .ignoresSafeArea()
     }
 }
