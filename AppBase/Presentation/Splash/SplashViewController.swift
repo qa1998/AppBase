@@ -8,7 +8,7 @@
 import UIKit
 import SwiftUI
 import BaseMVVM
-class SplashViewController<VM: SplashViewModel> : TIOViewController<VM> {
+class SplashViewController<VM: SplashViewModel>: TIOScreenViewController<VM> {
     
     private lazy var hostingController = UIHostingController(
         rootView: SplashView()

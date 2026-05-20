@@ -6,4 +6,4 @@
 //
 
 import BaseMVVM
-class SettingViewModel: TIOViewModel {}
+class SettingViewModel: TIOViewModel<TIOLoadingTarget> {}

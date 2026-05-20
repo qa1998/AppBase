@@ -26,7 +26,13 @@ class TIOTableViewController<VM: TIOListViewModel>: TIOListViewController<VM>,
 
     override func setupUI() {
         super.setupUI()
-        tableView.registerNibs(for: registerNibs())
+        registerNibs().forEach { tableView.registerNib(for: $0) }
+        registerCellClasses().forEach { tableView.registerClass(for: $0) }
+    }
+
+    /// Đăng ký cell programmatic (không nib).
+    func registerCellClasses() -> [TIOTableViewCell.Type] {
+        return []
     }
 
     func registerNibs() -> [TIOTableViewCell.Type] {
@@ -39,7 +45,7 @@ class TIOTableViewController<VM: TIOListViewModel>: TIOListViewController<VM>,
 
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        return viewModel.numOfItemsInSection(section)
+        return viewModel.displayItemCount(in: section)
     }
 
     func tableView(_ tableView: UITableView,

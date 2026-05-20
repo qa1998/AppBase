@@ -6,8 +6,9 @@ description: >-
   Enforces SnapKit for all programmatic Auto Layout. Use when the user asks to
   review, refactor, optimize, add UI/layout, constraints, or list/screen features
   in AppBase, or mentions TIO, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
-  or TIOPagingKit. For UI text and copy, use skill `appbase-localization` (L10n +
-  SwiftGen) — never hardcode user-facing strings.
+  TIOPagingKit, TrackLoading, shimmer, skeleton loading, UIView-Shimmer, Font,
+  FontSize, or Lato typography. For UI text and copy, use skill `appbase-localization`
+  (L10n + SwiftGen) — never hardcode user-facing strings.
 ---
 
 # AppBase iOS Presentation
@@ -15,12 +16,14 @@ description: >-
 ## Architecture (read first)
 
 ```
-BaseViewController<VM>     // viewDidLoad → setupUI → onBind → viewModelDidReady
-  └── TIOViewController<VM: TIOViewModel>           // cancelBag, IFSContentView layout
-        └── TIOListViewController<VM: TIOListViewModel>  // refresh/load-more, empty state
-              ├── TIOTableViewController              // UITableViewDelegate/DataSource
-              └── TIOCollectionViewController         // UICollectionViewDelegate/DataSource
+BaseViewController<VM>              // viewDidLoad → setupUI → onBind → viewModelDidReady
+  └── TIOViewController<VM, Event>  // trackLoading + shimmer (TIOScreenViewController = TIOLoadingTarget)
+        └── TIOListViewController<VM>
+              ├── TIOTableViewController
+              └── TIOCollectionViewController
 ```
+
+List loading: shimmer **trong cell** (`shimmerHost`), không shimmer `listView`.
 
 | Layer | Responsibility |
 |-------|----------------|
@@ -28,8 +31,161 @@ BaseViewController<VM>     // viewDidLoad → setupUI → onBind → viewModelDi
 | **List VC** | Bind subjects, MJRefresh, EmptyDataSet, **never** replace table `delegate` |
 | **Table VC** | `registerNibs()`, `cellForRowAt` (override required), table delegate |
 | **Collection VC** | `registerCells()`, `cellForItemAt` (override required), flow layout size |
+| **Loading** | `trackLoading` → list: skeleton cells; màn thường: `shimmerViews(for:)` |
 
 Lifecycle order matters: `BaseViewController.viewDidLoad` runs `setupUI` **before** subclass `viewDidLoad` adds `containerView`.
+
+## UI views (TIO*)
+
+```
+TIOView                    // base + ShimmeringViewProtocol
+├── TIOContentView         // IFSContentView, shimmeringAnimatedItems = [] (no shimmer shell)
+├── TIOLabel / TIOButton   // ShimmeringViewProtocol
+├── TIOTableViewCell       // shimmerHost pin full width — dùng cho list loading
+└── TIOCollectionViewCell  // shimmerHost edges = contentView
+```
+
+**Không** gọi `setTemplateWithSubviews` trực tiếp trên `UITableViewCell` / toàn cell — sẽ shimmer `textLabel` và bị lệch trái. Luôn dùng `applyListShimmer(_:)`.
+
+## Typography (`Font` + `FontSize`)
+
+Lato đã khai báo trong `Info.plist` (`UIAppFonts`). **Không** dùng `UIFont.systemFont`, `.font(.system(...))`, hay magic số size trực tiếp trong code AppBase (trừ `ThirdParty/`).
+
+| API | Dùng khi |
+|-----|----------|
+| `Font.default(size:)` | body, subtitle, input |
+| `Font.bold(size:)` | title, button, nav bar |
+| `Font.italic(size:)` | emphasis / link style |
+| `Font.swiftUIFont(_:style:)` | SwiftUI `Text` / `Image` |
+| `FontSize` token | `.text34` … `.text10`, semantic `.titles`, `.buttons`, `.custom(38)` |
+
+```swift
+// UIKit
+titleLabel.font = Font.bold(size: .text28)
+subtitleLabel.font = Font.default(size: .subtitle)
+titleLabel?.font = Font.bold(size: .buttons)  // TIOButton.commonInit
+
+// SwiftUI — enum `Font` (AppBase), không phải SwiftUI.Font.system
+Text(L10n.App.name)
+    .font(Font.swiftUIFont(.text34, style: .bold))
+Text(tagline)
+    .font(Font.swiftUIFont(.text22))
+```
+
+- Ưu tiên token có sẵn (`.text17`, `.text22`, …); size lẻ → `.custom(CGFloat)`.
+- `NavigationAppearance` đã dùng `Font.bold(size: .text17)` — giữ cùng pattern.
+- Semibold/medium system weight → map sang Lato **bold** hoặc **default** (không có Lato-Semibold).
+
+Files: `AppBase/Core/Font/Font.swift`, `FontSize.swift`, `Font+SwiftUI.swift`.
+
+## TrackLoading + shimmer
+
+### Types
+
+```swift
+enum TrackLoading<Event> {
+    case start(Event)
+    case stop(Event)
+}
+
+enum TIOLoadingTarget: Hashable { case screen }  // list loading mặc định
+
+class TIOViewModel<Event: Hashable>: BaseViewModel {
+    let trackLoading = PassthroughSubject<TrackLoading<Event>, Never>()
+    func startLoading(_ event: Event)
+    func stopLoading(_ event: Event)
+}
+
+// List VM
+extension TIOViewModel where Event == TIOLoadingTarget {
+    func startLoading()  // .start(.screen)
+    func stopLoading()
+}
+
+typealias TIOScreenViewController<VM> = TIOViewController<VM, TIOLoadingTarget>
+    where VM: TIOViewModel<TIOLoadingTarget>
+```
+
+**Không** dùng `TIOViewModel<Event = ...>` (Swift không hỗ trợ default generic trên class). List: `TIOViewModel<TIOLoadingTarget>` / `TIOListViewModel`.
+
+### List screen — shimmer trong cell (bắt buộc)
+
+**Không** shimmer `tableView` / `collectionView`. `TIOListViewController`:
+
+- `shimmerViews` → `[]`
+- `handleTrackLoading(.screen)` → `setListCellLoading` + `reloadData` + shimmer visible cells
+- `displayItemCount(in:)` → `skeletonPlaceholderCount` (8) khi `isListCellLoading`
+- `emptyDataSetShouldDisplay` → `false` khi `isListCellLoading` (đang có skeleton rows)
+
+**ViewModel (fetch / refresh):**
+
+```swift
+override func refreshAndGetListData() {
+    startLoading()          // skeleton rows + shimmer cell
+    fakeAPI.fetch { [weak self] in
+        DispatchQueue.main.async {
+            guard let self else { return }
+            self.items = response.items
+            self.dataDidChange.send()
+            self.stopLoading()
+        }
+    }
+}
+```
+
+**Không** gọi `startLoading()` cho `loadMoreData` — chỉ MJRefresh footer.
+
+**ViewController `cellForRowAt` / `cellForItemAt`:**
+
+```swift
+let cell = tableView.dequeueReusableCell(type: TIOTableViewCell.self, for: indexPath)
+if viewModel.isListCellLoading {
+    cell.applyListShimmer(true)
+} else {
+    cell.applyListShimmer(false)
+    // configure UI thật
+}
+return cell
+```
+
+**Cell registration:**
+
+- Programmatic: `override func registerCellClasses() -> [TIOTableViewCell.Type] { [MyCell.self] }`
+- Nib: `registerNibs() -> [MyCell.self]`
+- **Dequeue** bắt buộc — không `TIOTableViewCell()` tay
+- Row height cố định khi skeleton (vd. `72`) tránh layout nhảy
+
+### Non-list screen — shimmer theo vùng
+
+```swift
+enum ProfileLoadingEvent: Hashable { case header, form }
+
+class ProfileViewModel: TIOViewModel<ProfileLoadingEvent> { ... }
+
+class ProfileViewController: TIOViewController<ProfileViewModel, ProfileLoadingEvent> {
+    override func shimmerViews(for event: ProfileLoadingEvent) -> [UIView] {
+        switch event {
+        case .header: return [titleLabel, avatarView]  // TIOLabel / TIOView
+        case .form: return [formStack]
+        }
+    }
+}
+```
+
+`startLoading(.header)` / `stopLoading(.header)` — VC giữ `Set` active events, không shimmer chồng nhầm.
+
+### Fake API (test)
+
+Tách `*FakeAPI` (delay ~1.5s), gọi từ ViewModel:
+
+```swift
+final class HomeFakeAPI {
+    static let shared = HomeFakeAPI()
+    func fetchItems(page: Int, completion: @escaping (Result<HomeListResponse, Error>) -> Void)
+}
+```
+
+Files: `TrackLoading.swift`, `TIOViewModel.swift`, `TIOViewController.swift`, `TIOListViewModel.swift`, `TIOListViewController.swift`, `TIOListCell+Shimmer.swift`, `TIOTableViewCell.swift`, `TIOCollectionViewCell.swift`.
 
 ## Before changing code
 
@@ -63,8 +219,8 @@ Lifecycle order matters: `BaseViewController.viewDidLoad` runs `setupUI` **befor
 
 ### Content layout
 
-- List screens: `containerView` (`TIOContentView` / `IFSContentView`) pinned in subclass `viewDidLoad`, then `layoutIFSContentViewsIfNeeded()`.
-- Nib screens: `layoutIFSContentViewsIfNeeded()` pins all `IFSContentView` subviews — avoid `first(where:)` only; use loop over all matches.
+- List screens: `containerView` (`TIOContentView`) pinned in subclass `viewDidLoad` — **không** shimmer `containerView`.
+- Nib screens: `layoutIFSContentViewsIfNeeded()` pins all `IFSContentView` subviews.
 
 ## SnapKit (required for constraints)
 
@@ -173,10 +329,12 @@ Copy and track:
 - [ ] Verify pagination subjects + hasReachedEnd
 - [ ] Verify refresh/footer end states on all paths
 - [ ] Remove dead overrides (empty lifecycle, duplicate numberOfRows)
-- [ ] Wire registerNibs in TIOTableViewController subclass if using TIOTableViewCell
+- [ ] Wire `registerNibs()` or `registerCellClasses()`; dequeue cell in `cellForRowAt`
+- [ ] List loading: `startLoading`/`stopLoading` + `applyListShimmer` in cell — not shimmer `listView`
 - [ ] No debug titles / placeholder strings in base classes
 - [ ] Layout uses SnapKit (`import SnapKit`, `snp.makeConstraints` / `remakeConstraints`)
 - [ ] No raw `NSLayoutConstraint` / anchor APIs on new or touched code
+- [ ] Typography: `Font` / `FontSize` — no `UIFont.systemFont` / `.font(.system(...))` in AppBase code
 ```
 
 ### Review output format
@@ -206,10 +364,11 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
    - Override `hasReachedEnd()` when API has a last page (use `maxPage`, not magic numbers inline).
 
 2. **ViewController** — subclass `TIOTableViewController<YourViewModel>`:
-   - Override `registerNibs()` if using `TIOTableViewCell`.
-   - Override `tableView(_:cellForRowAt:)` only (row count comes from base).
-   - Put UI-only code in `viewDidLoad` **after** `super.viewDidLoad()`.
-   - Add extra views with SnapKit in `setupUI()` (after `super.setupUI()`).
+   - `registerCellClasses()` hoặc `registerNibs()`; dequeue trong `cellForRowAt`.
+   - `applyListShimmer(true/false)` theo `viewModel.isListCellLoading`.
+   - `heightForRowAt` cố định nếu cần skeleton đẹp (vd. 72).
+   - Override `tableView(_:cellForRowAt:)` — row count từ `displayItemCount` (base).
+   - UI-only code sau `super.viewDidLoad()`; SnapKit trong `setupUI()`.
 
 3. **Do not** override empty `viewWillAppear` / `setupUI` in base classes.
 
@@ -229,17 +388,23 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
 | Footer spins forever | Wrong `hasReachedEnd` or missing `endLoadMore` | Fix VM + call `updatePaginationFooter` pattern |
 | Crash on insert | Bad index paths / empty table | `IndexPath(row:)`; `notifyInsertItems` reloads if no sections |
 | Empty state wrong | Inverted loading vs empty copy | Guard `isListLoading` in EmptyDataSet source |
-| Cells not registered | `registerNibs()` empty | Return cell types; base calls `registerNibs(for:)` in `setupUI` |
+| Cells not registered | `registerNibs()` empty | `registerCellClasses()` + dequeue |
+| Shimmer lệch trái trong cell | `setTemplateWithSubviews` trên cả cell | `applyListShimmer` → `shimmerHost` trong `TIOTableViewCell` |
+| Cả listView shimmer | `shimmerViews` trả về listView | List: `shimmerViews` = `[]`, shimmer từng cell |
+| Không thấy skeleton khi load | `items` rỗng, không `startLoading` | `startLoading()` trước fetch; `displayItemCount` khi `isListCellLoading` |
 | Layout warnings / broken UI | Anchor/NSLayoutConstraint mix | Migrate to SnapKit; use `remakeConstraints` when re-parenting |
 
 ## User-facing text
 
 All labels, titles, buttons, alerts → skill **`appbase-localization`**: add to `Localizable.strings`, run SwiftGen, use `L10n`. Do not hardcode strings in VCs/cells.
 
+Typography → **`Font`** + **`FontSize`** (section above); không hardcode `UIFont` / SwiftUI system font.
+
 ## Files to consult
 
 - Localization: `.cursor/skills/appbase-localization/SKILL.md`
 - Detailed checklist: [checklist.md](checklist.md)
+- Typography: `AppBase/Core/Font/`
 - Foundation: `AppBase/Presentation/Foundation/`
 - List abstractions: `AppBase/Core/UI/ListView/TIOListView.swift`, `UITableView+ListView.swift`
 - Base lifecycle: `BaseMVVM/.../BaseViewController.swift`

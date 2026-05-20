@@ -9,25 +9,41 @@ import UIKit
 import TIOPagingKit
 import BaseMVVM
 
-class HomeViewController<VM: HomeViewModel>: TIOCollectionViewController<VM> {
-    
+class HomeViewController<VM: HomeViewModel>: TIOTableViewController<VM> {
+
+    private let listRowHeight: CGFloat = 72
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .red
+        view.backgroundColor = .systemBackground
         title = L10n.Tab.home
     }
-    override func registerCells() -> [TIOCollectionViewCell.Type] {
-        return [TIOCollectionViewCell.self]
+
+    override func registerCellClasses() -> [TIOTableViewCell.Type] {
+        [TIOTableViewCell.self]
     }
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(type: TIOCollectionViewCell.self, for: indexPath)
-        cell.backgroundColor = .orange
+
+    override func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(
+            type: TIOTableViewCell.self,
+            for: indexPath
+        )
+        if viewModel.isListCellLoading {
+            cell.applyListShimmer(true)
+        } else {
+            cell.applyListShimmer(false)
+            cell.backgroundColor = .orange
+        }
         return cell
     }
-//    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let cell = UITableViewCell()
-//        cell.backgroundColor = .orange
-//        return cell
-//    }
-}
 
+    override func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
+        listRowHeight
+    }
+}

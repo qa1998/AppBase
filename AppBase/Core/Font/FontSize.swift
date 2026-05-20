@@ -22,7 +22,7 @@ enum FontSize {
     case inputs
     case subtitle
     
-    case custon(CGFloat)
+    case custom(CGFloat)
     
     var value: CGFloat {
         switch self {
@@ -50,7 +50,7 @@ enum FontSize {
             return 17
         case .subtitle:
             return 15
-        case .custon(let value):
+        case .custom(let value):
             return value
         }
     }

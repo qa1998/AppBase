@@ -26,7 +26,7 @@ struct OnBoardView: View {
                 .frame(height: 40)
 
             Text(L10n.App.name)
-                .font(.system(size: 34, weight: .bold))
+                .font(Font.swiftUIFont(.text34, style: .bold))
                 .foregroundColor(.black)
 
             Spacer()
@@ -37,7 +37,7 @@ struct OnBoardView: View {
 
                 Text(L10n.App.Tagline.focus)
             }
-            .font(.system(size: 20))
+            .font(Font.swiftUIFont(.custom(20)))
             .foregroundColor(.gray)
             .multilineTextAlignment(.center)
 
@@ -47,7 +47,7 @@ struct OnBoardView: View {
                 callbackAction()
             } label: {
                 Text(L10n.Onboard.start)
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(Font.swiftUIFont(.text22, style: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 64)

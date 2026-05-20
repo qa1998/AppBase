@@ -6,7 +6,7 @@
 import UIKit
 import BaseMVVM
 
-class ScriptsViewController<VM: ScriptsViewModel>: TIOViewController<VM> {
+class ScriptsViewController<VM: ScriptsViewModel>: TIOScreenViewController<VM> {
 
     override func viewDidLoad() {
         super.viewDidLoad()

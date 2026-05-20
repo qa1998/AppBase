@@ -19,6 +19,32 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 - [ ] `layoutIFSContentViewsIfNeeded()` pins with `snp.remakeConstraints { make.edges.equalToSuperview() }`
 - [ ] `onBackPress` appropriate for navigation stack vs modal
 
+## TrackLoading / shimmer
+
+- [ ] List: **không** shimmer `tableView` / `collectionView` (`shimmerViews` → `[]`)
+- [ ] List fetch/refresh: `startLoading()` → `stopLoading()` trên main sau API
+- [ ] Load more: **không** `startLoading()` (chỉ footer MJRefresh)
+- [ ] `cellForRowAt` / `cellForItemAt`: `applyListShimmer(viewModel.isListCellLoading)`
+- [ ] Dequeue cell (`dequeueReusableCell`), không `init()` tay
+- [ ] `registerCellClasses()` hoặc `registerNibs()` đã gọi trong `setupUI`
+- [ ] `TIOTableViewCell` / `TIOCollectionViewCell` dùng `shimmerHost` full width (SnapKit inset)
+- [ ] `emptyDataSetShouldDisplay` = false khi `isListCellLoading`
+- [ ] Màn non-list: `TIOViewController<VM, Event>` + `shimmerViews(for:)` map đúng views
+- [ ] Fake API tách file, delay main thread cho UI update
+
+## Typography
+
+- [ ] UIKit: `Font.default` / `Font.bold` / `Font.italic` + `FontSize` token
+- [ ] SwiftUI: `Font.swiftUIFont(_:style:)` — không `.font(.system(...))`
+- [ ] `TIOButton` / labels mới: không `UIFont.systemFont` trực tiếp
+- [ ] Size lẻ: `FontSize.custom(_)` thay vì magic number trong `systemFont(ofSize:)`
+
+## TIOView / cells
+
+- [ ] `TIOContentView`: `shimmeringAnimatedItems` rỗng — container không shimmer
+- [ ] `TIOLabel` / `TIOButton` / `TIOView` cho UI cần shimmer từng vùng
+- [ ] Không `setTemplateWithSubviews` trực tiếp lên `UITableViewCell` root
+
 ## TIOListViewController
 
 - [ ] No `lv.delegate = self`
@@ -33,9 +59,10 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 ## TIOTableViewController
 
 - [ ] `tableView.delegate` and `dataSource` remain `self` on table VC
-- [ ] `registerNibs()` implemented in subclass when using `TIOTableViewCell`
-- [ ] `cellForRowAt` overridden in every concrete table VC
-- [ ] No redundant `numberOfRowsInSection` override unless custom section logic
+- [ ] `registerNibs()` / `registerCellClasses()` implemented in subclass
+- [ ] `cellForRowAt` overridden; `applyListShimmer` khi loading
+- [ ] Row count từ `displayItemCount` — không override trừ khi custom sections
+- [ ] `heightForRowAt` ổn định khi dùng skeleton (optional nhưng khuyến nghị)
 
 ## TIOCollectionViewController
 
@@ -48,7 +75,9 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 
 ## TIOListViewModel
 
+- [ ] `TIOViewModel<TIOLoadingTarget>` hoặc custom `Event` (không default generic)
 - [ ] `hasReachedEnd()` semantics documented in subclass
+- [ ] `setListCellLoading` chỉ qua `trackLoading` / `handleTrackLoading` trên list VC
 - [ ] Network/async work dispatches UI updates on main
 - [ ] `isEmpty()` consistent with section/item counts
 - [ ] Selection handling in `didSelectItem(at:)` not in VC when avoidable

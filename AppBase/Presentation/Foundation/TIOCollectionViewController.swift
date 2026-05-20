@@ -52,7 +52,7 @@ class TIOCollectionViewController<VM: TIOListViewModel>: TIOListViewController<V
 
     func collectionView(_ collectionView: UICollectionView,
                         numberOfItemsInSection section: Int) -> Int {
-        return viewModel.numOfItemsInSection(section)
+        return viewModel.displayItemCount(in: section)
     }
 
     func collectionView(_ collectionView: UICollectionView,

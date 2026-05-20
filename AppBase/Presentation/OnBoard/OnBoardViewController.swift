@@ -9,7 +9,7 @@ import UIKit
 import SwiftUI
 import BaseMVVM
 
-class OnBoardViewController<VM: TIOViewModel>: TIOViewController<VM> {
+class OnBoardViewController<VM: TIOViewModel<TIOLoadingTarget>>: TIOScreenViewController<VM> {
     
     private lazy var hostingController = UIHostingController(
         rootView: OnBoardView { [weak self] in

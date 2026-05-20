@@ -109,8 +109,7 @@ extension SettingView {
         VStack(alignment: .leading, spacing: Spacing.s12) {
 
             Text(title)
-                .font(.caption)
-                .fontWeight(.semibold)
+                .font(Font.swiftUIFont(.text13, style: .bold))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 4)
 
@@ -150,12 +149,12 @@ struct SettingsRow: View {
                     .frame(width: 36, height: 36)
 
                 Image(systemName: item.icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(Font.swiftUIFont(.custom(16), style: .bold))
                     .foregroundStyle(item.iconColor)
             }
 
             Text(item.title)
-                .font(.system(size: 17, weight: .medium))
+                .font(Font.swiftUIFont(.text17))
 
             Spacer()
 
@@ -165,7 +164,7 @@ struct SettingsRow: View {
             }
 
             Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
+                .font(Font.swiftUIFont(.text13, style: .bold))
                 .foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 16)

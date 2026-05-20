@@ -9,10 +9,15 @@ import UIKit
 import BaseMVVM
 import Combine
 
-class TIOListViewModel: TIOViewModel {
+class TIOListViewModel: TIOViewModel<TIOLoadingTarget> {
 
     let dataDidChange = PassthroughSubject<Void, Never>()
     let dataDidInsert = PassthroughSubject<(start: Int, count: Int), Never>()
+
+    private(set) var isListCellLoading = false
+
+    /// Số skeleton cell khi đang load (shimmer trong cell).
+    var skeletonPlaceholderCount: Int { 8 }
 
     func numberOfSections() -> Int {
         return 1
@@ -20,6 +25,18 @@ class TIOListViewModel: TIOViewModel {
 
     func numOfItemsInSection(_ section: Int) -> Int {
         return 0
+    }
+
+    /// Số item hiển thị trên list (skeleton khi `isListCellLoading`).
+    func displayItemCount(in section: Int) -> Int {
+        if isListCellLoading {
+            return skeletonPlaceholderCount
+        }
+        return numOfItemsInSection(section)
+    }
+
+    func setListCellLoading(_ loading: Bool) {
+        isListCellLoading = loading
     }
 
     func item(at indexPath: IndexPath) -> Any? {

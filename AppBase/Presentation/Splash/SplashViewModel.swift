@@ -7,7 +7,7 @@
 
 import BaseMVVM
 import Foundation
-class SplashViewModel: TIOViewModel {
+class SplashViewModel: TIOViewModel<TIOLoadingTarget> {
     
     override func viewModelDidReady() {
         super.viewModelDidReady()

@@ -69,8 +69,8 @@ class AppCoordinator: Coordinator<VoidMeta> {
     override func start() {
         super.start()
         print("APP COORDINATOR START")
-//        ThemeManager.shared.apply()
-//        AppAppearance.shared.apply()
+        ThemeManager.shared.apply()
+        AppAppearance.shared.apply()
         bind()
         bindAppState()
     }

@@ -11,7 +11,7 @@ import SnapKit
 import Combine
 import MJRefresh
 
-class TIOListViewController<VM: TIOListViewModel>: TIOViewController<VM>,
+class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
                                                    EmptyDataSetSource,
                                                    EmptyDataSetDelegate {
 
@@ -20,9 +20,20 @@ class TIOListViewController<VM: TIOListViewModel>: TIOViewController<VM>,
     private var isListLoading: Bool = false
 
     lazy var containerView: TIOContentView = {
-        let container = TIOContentView()
-        return container
+        TIOContentView()
     }()
+
+    /// List không shimmer `listView` — chỉ shimmer trong cell (override `handleTrackLoading`).
+    override func shimmerViews(for event: TIOLoadingTarget) -> [UIView] {
+        []
+    }
+
+    override func handleTrackLoading(_ track: TrackLoading<TIOLoadingTarget>) {
+        guard case .screen = track.event else { return }
+        viewModel.setListCellLoading(track.isLoading)
+        listView?.reloadData()
+        applyShimmerToVisibleListCells(track.isLoading)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -88,6 +99,9 @@ class TIOListViewController<VM: TIOListViewModel>: TIOViewController<VM>,
     }
 
     func emptyDataSetShouldDisplay(_ scrollView: UIScrollView) -> Bool {
+        if viewModel.isListCellLoading {
+            return false
+        }
         if isListLoading {
             return true
         }
@@ -144,6 +158,21 @@ class TIOListViewController<VM: TIOListViewModel>: TIOViewController<VM>,
     private func updatePaginationFooter(for listView: TIOListView) {
         if viewModel.hasReachedEnd() {
             listView.endLoadMoreWithNoData()
+        }
+    }
+
+    func applyListCellShimmerIfNeeded(_ cell: UIView) {
+        guard let shimmerCell = cell as? TIOListCellShimmerApplicable else { return }
+        shimmerCell.applyListShimmer(viewModel.isListCellLoading)
+    }
+
+    private func applyShimmerToVisibleListCells(_ isLoading: Bool) {
+        if let tableView = listView as? UITableView {
+            tableView.visibleCells.forEach { applyListCellShimmerIfNeeded($0) }
+            return
+        }
+        if let collectionView = listView as? UICollectionView {
+            collectionView.visibleCells.forEach { applyListCellShimmerIfNeeded($0) }
         }
     }
 }

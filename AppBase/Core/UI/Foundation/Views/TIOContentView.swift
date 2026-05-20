@@ -4,13 +4,19 @@
 //
 //  Created by QuangAnh on 11/5/26.
 //
+
 import UIKit
 
-protocol IFSContentView where Self: UIView {
-    
-}
+/// Marker: view gắn full-screen trong `TIOViewController.layoutIFSContentViewsIfNeeded()`.
+protocol IFSContentView where Self: UIView {}
 
+/// Container layout — không tham gia shimmer (chỉ bọc subviews).
+class TIOContentView: TIOView, IFSContentView {
 
-class TIOContentView: UIView, IFSContentView {
-    
+    override var shimmeringAnimatedItems: [UIView] { [] }
+
+    override func commonInit() {
+        super.commonInit()
+        backgroundColor = .systemBackground
+    }
 }

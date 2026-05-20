@@ -23,7 +23,7 @@ struct SplashView: View {
                 VStack(spacing: 20) {
 
                     Text(L10n.App.name)
-                        .font(.system(size: 38, weight: .bold))
+                        .font(Font.swiftUIFont(.custom(38), style: .bold))
                         .foregroundColor(.black)
                     VStack(spacing: 12) {
 
@@ -31,7 +31,7 @@ struct SplashView: View {
 
                         Text(L10n.App.Tagline.focus)
                     }
-                    .font(.system(size: 22, weight: .regular))
+                    .font(Font.swiftUIFont(.text22))
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                 }

@@ -9,7 +9,7 @@ import UIKit
 import SwiftUI
 import BaseMVVM
 
-class SettingViewController<VM: SettingViewModel>: TIOViewController<VM> {
+class SettingViewController<VM: SettingViewModel>: TIOScreenViewController<VM> {
     
     override func viewDidLoad() {
         super.viewDidLoad()

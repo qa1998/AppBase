@@ -6,33 +6,63 @@
 //
 
 import UIKit
-class TIOCollectionViewCell: UICollectionViewCell {
+import SnapKit
+
+class TIOCollectionViewCell: UICollectionViewCell, ShimmeringViewProtocol, TIOListCellShimmerApplicable {
+
     static var reuseIdentifier: String {
         return String(describing: self)
     }
-    
+
+    var shimmeringAnimatedItems: [UIView] { [shimmerHost] }
+
+    private let shimmerHost: TIOView = {
+        let view = TIOView()
+        view.layer.cornerRadius = 8
+        view.layer.masksToBounds = true
+        view.isHidden = true
+        return view
+    }()
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonInit()
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         commonInit()
     }
-    
-    private func commonInit(){
-        self.setupLayout()
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        contentView.bringSubviewToFront(shimmerHost)
     }
-    
-    func setupLayout(){
-        
+
+    func applyListShimmer(_ isLoading: Bool) {
+        shimmerHost.isHidden = !isLoading
+        shimmerHost.setTemplateWithSubviews(
+            isLoading,
+            viewBackgroundColor: .secondarySystemGroupedBackground
+        )
     }
-    func updateDisplay(data: Any?){
-        
+
+    func setupLayout() {
+
     }
-    
+
+    func updateDisplay(data: Any?) {
+
+    }
+
     class func cellSize(data: Any?) -> CGSize {
         return .zero
+    }
+
+    private func commonInit() {
+        contentView.addSubview(shimmerHost)
+        shimmerHost.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
 }

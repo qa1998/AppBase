@@ -5,4 +5,4 @@
 
 import BaseMVVM
 
-class ScriptsViewModel: TIOViewModel {}
+class ScriptsViewModel: TIOViewModel<TIOLoadingTarget> {}

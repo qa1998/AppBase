@@ -6,6 +6,6 @@
 //
 
 
-class LoginViewModel: TIOViewModel {
+class LoginViewModel: TIOViewModel<TIOLoadingTarget> {
     
 }

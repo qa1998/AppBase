@@ -5,4 +5,4 @@
 
 import BaseMVVM
 
-class RecordViewModel: TIOViewModel {}
+class RecordViewModel: TIOViewModel<TIOLoadingTarget> {}

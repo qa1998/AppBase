@@ -8,7 +8,7 @@ import UIKit
 import Combine
 import BaseMVVM
 
-class LoginViewController<VM: LoginViewModel>: TIOViewController<VM> {
+class LoginViewController<VM: LoginViewModel>: TIOScreenViewController<VM> {
     let navToRegister = PassthroughSubject<Void, Never>()
 
     override func viewDidLoad() {
