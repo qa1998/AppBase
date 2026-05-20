@@ -7,7 +7,8 @@ description: >-
   review, refactor, optimize, add UI/layout, constraints, or list/screen features
   in AppBase, or mentions TIO, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
   TIOPagingKit, TrackLoading, shimmer, skeleton loading, UIView-Shimmer, Font,
-  FontSize, Lato typography, Spacing, Radius, ThemeManager, TIOThemable, palette, or dark/light mode.
+  FontSize, Lato typography, Spacing, Radius, ThemeManager, TIOThemable, palette, or dark/light mode,
+  Coordinator, NavigationCoordinator, cancelBag, lazy tab, push/pop navigation.
   For UI text and copy, use skill `appbase-localization` (L10n + SwiftGen) — never
   hardcode user-facing strings. **Every new view/screen must apply theme** (see below).
 ---
@@ -195,6 +196,7 @@ Dùng **mỗi lần** tạo ViewController / SwiftUI view / custom `UIView` mớ
 - [ ] title / strings: L10n + override refreshLocalization() (skill appbase-localization)
 - [ ] Font: Font.default / Font.bold + FontSize (không systemFont)
 - [ ] Spacing / Radius cho padding & cornerRadius (không magic 8, 12, 16, 20…)
+- [ ] Có điều hướng sang màn khác → Coordinator + subject action (không push/pop trực tiếp từ VC)
 ```
 
 ### ViewController template
@@ -225,6 +227,93 @@ final class FeatureViewController<VM: FeatureViewModel>: TIOScreenViewController
 ```
 
 `TIOViewController` đã gọi `bindScreenTheme()` và `bindLocalization()` — **không** duplicate trừ khi cần thêm observer riêng.
+
+## Coordinator (navigation) — **bắt buộc khi có flow màn**
+
+AppBase dùng `Coordinator<M: CoordinationMeta>` + `NavigationCoordinator<VoidMeta>` (`AppBase/ThirdParty/Coordinator/`).
+
+### Quy tắc vàng
+
+1. **Navigation chỉ trong Coordinator** — `push` / `pop` / `set` / `present` qua `navigate(to:)`. **Không** gọi `navigationController?.pushViewController` / `popViewController` từ VC feature (trừ `onBackPress` test hoặc user yêu cầu ngoại lệ).
+2. **VC / ViewModel chỉ bắn action** — `PassthroughSubject` (hoặc publisher trên VC như Login). Coordinator `sink` và gọi `navigate`.
+3. **`cancelBag` trên base `Coordinator`** — `open class Coordinator` đã có `var cancelBag`. Subclass **dùng `&cancelBag`**, **không** khai báo `private var cancelBag` trùng.
+4. **Generic type** — khai báo `Coordinator<VoidMeta>`, `NavigationCoordinator<VoidMeta>` (meta: `struct VoidMeta` trong `AppCoordinator.swift`).
+5. **`rootVC` lazy** — tạo VC + VM, bind navigation subjects, `invoke(viewModel:)`, return VC; `start()` → `navigate(to: .set([rootVC]))`.
+
+### Bind navigation trong Coordinator
+
+```swift
+class FeatureCoordinator: NavigationCoordinator<VoidMeta> {
+
+    private lazy var rootVC: UIViewController = {
+        let viewController = FeatureViewController()
+        let viewModel = FeatureViewModel()
+        viewModel.openDetail
+            .sink { [weak self] id in
+                self?.pushDetail(id: id)
+            }
+            .store(in: &cancelBag)  // cancelBag từ Coordinator base
+        viewController.invoke(viewModel: viewModel)
+        return viewController
+    }()
+
+    override func start() {
+        super.start()
+        navigate(to: .set([rootVC]), transitioning: .none)
+    }
+
+    private func pushDetail(id: String) {
+        let viewController = DetailViewController()
+        let viewModel = DetailViewModel(id: id)
+        bindDetailNavigation(viewModel)  // bind mỗi màn push mới nếu màn đó cũng bắn action
+        viewController.invoke(viewModel: viewModel)
+        navigate(to: .push(viewController))
+    }
+}
+```
+
+### Màn con cũng bắn action → cùng Coordinator
+
+Khi push màn test / detail, bind thêm subject **trước** `invoke` + `push`:
+
+```swift
+enum DetailNavigation {
+    case pop
+    case push(step: Int)
+}
+
+final class DetailViewModel: TIOViewModel<TIOLoadingTarget> {
+    let navigationAction = PassthroughSubject<DetailNavigation, Never>()
+    func requestPop() { navigationAction.send(.pop) }
+}
+
+private func bindDetailNavigation(_ viewModel: DetailViewModel) {
+    viewModel.navigationAction
+        .sink { [weak self] action in
+            switch action {
+            case .pop: self?.navigate(to: .pop)
+            case let .push(step): self?.pushTestScreen(step: step)
+            }
+        }
+        .store(in: &cancelBag)
+}
+```
+
+**VC test:** nút chỉ gọi `viewModel.requestPop()` — không `navigationController`.
+
+### Tham chiếu trong repo
+
+| Flow | File | Pattern |
+|------|------|---------|
+| Login → Register | `LoginCoordinator`, `LoginViewController` | `navToRegister` trên **VC** → coordinator `push` |
+| Record → Test | `RecordCoordinator`, `RecordViewModel` | `pushTestScreen` trên **VM** → coordinator `push` |
+| Test pop/push lại | `RecordTestViewModel`, `RecordTestNavigation` | enum action → coordinator `pop` / `push` |
+
+### Main tab bar — lazy coordinator
+
+`MainViewController`: **5 `UINavigationController` cố định** + **5 coordinator `start()` ngay trong `viewDidLoad`** (không lazy / placeholder / preload). Giữ mảng `coordinators` để retain coordinator. `syncESTabBarHighlight` trong `viewDidAppear` / `didSelect`.
+
+Tab coordinator: `private lazy var rootVC` — root màn tạo khi `coordinator.start()`.
 
 ## TrackLoading + shimmer
 
@@ -357,8 +446,9 @@ Files: `TrackLoading.swift`, `TIOViewModel.swift`, `TIOViewController.swift`, `T
 
 ### Combine / memory
 
-- VC bindings → `cancelBag` on `TIOViewController` only (not duplicated on `TIOViewModel`).
-- Always `[weak self]` in sinks that capture `self`.
+- **VC** bindings → `cancelBag` trên `TIOViewController` only (not duplicated on `TIOViewModel`).
+- **Coordinator** bindings → `cancelBag` trên `Coordinator` base (không tạo `Set<AnyCancellable>` riêng trong subclass).
+- Always `[weak self]` in sinks that capture `self` / coordinator.
 
 ### Empty state
 
@@ -487,6 +577,9 @@ Copy and track:
 - [ ] Theme: TIO* views or `bindTheme`; no `.systemBackground` / `.white` / `.label` for main UI
 - [ ] Spacing / Radius: no raw `12`, `16`, `20` for padding or corner radius
 - [ ] New screen: `refreshLocalization()` if có `title` / copy
+- [ ] Navigation: Coordinator + `navigate(to:)`; VC/VM chỉ emit action
+- [ ] Coordinator: dùng `&cancelBag` base, không duplicate
+- [ ] Push màn con: bind navigation subject của màn con trong coordinator
 ```
 
 ### Review output format
@@ -506,6 +599,20 @@ Copy and track:
 ```
 
 Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion** = clarity, DRY; **Nice to have** = style.
+
+## Adding a new tab / feature coordinator
+
+1. **Coordinator** — subclass `NavigationCoordinator<VoidMeta>`:
+   - `lazy rootVC`: tạo VC, VM, `sink` navigation subjects → `store(in: &cancelBag)`.
+   - `start()` → `navigate(to: .set([rootVC]))`.
+   - Mỗi `push`: tạo VC + VM, bind action màn con (nếu có), `invoke`, `navigate(to: .push(...))`.
+   - `pop` → `navigate(to: .pop)`.
+
+2. **ViewModel / VC** — `PassthroughSubject` cho điều hướng (`pushTestScreen`, `navigationAction`, …); **không** giữ `UINavigationController`.
+
+3. **Main tab** — thêm case trong `MainViewController.Tab` + `makeCoordinator`; gọi `start()` cùng các tab khác trong `viewDidLoad`.
+
+4. **Tham khảo:** `RecordCoordinator`, `LoginCoordinator`, `MainViewController`.
 
 ## Adding a new list screen
 
@@ -549,6 +656,9 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
 | Layout warnings / broken UI | Anchor/NSLayoutConstraint mix | Migrate to SnapKit; use `remakeConstraints` when re-parenting |
 | Theme không đổi khi switch dark/light | Hardcode màu / không TIO* / không `bindTheme` | Dùng TIO views + `TIOViewController`; custom view → `bindTheme` |
 | Nav/tab title không đổi ngôn ngữ | Chỉ set `title` trong `viewDidLoad` | Override `refreshLocalization()` + `L10n` |
+| Push/pop từ VC, coordinator không biết | `navigationController?.push` trong feature VC | Subject → coordinator `navigate(to:)` |
+| Memory / duplicate subscription | `cancelBag` riêng trên coordinator subclass | Dùng `Coordinator.cancelBag` |
+| Đổi tab chậm lần đầu | Lazy `loadTab` trong `shouldSelect` | Eager 5 coordinator trong `viewDidLoad` (trade-off: mở Main nặng hơn) |
 
 ## User-facing text
 
@@ -563,6 +673,7 @@ Typography → **`Font`** + **`FontSize`** (section above); không hardcode `UIF
 - Layout tokens: `AppBase/Core/Layout/Spacing.swift`, `Radius.swift`
 - Typography: `AppBase/Core/Font/`
 - Foundation: `AppBase/Presentation/Foundation/`
+- Coordinator: `AppBase/ThirdParty/Coordinator/`, `RecordCoordinator`, `LoginCoordinator`, `MainViewController`
 - List abstractions: `AppBase/Core/UI/ListView/TIOListView.swift`, `UITableView+ListView.swift`
 - Base lifecycle: `BaseMVVM/.../BaseViewController.swift`
 

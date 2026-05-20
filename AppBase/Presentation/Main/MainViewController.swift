@@ -9,7 +9,7 @@ import UIKit
 import BaseMVVM
 import Combine
 
-/// Tab bar chính — coordinator từng tab chỉ khởi tạo khi user chọn tab lần đầu (lazy).
+/// Tab bar chính — 5 tab, mỗi tab một `UINavigationController` + coordinator `start()` ngay khi mở Main.
 final class MainViewController: ESTabBarController {
 
     private enum Tab: Int, CaseIterable {
@@ -43,8 +43,8 @@ final class MainViewController: ESTabBarController {
     private var themeCancel: AnyCancellable?
     private var localizationCancel: AnyCancellable?
 
-    private var coordinators: [Int: Coordinator<VoidMeta>] = [:]
-    private var placeholderViewControllers: [UIViewController] = []
+    private var coordinators: [Coordinator<VoidMeta>] = []
+    private var navigationControllers: [UINavigationController] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,34 +53,30 @@ final class MainViewController: ESTabBarController {
         bindThemeUpdates()
         bindLocalizationUpdates()
 
-        placeholderViewControllers = Tab.allCases.map { _ in makePlaceholderViewController() }
-        viewControllers = placeholderViewControllers
+        navigationControllers = Tab.allCases.map { tab in
+            let navigationController = UINavigationController()
+            navigationController.tabBarItem = makeTabBarItem(for: tab.rawValue)
+            return navigationController
+        }
 
-        loadTab(at: Tab.home.rawValue)
-        selectedIndex = Tab.home.rawValue
+        coordinators = Tab.allCases.map { tab in
+            makeCoordinator(for: tab.rawValue, navigationController: navigationControllers[tab.rawValue])
+        }
 
-        applyTabBarItems()
+        viewControllers = navigationControllers
         applyTabBarTheme()
+        selectedIndex = Tab.home.rawValue
     }
 
-    // MARK: - Lazy tab loading
-
-    private func loadTab(at index: Int) {
-        guard coordinators[index] == nil,
-              index >= 0,
-              index < (viewControllers?.count ?? 0) else { return }
-
-        let coordinator = makeCoordinator(for: index)
-        coordinators[index] = coordinator
-
-        var controllers = viewControllers ?? []
-        controllers[index] = coordinator.rootViewController
-        controllers[index].tabBarItem = makeTabBarItem(for: index)
-        viewControllers = controllers
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        syncESTabBarHighlight(selectedIndex)
     }
 
-    private func makeCoordinator(for index: Int) -> Coordinator<VoidMeta> {
-        let navigationController = UINavigationController()
+    private func makeCoordinator(
+        for index: Int,
+        navigationController: UINavigationController
+    ) -> Coordinator<VoidMeta> {
         switch Tab(rawValue: index) {
         case .home:
             let coordinator = HomeCoordinator(navigationController: navigationController)
@@ -107,12 +103,6 @@ final class MainViewController: ESTabBarController {
         }
     }
 
-    private func makePlaceholderViewController() -> UIViewController {
-        let controller = UIViewController()
-        controller.view.backgroundColor = ThemeManager.shared.palette.backgroundSecondary
-        return controller
-    }
-
     // MARK: - Tab bar UI
 
     private func bindThemeUpdates() {
@@ -120,7 +110,6 @@ final class MainViewController: ESTabBarController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.applyTabBarTheme()
-                self?.updatePlaceholderBackgrounds()
             }
     }
 
@@ -132,21 +121,13 @@ final class MainViewController: ESTabBarController {
             }
     }
 
-    private func updatePlaceholderBackgrounds() {
-        let color = ThemeManager.shared.palette.backgroundSecondary
-        placeholderViewControllers.forEach { $0.view.backgroundColor = color }
-    }
-
     private func applyTabBarItems() {
-        guard let controllers = viewControllers else { return }
-
-        for index in controllers.indices {
-            controllers[index].tabBarItem = makeTabBarItem(for: index)
+        for index in navigationControllers.indices {
+            navigationControllers[index].tabBarItem = makeTabBarItem(for: index)
         }
-        viewControllers = controllers
-
         let titles = Tab.allCases.map(\.title)
         ESTabBarAppearance.updateTitles(on: tabBar, titles: titles)
+        syncESTabBarHighlight(selectedIndex)
     }
 
     private func makeTabBarItem(for index: Int) -> ESTabBarItem {
@@ -165,6 +146,21 @@ final class MainViewController: ESTabBarController {
         TabBarAppearance().apply(to: tabBar)
         ESTabBarAppearance.apply(to: tabBar, colors: colors)
     }
+
+    private func syncESTabBarHighlight(_ index: Int) {
+        guard let tabBar = tabBar as? ESTabBar,
+              let items = tabBar.items,
+              items.indices.contains(index) else { return }
+
+        for (idx, item) in items.enumerated() {
+            guard let estItem = item as? ESTabBarItem else { continue }
+            if idx == index {
+                estItem.contentView.select(animated: false, completion: nil)
+            } else {
+                estItem.contentView.deselect(animated: false, completion: nil)
+            }
+        }
+    }
 }
 
 // MARK: - UITabBarControllerDelegate
@@ -173,18 +169,12 @@ extension MainViewController: UITabBarControllerDelegate {
 
     func tabBarController(
         _ tabBarController: UITabBarController,
-        shouldSelect viewController: UIViewController
-    ) -> Bool {
-        guard let index = viewControllers?.firstIndex(of: viewController) else {
-            return true
+        didSelect viewController: UIViewController
+    ) {
+        guard let navigationController = viewController as? UINavigationController,
+              let index = navigationControllers.firstIndex(of: navigationController) else {
+            return
         }
-
-        if coordinators[index] != nil {
-            return true
-        }
-
-        loadTab(at: index)
-        tabBarController.selectedIndex = index
-        return false
+        syncESTabBarHighlight(index)
     }
 }

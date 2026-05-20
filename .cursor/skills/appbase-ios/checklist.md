@@ -13,10 +13,23 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 - [ ] `offset` / `inset` dùng `Spacing.*` — không magic number
 - [ ] `cornerRadius` / `RoundedRectangle` dùng `Radius.*`
 
+## Coordinator & navigation
+
+- [ ] Feature flow có `*Coordinator` kế thừa `NavigationCoordinator<VoidMeta>`
+- [ ] `push` / `pop` / `set` chỉ qua `navigate(to:)` — không `navigationController?.push` trong feature VC
+- [ ] VC / VM bắn action: `PassthroughSubject` (hoặc publisher trên VC) → coordinator `sink`
+- [ ] Subclass coordinator **không** tạo `private var cancelBag` — dùng `&cancelBag` trên `Coordinator` base
+- [ ] `sink` navigation: `[weak self]` + `store(in: &cancelBag)`
+- [ ] Màn push mới có action riêng → `bind*Navigation(viewModel)` trước `invoke` + `push`
+- [ ] `Coordinator<VoidMeta>` / `NavigationCoordinator<VoidMeta>` — không bỏ generic
+- [ ] Tab mới trong `MainViewController`: thêm `Tab` case + `makeCoordinator` + `start()` trong `viewDidLoad` (eager 5 tab)
+- [ ] Retain coordinator trong mảng `coordinators`
+- [ ] ESTabBar: `syncESTabBarHighlight` trong `viewDidAppear` / `didSelect`
+
 ## TIOViewController
 
 - [ ] No empty lifecycle overrides (`viewWillAppear` …) unless adding behavior
-- [ ] `cancelBag` only here for VC-side Combine
+- [ ] `cancelBag` only here for VC-side Combine (không trùng trên Coordinator)
 - [ ] `layoutIFSContentViewsIfNeeded()` uses all `IFSContentView` subviews, not `first(where:)`
 - [ ] `layoutIFSContentViewsIfNeeded()` pins with `snp.remakeConstraints { make.edges.equalToSuperview() }`
 - [ ] `onBackPress` appropriate for navigation stack vs modal
@@ -114,6 +127,9 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 
 ## Performance & size
 
+- [ ] Main tab: 5 coordinator start trong `viewDidLoad` (đổi tab instant, mở Main có thể chậm hơn)
+- [ ] Tab coordinator: `lazy var rootVC` — tạo khi `start()`
+- [ ] List loading: không `applyShimmerToVisibleListCells` sau `reloadData` (shimmer trong `cellForRowAt`)
 - [ ] Avoid `reloadData()` when batch insert/delete is possible
 - [ ] Cell reuse via registered nibs/classes
 - [ ] Custom cells: SnapKit in `init`, not repeated work in `layoutSubviews` every pass
