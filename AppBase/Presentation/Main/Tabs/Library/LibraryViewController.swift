@@ -33,7 +33,10 @@ class LibraryViewController<VM: LibraryViewModel>: TIOViewController<VM, Library
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        refreshLocalization()
+    }
+
+    override func refreshLocalization() {
         title = L10n.Tab.library
     }
 
@@ -53,8 +56,7 @@ class LibraryViewController<VM: LibraryViewModel>: TIOViewController<VM, Library
         loadSubtitleButton.setTitle("Shimmer subtitle only", for: .normal)
 
         [loadTestButton, loadTitleButton, loadSubtitleButton].forEach {
-            $0.backgroundColor = .systemBlue
-            $0.setTitleColor(.white, for: .normal)
+            $0.usesFilledPrimaryStyle = true
             $0.layer.cornerRadius = 12
             $0.snp.makeConstraints { make in
                 make.height.equalTo(48)

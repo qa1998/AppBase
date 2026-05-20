@@ -10,11 +10,11 @@ import SwiftUI
 import BaseMVVM
 
 class SettingViewController<VM: SettingViewModel>: TIOScreenViewController<VM> {
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = L10n.Settings.title
-        
+        refreshLocalization()
+
         let swiftUIView = SettingView()
         
         let hostingController = UIHostingController(
@@ -43,6 +43,10 @@ class SettingViewController<VM: SettingViewModel>: TIOScreenViewController<VM> {
         ])
         
         hostingController.didMove(toParent: self)
+    }
+
+    override func refreshLocalization() {
+        title = L10n.Settings.title
     }
 }
 

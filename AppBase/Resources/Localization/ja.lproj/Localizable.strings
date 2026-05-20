@@ -27,6 +27,8 @@
 "settings.section.preferences" = "環境設定";
 "settings.theme" = "テーマ";
 "settings.theme.system" = "システム";
+"settings.theme.light" = "ライト";
+"settings.theme.dark" = "ダーク";
 "settings.language" = "言語";
 "settings.notifications" = "通知";
 "settings.appearance" = "外観";
@@ -49,3 +51,4 @@
 
 /* Common */
 "common.loading" = "読み込み中...";
+"common.cancel" = "キャンセル";

@@ -27,6 +27,8 @@
 "settings.section.preferences" = "TÙY CHỌN";
 "settings.theme" = "Giao diện";
 "settings.theme.system" = "Hệ thống";
+"settings.theme.light" = "Sáng";
+"settings.theme.dark" = "Tối";
 "settings.language" = "Ngôn ngữ";
 "settings.notifications" = "Thông báo";
 "settings.appearance" = "Hiển thị";
@@ -49,3 +51,4 @@
 
 /* Common */
 "common.loading" = "Đang tải...";
+"common.cancel" = "Hủy";

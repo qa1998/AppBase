@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class TIOCollectionViewCell: UICollectionViewCell, ShimmeringViewProtocol, TIOListCellShimmerApplicable {
+class TIOCollectionViewCell: UICollectionViewCell, ShimmeringViewProtocol, TIOListCellShimmerApplicable, TIOThemable {
 
     static var reuseIdentifier: String {
         return String(describing: self)
@@ -39,11 +39,16 @@ class TIOCollectionViewCell: UICollectionViewCell, ShimmeringViewProtocol, TIOLi
         contentView.bringSubviewToFront(shimmerHost)
     }
 
+    func applyTheme(_ colors: ThemeColors) {
+        backgroundColor = colors.backgroundPrimary
+        contentView.backgroundColor = colors.backgroundPrimary
+    }
+
     func applyListShimmer(_ isLoading: Bool) {
         shimmerHost.isHidden = !isLoading
         shimmerHost.setTemplateWithSubviews(
             isLoading,
-            viewBackgroundColor: .secondarySystemGroupedBackground
+            viewBackgroundColor: ThemeManager.shared.palette.backgroundSecondary
         )
     }
 
@@ -64,5 +69,6 @@ class TIOCollectionViewCell: UICollectionViewCell, ShimmeringViewProtocol, TIOLi
         shimmerHost.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        startTheming()
     }
 }

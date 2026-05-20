@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShimmerApplicable {
+class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShimmerApplicable, TIOThemable {
 
     var isEnableHighlight: Bool {
         return true
@@ -65,11 +65,20 @@ class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShim
         }
     }
 
+    func applyTheme(_ colors: ThemeColors) {
+        backgroundColor = colors.backgroundPrimary
+        contentView.backgroundColor = colors.backgroundPrimary
+        textLabel?.textColor = colors.textPrimary
+        detailTextLabel?.textColor = colors.textSecondary
+        imageView?.tintColor = colors.textSecondary
+    }
+
     func applyListShimmer(_ isLoading: Bool) {
         shimmerHost.isHidden = !isLoading
+        let shimmerBackground = ThemeManager.shared.palette.backgroundSecondary
         shimmerHost.setTemplateWithSubviews(
             isLoading,
-            viewBackgroundColor: .secondarySystemGroupedBackground
+            viewBackgroundColor: shimmerBackground
         )
         textLabel?.isHidden = isLoading
         detailTextLabel?.isHidden = isLoading
@@ -81,7 +90,6 @@ class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShim
     }
 
     private func commonInit() {
-        backgroundColor = ThemeManager.shared.colors.backgroundPrimary
         separatorInset = .zero
 
         let selectedView = UIView(frame: .zero)
@@ -93,5 +101,7 @@ class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShim
             make.leading.trailing.equalToSuperview().inset(16)
             make.top.bottom.equalToSuperview().inset(8)
         }
+
+        startTheming()
     }
 }

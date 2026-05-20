@@ -2,8 +2,6 @@
 //  TIOContentView.swift
 //  AppBase
 //
-//  Created by QuangAnh on 11/5/26.
-//
 
 import UIKit
 
@@ -15,8 +13,7 @@ class TIOContentView: TIOView, IFSContentView {
 
     override var shimmeringAnimatedItems: [UIView] { [] }
 
-    override func commonInit() {
-        super.commonInit()
-        backgroundColor = .systemBackground
+    override func applyTheme(_ colors: ThemeColors) {
+        backgroundColor = colors.backgroundSecondary
     }
 }

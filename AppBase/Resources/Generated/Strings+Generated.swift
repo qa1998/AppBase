@@ -21,6 +21,8 @@ internal enum L10n {
     }
   }
   internal enum Common {
+    /// Cancel
+    internal static var cancel: String { return L10n.tr("Localizable", "common.cancel", fallback: "Cancel") }
     /// Common
     internal static var loading: String { return L10n.tr("Localizable", "common.loading", fallback: "Loading...") }
   }
@@ -84,6 +86,10 @@ internal enum L10n {
       internal static var preferences: String { return L10n.tr("Localizable", "settings.section.preferences", fallback: "PREFERENCES") }
     }
     internal enum Theme {
+      /// Dark
+      internal static var dark: String { return L10n.tr("Localizable", "settings.theme.dark", fallback: "Dark") }
+      /// Light
+      internal static var light: String { return L10n.tr("Localizable", "settings.theme.light", fallback: "Light") }
       /// System
       internal static var system: String { return L10n.tr("Localizable", "settings.theme.system", fallback: "System") }
     }

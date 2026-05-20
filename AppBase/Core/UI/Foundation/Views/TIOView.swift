@@ -5,8 +5,8 @@
 
 import UIKit
 
-/// Base UIView — hỗ trợ shimmer qua `ShimmeringViewProtocol`.
-class TIOView: UIView, ShimmeringViewProtocol {
+/// Base UIView — shimmer + theme tự cập nhật khi `ThemeManager.palette` đổi.
+class TIOView: UIView, ShimmeringViewProtocol, TIOThemable {
 
     var shimmeringAnimatedItems: [UIView] { [self] }
 
@@ -24,5 +24,10 @@ class TIOView: UIView, ShimmeringViewProtocol {
 
     func commonInit() {
         backgroundColor = .clear
+        startTheming()
+    }
+
+    func applyTheme(_ colors: ThemeColors) {
+        // Subclasses override; mặc định giữ clear.
     }
 }

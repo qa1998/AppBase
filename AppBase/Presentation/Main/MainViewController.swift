@@ -7,8 +7,12 @@
 
 import UIKit
 import BaseMVVM
+import Combine
 
 class MainViewController: ESTabBarController {
+
+    private var themeCancel: AnyCancellable?
+    private var localizationCancel: AnyCancellable?
 
     var homeCoor: Coordinator = {
         let nav = UINavigationController()
@@ -47,38 +51,70 @@ class MainViewController: ESTabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.viewControllers = [
-            self.homeCoor.rootViewController,
-            self.scriptsCoor.rootViewController,
-            self.recordCoor.rootViewController,
-            self.libraryCoor.rootViewController,
-            self.settingCoor.rootViewController
+        bindThemeUpdates()
+        bindLocalizationUpdates()
+
+        viewControllers = [
+            homeCoor.rootViewController,
+            scriptsCoor.rootViewController,
+            recordCoor.rootViewController,
+            libraryCoor.rootViewController,
+            settingCoor.rootViewController
         ]
 
-        homeCoor.rootViewController.tabBarItem = UITabBarItem(
-            title: L10n.Tab.home,
-            image: UIImage(systemName: "house.fill"),
-            tag: 0
+        applyTabBarItems()
+        applyTabBarTheme()
+    }
+
+    private func bindThemeUpdates() {
+        themeCancel = ThemeManager.shared.$palette
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.applyTabBarTheme()
+            }
+    }
+
+    private func bindLocalizationUpdates() {
+        localizationCancel = LocalizationService.shared.$currentLanguage
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.applyTabBarItems()
+            }
+    }
+
+    private func applyTabBarItems() {
+        let configs: [(Coordinator, String, String, Int)] = [
+            (homeCoor, L10n.Tab.home, "house.fill", 0),
+            (scriptsCoor, L10n.Tab.scripts, "doc.text.fill", 1),
+            (recordCoor, L10n.Tab.record, "record.circle.fill", 2),
+            (libraryCoor, L10n.Tab.library, "folder.fill", 3),
+            (settingCoor, L10n.Tab.settings, "gearshape.fill", 4)
+        ]
+
+        let titles = configs.map(\.1)
+
+        for (coordinator, title, imageName, tag) in configs {
+            coordinator.rootViewController.tabBarItem = makeTabBarItem(
+                title: title,
+                imageName: imageName,
+                tag: tag
+            )
+        }
+
+        ESTabBarAppearance.updateTitles(on: tabBar, titles: titles)
+    }
+
+    private func makeTabBarItem(title: String, imageName: String, tag: Int) -> ESTabBarItem {
+        ESTabBarItem(
+            title: title,
+            image: UIImage(systemName: imageName),
+            tag: tag
         )
-        scriptsCoor.rootViewController.tabBarItem = UITabBarItem(
-            title: L10n.Tab.scripts,
-            image: UIImage(systemName: "doc.text.fill"),
-            tag: 1
-        )
-        recordCoor.rootViewController.tabBarItem = UITabBarItem(
-            title: L10n.Tab.record,
-            image: UIImage(systemName: "record.circle.fill"),
-            tag: 2
-        )
-        libraryCoor.rootViewController.tabBarItem = UITabBarItem(
-            title: L10n.Tab.library,
-            image: UIImage(systemName: "folder.fill"),
-            tag: 3
-        )
-        settingCoor.rootViewController.tabBarItem = UITabBarItem(
-            title: L10n.Tab.settings,
-            image: UIImage(systemName: "gearshape.fill"),
-            tag: 4
-        )
+    }
+
+    private func applyTabBarTheme() {
+        let colors = ThemeManager.shared.palette
+        TabBarAppearance().apply(to: tabBar)
+        ESTabBarAppearance.apply(to: tabBar, colors: colors)
     }
 }

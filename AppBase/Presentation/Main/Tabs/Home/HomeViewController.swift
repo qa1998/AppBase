@@ -15,7 +15,10 @@ class HomeViewController<VM: HomeViewModel>: TIOTableViewController<VM> {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        refreshLocalization()
+    }
+
+    override func refreshLocalization() {
         title = L10n.Tab.home
     }
 

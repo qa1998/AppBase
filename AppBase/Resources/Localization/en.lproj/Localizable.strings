@@ -27,6 +27,8 @@
 "settings.section.preferences" = "PREFERENCES";
 "settings.theme" = "Theme";
 "settings.theme.system" = "System";
+"settings.theme.light" = "Light";
+"settings.theme.dark" = "Dark";
 "settings.language" = "Language";
 "settings.notifications" = "Notifications";
 "settings.appearance" = "Appearance";
@@ -49,3 +51,4 @@
 
 /* Common */
 "common.loading" = "Loading...";
+"common.cancel" = "Cancel";

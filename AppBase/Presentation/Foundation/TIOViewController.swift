@@ -10,7 +10,8 @@ import Combine
 import UIKit
 import SnapKit
 
-class TIOViewController<VM, Event: Hashable>: BaseViewController<VM> where VM: TIOViewModel<Event> {
+class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, LocalizationRefreshable
+    where VM: TIOViewModel<Event> {
 
     var cancelBag = Set<AnyCancellable>()
 
@@ -23,7 +24,39 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM> where VM: T
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        bindScreenTheme()
+        bindLocalization()
         layoutIFSContentViewsIfNeeded()
+    }
+
+    private func bindLocalization() {
+        LocalizationService.shared.$currentLanguage
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshLocalization()
+            }
+            .store(in: &cancelBag)
+    }
+
+    /// Override để cập nhật `title`, label, … khi đổi ngôn ngữ.
+    open func refreshLocalization() {}
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else {
+            return
+        }
+        ThemeManager.shared.refreshPaletteIfNeeded()
+    }
+
+    private func bindScreenTheme() {
+        bindTheme { [weak self] colors in
+            self?.applyScreenTheme(colors)
+        }
+    }
+
+    open func applyScreenTheme(_ colors: ThemeColors) {
+        view.backgroundColor = colors.backgroundSecondary
     }
 
     override func onBind() {
@@ -52,10 +85,11 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM> where VM: T
     }
 
     func applyShimmerLoading(_ isLoading: Bool, on views: [UIView]) {
+        let shimmerBackground = ThemeManager.shared.palette.backgroundSecondary
         for target in views {
             target.setTemplateWithSubviews(
                 isLoading,
-                viewBackgroundColor: target.backgroundColor ?? .systemBackground
+                viewBackgroundColor: target.backgroundColor ?? shimmerBackground
             )
         }
     }

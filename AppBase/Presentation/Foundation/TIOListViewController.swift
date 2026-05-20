@@ -109,7 +109,7 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
     }
 
     func backgroundColor(forEmptyDataSet scrollView: UIScrollView) -> UIColor? {
-        return .white
+        ThemeManager.shared.palette.backgroundSecondary
     }
 
     func customView(forEmptyDataSet scrollView: UIScrollView) -> UIView? {

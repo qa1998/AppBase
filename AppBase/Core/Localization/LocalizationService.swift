@@ -7,41 +7,25 @@
 
 
 import Foundation
+import Combine
 
-final class LocalizationService {
-    
+final class LocalizationService: ObservableObject {
+
     static let shared = LocalizationService()
-    
-    private init() {}
-    
+
     private let languageKey = "selected_language"
-    
-    var currentLanguage: Language {
-        
-        get {
-            
-            let value = UserDefaults.standard.string(
-                forKey: languageKey
-            )
-            
-            return Language(
-                rawValue: value ?? "en"
-            ) ?? .english
-        }
-        
-        set {
-            
-            UserDefaults.standard.set(
-                newValue.rawValue,
-                forKey: languageKey
-            )
-        }
+
+    @Published private(set) var currentLanguage: Language
+
+    private init() {
+        let value = UserDefaults.standard.string(forKey: languageKey)
+        currentLanguage = Language(rawValue: value ?? "en") ?? .english
     }
-    
-    func setLanguage(
-        _ language: Language
-    ) {
-        
+
+    func setLanguage(_ language: Language) {
+        guard currentLanguage != language else { return }
         currentLanguage = language
+        UserDefaults.standard.set(language.rawValue, forKey: languageKey)
+        LocalizationRefresh.refreshVisibleUI()
     }
 }

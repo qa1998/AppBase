@@ -26,6 +26,8 @@ description: >-
 
 Runtime language: `LocalizationService.shared.currentLanguage` (`en` / `vi` / `ja`).
 
+Sau `setLanguage`, gọi `LocalizationRefresh.refreshVisibleUI()` — cập nhật tab bar (`ESTabBarItem`), navigation `title` (override `refreshLocalization()` trên `TIOViewController`), SwiftUI dùng `@ObservedObject` + `.id(currentLanguage)`.
+
 ## Workflow (required for every new string)
 
 ```

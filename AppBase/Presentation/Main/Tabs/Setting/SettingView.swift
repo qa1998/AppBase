@@ -8,6 +8,13 @@
 import SwiftUI
 
 struct SettingView: View {
+
+    @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var localization = LocalizationService.shared
+
+    @State private var showThemePicker = false
+    @State private var showLanguagePicker = false
+
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.s24) {
@@ -19,13 +26,15 @@ struct SettingView: View {
                             icon: "moon.fill",
                             iconColor: .indigo,
                             title: L10n.Settings.theme,
-                            value: L10n.Settings.Theme.system
+                            value: themeManager.mode.localizedTitle,
+                            onTap: { showThemePicker = true }
                         ),
                         .init(
                             icon: "globe",
                             iconColor: .blue,
                             title: L10n.Settings.language,
-                            value: LocalizationService.shared.currentLanguage.localizedTitle
+                            value: localization.currentLanguage.localizedTitle,
+                            onTap: { showLanguagePicker = true }
                         ),
                         .init(
                             icon: "bell.fill",
@@ -97,6 +106,68 @@ struct SettingView: View {
             .padding(.top, 16)
             .padding(.bottom, 40)
         }
+        .background(Color(uiColor: themeManager.palette.backgroundSecondary))
+        .confirmationDialog(
+            L10n.Settings.theme,
+            isPresented: $showThemePicker,
+            titleVisibility: .visible
+        ) {
+            ForEach(ThemeMode.allCases, id: \.self) { mode in
+                Button(mode.localizedTitle) {
+                    themeManager.mode = mode
+                }
+            }
+            Button(L10n.Common.cancel, role: .cancel) {}
+        }
+        .sheet(isPresented: $showLanguagePicker) {
+            LanguagePickerSheet(
+                selected: localization.currentLanguage,
+                onSelect: { language in
+                    localization.setLanguage(language)
+                    showLanguagePicker = false
+                }
+            )
+        }
+        .id(localization.currentLanguage)
+    }
+}
+
+// MARK: - Language picker
+
+private struct LanguagePickerSheet: View {
+
+    let selected: Language
+    let onSelect: (Language) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    @ObservedObject private var themeManager = ThemeManager.shared
+
+    var body: some View {
+            List(Language.allCases, id: \.self) { language in
+                Button {
+                    onSelect(language)
+                } label: {
+                    HStack {
+                        Text(language.localizedTitle)
+                            .foregroundStyle(Color(uiColor: themeManager.palette.textPrimary))
+                        Spacer()
+                        if language == selected {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color(uiColor: themeManager.palette.primary))
+                        }
+                    }
+                }
+            }
+            .navigationTitle(L10n.Settings.language)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(L10n.Common.cancel) {
+                        dismiss()
+                    }
+                }
+            }
     }
 }
 
@@ -110,14 +181,14 @@ extension SettingView {
 
             Text(title)
                 .font(Font.swiftUIFont(.text13, style: .bold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color(uiColor: themeManager.palette.textSecondary))
                 .padding(.horizontal, 4)
 
             VStack(spacing: 0) {
 
                 ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
 
-                    SettingsRow(item: item)
+                    SettingsRow(item: item, palette: themeManager.palette)
 
                     if idx != items.count - 1 {
                         Divider()
@@ -125,7 +196,7 @@ extension SettingView {
                     }
                 }
             }
-            .background(.white)
+            .background(Color(uiColor: themeManager.palette.backgroundPrimary))
             .clipShape(
                 RoundedRectangle(
                     cornerRadius: Radius.s20,
@@ -139,8 +210,22 @@ extension SettingView {
 struct SettingsRow: View {
 
     let item: SettingItem
+    let palette: ThemeColors
 
     var body: some View {
+        Group {
+            if let onTap = item.onTap {
+                Button(action: onTap) {
+                    rowContent
+                }
+                .buttonStyle(.plain)
+            } else {
+                rowContent
+            }
+        }
+    }
+
+    private var rowContent: some View {
         HStack(spacing: 16) {
 
             ZStack {
@@ -155,17 +240,18 @@ struct SettingsRow: View {
 
             Text(item.title)
                 .font(Font.swiftUIFont(.text17))
+                .foregroundStyle(Color(uiColor: palette.textPrimary))
 
             Spacer()
 
             if let value = item.value {
                 Text(value)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color(uiColor: palette.textSecondary))
             }
 
             Image(systemName: "chevron.right")
                 .font(Font.swiftUIFont(.text13, style: .bold))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Color(uiColor: palette.textSecondary).opacity(0.6))
         }
         .padding(.horizontal, 16)
         .frame(height: 60)
@@ -181,4 +267,5 @@ struct SettingItem {
     let iconColor: Color
     let title: String
     var value: String? = nil
+    var onTap: (() -> Void)? = nil
 }

@@ -7,8 +7,9 @@ description: >-
   review, refactor, optimize, add UI/layout, constraints, or list/screen features
   in AppBase, or mentions TIO, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
   TIOPagingKit, TrackLoading, shimmer, skeleton loading, UIView-Shimmer, Font,
-  FontSize, or Lato typography. For UI text and copy, use skill `appbase-localization`
-  (L10n + SwiftGen) — never hardcode user-facing strings.
+  FontSize, Lato typography, ThemeManager, TIOThemable, palette, or dark/light mode.
+  For UI text and copy, use skill `appbase-localization` (L10n + SwiftGen) — never
+  hardcode user-facing strings. **Every new view/screen must apply theme** (see below).
 ---
 
 # AppBase iOS Presentation
@@ -77,6 +78,121 @@ Text(tagline)
 - Semibold/medium system weight → map sang Lato **bold** hoặc **default** (không có Lato-Semibold).
 
 Files: `AppBase/Core/Font/Font.swift`, `FontSize.swift`, `Font+SwiftUI.swift`.
+
+## Theme (`ThemeManager` + TIO common views) — **bắt buộc mỗi view mới**
+
+`ThemeManager.shared.palette` (`@Published`) — đổi `mode` hoặc system appearance → UI tự cập nhật qua `bindTheme` / `startTheming()`.
+
+### Quy tắc vàng
+
+1. **UIKit UI** → dùng `TIOView` / `TIOLabel` / `TIOButton` / `TIOContentView` / cell `TIOTableViewCell` — **không** `UIView` / `UILabel` / `UIButton` thuần trừ khi wrap và gọi `bindTheme`.
+2. **Màn hình** → subclass `TIOViewController` (hoặc list/table/collection base) — **không** set `view.backgroundColor = .systemBackground` / `.white`.
+3. **Màu** → chỉ lấy từ `ThemeManager.shared.palette` (hoặc `colors`) — **không** `.label`, `.systemBackground`, `.white`, `.black` cho nền/chữ chính.
+4. **SwiftUI** → `@ObservedObject private var themeManager = ThemeManager.shared` + `Color(uiColor: themeManager.palette.*)`.
+5. **Shimmer** → `viewBackgroundColor` từ `palette.backgroundSecondary`, không hardcode.
+
+### Mapping màu (`ThemeColors`)
+
+| Token | Dùng cho |
+|-------|----------|
+| `backgroundPrimary` | Card, nav/tab bar nền, cell nền |
+| `backgroundSecondary` | Màn full (`TIOViewController.view`), `TIOContentView` |
+| `textPrimary` | Title, body (`TIOLabel`) |
+| `textSecondary` | Subtitle, caption |
+| `primary` | CTA, tint, tab selected |
+| `separator` | Divider |
+
+### TIO views (tự theme qua `TIOThemable`)
+
+| View | Hành vi |
+|------|---------|
+| `TIOView` | `startTheming()` trong `commonInit`; override `applyTheme` nếu cần màu riêng |
+| `TIOContentView` | `backgroundSecondary` |
+| `TIOLabel` | `textPrimary` + `Font.default(size: .text17)` |
+| `TIOButton` | `primary`; CTA: `usesFilledPrimaryStyle = true` |
+| `TIOTableViewCell` / `TIOCollectionViewCell` | nền + `textLabel` colors + shimmer nền |
+| `TIOViewController` | `view` = `backgroundSecondary`; `traitCollectionDidChange` → `refreshPaletteIfNeeded()` |
+
+```swift
+// Custom UIView không có subclass TIO* — bắt buộc bindTheme
+final class ProfileHeaderView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        bindTheme { [weak self] colors in
+            self?.backgroundColor = colors.backgroundPrimary
+        }
+    }
+}
+
+// Subclass TIOView — override applyTheme
+final class BannerView: TIOView {
+    override func applyTheme(_ colors: ThemeColors) {
+        backgroundColor = colors.backgroundPrimary
+        layer.borderColor = colors.separator.cgColor
+    }
+}
+```
+
+### SwiftUI màn mới
+
+```swift
+struct FeatureView: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
+
+    var body: some View {
+        ScrollView { /* ... */ }
+            .background(Color(uiColor: themeManager.palette.backgroundSecondary))
+    }
+}
+```
+
+Nav/tab bar: `AppAppearance.shared.applyIncludingVisibleBars()` đã gọi từ `ThemeManager.updatePalette()` — không cần set tay trên từng màn.
+
+Files: `AppBase/Core/Theme/`, `UIView+Theme.swift`, `TIOThemable.swift`.
+
+## Adding a new screen (theme + localization checklist)
+
+Dùng **mỗi lần** tạo ViewController / SwiftUI view / custom `UIView` mới:
+
+```
+- [ ] VC kế thừa TIOViewController / TIOListViewController / TIOTableViewController (không BaseViewController trực tiếp nếu có UI)
+- [ ] Subview UIKit: TIOLabel, TIOButton, TIOContentView, TIOView (không UILabel/UIButton thuần)
+- [ ] Không .systemBackground / .white / .label cho nền & chữ chính
+- [ ] CTA: TIOButton + usesFilledPrimaryStyle = true
+- [ ] Custom UIView: bindTheme { } hoặc subclass TIOView + applyTheme
+- [ ] SwiftUI: @ObservedObject themeManager + palette colors
+- [ ] title / strings: L10n + override refreshLocalization() (skill appbase-localization)
+- [ ] Font: Font.default / Font.bold + FontSize (không systemFont)
+```
+
+### ViewController template
+
+```swift
+final class FeatureViewController<VM: FeatureViewModel>: TIOScreenViewController<VM> {
+
+    private let contentView = TIOContentView()
+    private let titleLabel = TIOLabel()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()  // đã bind theme + localization
+        refreshLocalization()
+    }
+
+    override func setupUI() {
+        super.setupUI()
+        view.addSubview(contentView)
+        contentView.addSubview(titleLabel)
+        // SnapKit...
+    }
+
+    override func refreshLocalization() {
+        title = L10n.Feature.title
+        titleLabel.text = L10n.Feature.subtitle
+    }
+}
+```
+
+`TIOViewController` đã gọi `bindScreenTheme()` và `bindLocalization()` — **không** duplicate trừ khi cần thêm observer riêng.
 
 ## TrackLoading + shimmer
 
@@ -335,6 +451,8 @@ Copy and track:
 - [ ] Layout uses SnapKit (`import SnapKit`, `snp.makeConstraints` / `remakeConstraints`)
 - [ ] No raw `NSLayoutConstraint` / anchor APIs on new or touched code
 - [ ] Typography: `Font` / `FontSize` — no `UIFont.systemFont` / `.font(.system(...))` in AppBase code
+- [ ] Theme: TIO* views or `bindTheme`; no `.systemBackground` / `.white` / `.label` for main UI
+- [ ] New screen: `refreshLocalization()` if có `title` / copy
 ```
 
 ### Review output format
@@ -371,6 +489,7 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
    - UI-only code sau `super.viewDidLoad()`; SnapKit trong `setupUI()`.
 
 3. **Do not** override empty `viewWillAppear` / `setupUI` in base classes.
+4. **Theme** — `TIOTableViewCell` / custom cell subclass; không hardcode `cell.backgroundColor`.
 
 ## Adding a new collection screen
 
@@ -379,6 +498,7 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
    - Override `registerCells()` → `[YourCell.self]`.
    - Override `collectionView(_:cellForItemAt:)`.
    - Optional: `createCollectionViewLayout()`, `sizeForItemAt`, `registerCells(_, useNib: true)` for nib cells.
+3. **Theme** — `TIOCollectionViewCell`; list `backgroundColor(forEmptyDataSet:)` → `palette.backgroundSecondary`.
 
 ## Common fixes
 
@@ -393,6 +513,8 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
 | Cả listView shimmer | `shimmerViews` trả về listView | List: `shimmerViews` = `[]`, shimmer từng cell |
 | Không thấy skeleton khi load | `items` rỗng, không `startLoading` | `startLoading()` trước fetch; `displayItemCount` khi `isListCellLoading` |
 | Layout warnings / broken UI | Anchor/NSLayoutConstraint mix | Migrate to SnapKit; use `remakeConstraints` when re-parenting |
+| Theme không đổi khi switch dark/light | Hardcode màu / không TIO* / không `bindTheme` | Dùng TIO views + `TIOViewController`; custom view → `bindTheme` |
+| Nav/tab title không đổi ngôn ngữ | Chỉ set `title` trong `viewDidLoad` | Override `refreshLocalization()` + `L10n` |
 
 ## User-facing text
 

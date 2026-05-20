@@ -32,6 +32,17 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 - [ ] Màn non-list: `TIOViewController<VM, Event>` + `shimmerViews(for:)` map đúng views
 - [ ] Fake API tách file, delay main thread cho UI update
 
+## Theme (bắt buộc mỗi view/screen mới)
+
+- [ ] VC: `TIOViewController` / list base — **không** `view.backgroundColor = .systemBackground`
+- [ ] Subviews: `TIOView`, `TIOLabel`, `TIOButton`, `TIOContentView` (không UIKit thuần)
+- [ ] Custom `UIView`: `bindTheme { }` hoặc subclass `TIOView` + `applyTheme(_:)`
+- [ ] Không `.white` / `.black` / `.label` / `.secondaryLabel` cho UI chính
+- [ ] CTA: `TIOButton` + `usesFilledPrimaryStyle = true` khi nền primary
+- [ ] SwiftUI: `@ObservedObject themeManager` + `themeManager.palette.*`
+- [ ] Shimmer: `palette.backgroundSecondary` làm `viewBackgroundColor`
+- [ ] Cell: `TIOTableViewCell` / `TIOCollectionViewCell` (đã có theme sẵn)
+
 ## Typography
 
 - [ ] UIKit: `Font.default` / `Font.bold` / `Font.italic` + `FontSize` token

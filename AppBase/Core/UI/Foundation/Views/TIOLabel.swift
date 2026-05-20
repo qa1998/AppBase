@@ -5,7 +5,7 @@
 
 import UIKit
 
-class TIOLabel: UILabel, ShimmeringViewProtocol {
+class TIOLabel: UILabel, ShimmeringViewProtocol, TIOThemable {
 
     var shimmeringAnimatedItems: [UIView] { [self] }
 
@@ -23,5 +23,11 @@ class TIOLabel: UILabel, ShimmeringViewProtocol {
 
     func commonInit() {
         numberOfLines = 0
+        font = Font.default(size: .text17)
+        startTheming()
+    }
+
+    func applyTheme(_ colors: ThemeColors) {
+        textColor = colors.textPrimary
     }
 }
