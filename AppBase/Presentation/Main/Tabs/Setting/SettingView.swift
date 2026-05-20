@@ -6,88 +6,89 @@
 //
 
 import SwiftUI
+
 struct SettingView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.s24) {
-                
+
                 settingsSection(
-                    title: "PREFERENCES",
+                    title: L10n.Settings.Section.preferences,
                     items: [
                         .init(
                             icon: "moon.fill",
                             iconColor: .indigo,
-                            title: "Theme",
-                            value: "System"
+                            title: L10n.Settings.theme,
+                            value: L10n.Settings.Theme.system
                         ),
                         .init(
                             icon: "globe",
                             iconColor: .blue,
-                            title: "Language",
-                            value: "English"
+                            title: L10n.Settings.language,
+                            value: LocalizationService.shared.currentLanguage.localizedTitle
                         ),
                         .init(
                             icon: "bell.fill",
                             iconColor: .green,
-                            title: "Notifications"
+                            title: L10n.Settings.notifications
                         ),
                         .init(
                             icon: "square.grid.2x2.fill",
                             iconColor: .orange,
-                            title: "Appearance"
+                            title: L10n.Settings.appearance
                         )
                     ]
                 )
-                
+
                 settingsSection(
-                    title: "GENERAL",
+                    title: L10n.Settings.Section.general,
                     items: [
                         .init(
                             icon: "shield.fill",
                             iconColor: .gray,
-                            title: "Privacy"
+                            title: L10n.Settings.privacy
                         ),
                         .init(
                             icon: "lock.fill",
                             iconColor: .blue,
-                            title: "Security"
+                            title: L10n.Settings.security
                         ),
                         .init(
                             icon: "icloud.fill",
                             iconColor: .green,
-                            title: "Backup & Sync"
+                            title: L10n.Settings.backup
                         ),
                         .init(
                             icon: "internaldrive.fill",
                             iconColor: .purple,
-                            title: "Storage"
+                            title: L10n.Settings.storage
                         )
                     ]
                 )
-                
+
                 settingsSection(
-                    title: "ABOUT",
+                    title: L10n.Settings.Section.about,
                     items: [
                         .init(
                             icon: "info.circle.fill",
                             iconColor: .gray,
-                            title: "App Version",
-                            value: "1.2.3 (123)"
+                            title: L10n.Settings.appVersion,
+                            value: L10n.Settings.AppVersion.value
                         ),
                         .init(
                             icon: "heart.fill",
                             iconColor: .pink,
-                            title: "Rate Us"
+                            title: L10n.Settings.rateUs
                         ),
                         .init(
                             icon: "questionmark.circle.fill",
                             iconColor: .yellow,
-                            title: "Help & Support"
+                            title: L10n.Settings.help
                         ),
                         .init(
                             icon: "doc.text.fill",
                             iconColor: .gray,
-                            title: "Terms of Service"
+                            title: L10n.Settings.terms
                         )
                     ]
                 )
@@ -96,72 +97,73 @@ struct SettingView: View {
             .padding(.top, 16)
             .padding(.bottom, 40)
         }
-      }
+    }
 }
 
 extension SettingView {
     func settingsSection(
-            title: String,
-            items: [SettingItem]
-        ) -> some View {
-            
-            VStack(alignment: .leading, spacing: Spacing.s12) {
-                
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 4)
-                
-                VStack(spacing: 0) {
-                    
-                    ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
-                        
-                        SettingsRow(item: item)
-                        
-                        if idx != items.count - 1 {
-                            Divider()
-                                .padding(.leading, Spacing.s32)
-                        }
+        title: String,
+        items: [SettingItem]
+    ) -> some View {
+
+        VStack(alignment: .leading, spacing: Spacing.s12) {
+
+            Text(title)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 4)
+
+            VStack(spacing: 0) {
+
+                ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
+
+                    SettingsRow(item: item)
+
+                    if idx != items.count - 1 {
+                        Divider()
+                            .padding(.leading, Spacing.s32)
                     }
                 }
-                .background(.white)
-                .clipShape(
-                    RoundedRectangle(
-                        cornerRadius: Radius.s20,
-                        style: .continuous
-                    )
-                )
             }
+            .background(.white)
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: Radius.s20,
+                    style: .continuous
+                )
+            )
         }
+    }
 }
+
 struct SettingsRow: View {
-    
+
     let item: SettingItem
-    
+
     var body: some View {
         HStack(spacing: 16) {
-            
+
             ZStack {
                 RoundedRectangle(cornerRadius: Radius.s12)
                     .fill(item.iconColor.opacity(0.15))
                     .frame(width: 36, height: 36)
-                
+
                 Image(systemName: item.icon)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(item.iconColor)
             }
-            
+
             Text(item.title)
                 .font(.system(size: 17, weight: .medium))
-            
+
             Spacer()
-            
+
             if let value = item.value {
                 Text(value)
                     .foregroundStyle(.secondary)
             }
-            
+
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.tertiary)
@@ -175,7 +177,7 @@ struct SettingsRow: View {
 // MARK: - Model
 
 struct SettingItem {
-    
+
     let icon: String
     let iconColor: Color
     let title: String

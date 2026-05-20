@@ -18,19 +18,11 @@ extension UICollectionView: TIOListView {
     }
     
     func notifyInsertItems(at indexPaths: [IndexPath]) {
-        var total: Int = 0
-        for section in 0..<self.numberOfSections {
-            total += numberOfItems(inSection: section)
+        if numberOfSections == 0 || indexPaths.isEmpty {
+            reloadData()
+            return
         }
-        if #available(iOS 15.0, *) {
-            if total == 0 {
-                self.reconfigureItems(at: indexPaths)
-            } else {
-                self.insertItems(at: indexPaths)
-            }
-        } else {
-            self.insertItems(at: indexPaths)
-        }
+        insertItems(at: indexPaths)
     }
     func notiDeleteItems(at indexPaths: [IndexPath]) {
         self.deleteItems(at: indexPaths)

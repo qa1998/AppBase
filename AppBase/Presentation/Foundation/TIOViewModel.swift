@@ -10,27 +10,24 @@ import Foundation
 import Combine
 
 class TIOViewModel: BaseViewModel {
-    
-    let cancelBag = Set<AnyCancellable>()
-    
+
     open override func viewModelDidReady() {
         super.viewModelDidReady()
     }
-    
+
     open override func viewModelWillActive() {
         super.viewModelWillActive()
     }
-    
+
     open override func viewModelDidActive() {
         super.viewModelDidActive()
     }
-    
+
     open override func viewModelWillInactive() {
         super.viewModelWillInactive()
     }
-    
+
     open override func viewModelDidInactive() {
         super.viewModelDidInactive()
     }
 }
-

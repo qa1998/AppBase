@@ -9,44 +9,44 @@ import SwiftUI
 
 struct OnBoardView: View {
     let callbackAction: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 0) {
-            
+
             Spacer()
                 .frame(height: 120)
-            
+
             Image(systemName: "doc.text")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 70, height: 70)
                 .foregroundColor(.black)
-            
+
             Spacer()
                 .frame(height: 40)
-            
-            Text("MC Teleprompter")
+
+            Text(L10n.App.name)
                 .font(.system(size: 34, weight: .bold))
                 .foregroundColor(.black)
-            
+
             Spacer()
                 .frame(height: 24)
-            
+
             VStack(spacing: 10) {
-                Text("Nhắc chữ dễ dàng.")
-                
-                Text("Tập trung vào nội dung của bạn.")
+                Text(L10n.App.Tagline.prompting)
+
+                Text(L10n.App.Tagline.focus)
             }
             .font(.system(size: 20))
             .foregroundColor(.gray)
             .multilineTextAlignment(.center)
-            
+
             Spacer()
-            
+
             Button {
                 callbackAction()
             } label: {
-                Text("Bắt đầu")
+                Text(L10n.Onboard.start)
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

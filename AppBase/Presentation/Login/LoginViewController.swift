@@ -10,47 +10,44 @@ import BaseMVVM
 
 class LoginViewController<VM: LoginViewModel>: TIOViewController<VM> {
     let navToRegister = PassthroughSubject<Void, Never>()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .green
-        self.title = "Login"
-        
+        title = L10n.Login.title
+
         let addButton = UIBarButtonItem(
             image: UIImage(systemName: "plus"),
             style: .plain,
             target: self,
             action: #selector(didTapAdd)
         )
-        
+
         navigationItem.rightBarButtonItem = addButton
     }
-    
+
     @objc private func didTapAdd() {
         navToRegister.send()
     }
 }
 
-
-
 class RegisterViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        self.title = "Register"
-        
+        title = L10n.Login.Register.title
+
         let addButton = UIBarButtonItem(
             image: UIImage(systemName: "plus"),
             style: .plain,
             target: self,
             action: #selector(didTapAdd)
         )
-        
+
         navigationItem.rightBarButtonItem = addButton
     }
-    
+
     @objc private func didTapAdd() {
 //        AppStateEvent.set(state: .main)
     }
-    
 }

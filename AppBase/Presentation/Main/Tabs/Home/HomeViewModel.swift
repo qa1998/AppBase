@@ -37,7 +37,9 @@ class HomeViewModel: TIOListViewModel {
         }
     }
     
-    override func canLoadMore() -> Bool {
-        return page == 3
+    private let maxPage = 3
+
+    override func hasReachedEnd() -> Bool {
+        return page >= maxPage
     }
 }

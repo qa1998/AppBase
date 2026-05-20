@@ -7,6 +7,8 @@
 
 import UIKit
 import SwiftUI
+import BaseMVVM
+
 class OnBoardViewController<VM: TIOViewModel>: TIOViewController<VM> {
     
     private lazy var hostingController = UIHostingController(

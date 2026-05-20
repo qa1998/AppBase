@@ -6,25 +6,21 @@
 //
 
 import Foundation
+
 enum Language: String, CaseIterable {
 
     case english = "en"
     case vietnamese = "vi"
     case japanese = "ja"
 
-    var title: String {
-
+    var localizedTitle: String {
         switch self {
-
         case .english:
-            return "English"
-
+            return L10n.Language.english
         case .vietnamese:
-            return "Tiếng Việt"
-
+            return L10n.Language.vietnamese
         case .japanese:
-            return "日本語"
+            return L10n.Language.japanese
         }
     }
 }
-

@@ -10,15 +10,84 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 internal enum L10n {
-  /// Tạm biệt
-  internal static var goodbye: String { return L10n.tr("Localizable", "Goodbye", fallback: "Tạm biệt") }
-  /// Localizable.strings
-  ///   AppBase
-  /// 
-  ///   Created by QuangAnh on 7/5/26.
-  internal static var helllo: String { return L10n.tr("Localizable", "Helllo", fallback: "Xin chào") }
-  /// Xin chào
-  internal static var hi: String { return L10n.tr("Localizable", "Hi", fallback: "Xin chào") }
+  internal enum App {
+    /// App
+    internal static var name: String { return L10n.tr("Localizable", "app.name", fallback: "MC Teleprompter") }
+    internal enum Tagline {
+      /// Focus on your content.
+      internal static var focus: String { return L10n.tr("Localizable", "app.tagline.focus", fallback: "Focus on your content.") }
+      /// Easy teleprompter.
+      internal static var prompting: String { return L10n.tr("Localizable", "app.tagline.prompting", fallback: "Easy teleprompter.") }
+    }
+  }
+  internal enum Common {
+    /// Common
+    internal static var loading: String { return L10n.tr("Localizable", "common.loading", fallback: "Loading...") }
+  }
+  internal enum Language {
+    /// Language
+    internal static var english: String { return L10n.tr("Localizable", "language.english", fallback: "English") }
+    /// Japanese
+    internal static var japanese: String { return L10n.tr("Localizable", "language.japanese", fallback: "Japanese") }
+    /// Vietnamese
+    internal static var vietnamese: String { return L10n.tr("Localizable", "language.vietnamese", fallback: "Vietnamese") }
+  }
+  internal enum Login {
+    /// Login
+    internal static var title: String { return L10n.tr("Localizable", "login.title", fallback: "Login") }
+    internal enum Register {
+      /// Register
+      internal static var title: String { return L10n.tr("Localizable", "login.register.title", fallback: "Register") }
+    }
+  }
+  internal enum Onboard {
+    /// Onboarding
+    internal static var start: String { return L10n.tr("Localizable", "onboard.start", fallback: "Get Started") }
+  }
+  internal enum Settings {
+    /// Appearance
+    internal static var appearance: String { return L10n.tr("Localizable", "settings.appearance", fallback: "Appearance") }
+    /// App Version
+    internal static var appVersion: String { return L10n.tr("Localizable", "settings.appVersion", fallback: "App Version") }
+    /// Backup & Sync
+    internal static var backup: String { return L10n.tr("Localizable", "settings.backup", fallback: "Backup & Sync") }
+    /// Help & Support
+    internal static var help: String { return L10n.tr("Localizable", "settings.help", fallback: "Help & Support") }
+    /// Language
+    internal static var language: String { return L10n.tr("Localizable", "settings.language", fallback: "Language") }
+    /// Notifications
+    internal static var notifications: String { return L10n.tr("Localizable", "settings.notifications", fallback: "Notifications") }
+    /// Privacy
+    internal static var privacy: String { return L10n.tr("Localizable", "settings.privacy", fallback: "Privacy") }
+    /// Rate Us
+    internal static var rateUs: String { return L10n.tr("Localizable", "settings.rateUs", fallback: "Rate Us") }
+    /// Security
+    internal static var security: String { return L10n.tr("Localizable", "settings.security", fallback: "Security") }
+    /// Storage
+    internal static var storage: String { return L10n.tr("Localizable", "settings.storage", fallback: "Storage") }
+    /// Terms of Service
+    internal static var terms: String { return L10n.tr("Localizable", "settings.terms", fallback: "Terms of Service") }
+    /// Theme
+    internal static var theme: String { return L10n.tr("Localizable", "settings.theme", fallback: "Theme") }
+    /// Settings
+    internal static var title: String { return L10n.tr("Localizable", "settings.title", fallback: "Settings") }
+    internal enum AppVersion {
+      /// 1.2.3 (123)
+      internal static var value: String { return L10n.tr("Localizable", "settings.appVersion.value", fallback: "1.2.3 (123)") }
+    }
+    internal enum Section {
+      /// ABOUT
+      internal static var about: String { return L10n.tr("Localizable", "settings.section.about", fallback: "ABOUT") }
+      /// GENERAL
+      internal static var general: String { return L10n.tr("Localizable", "settings.section.general", fallback: "GENERAL") }
+      /// PREFERENCES
+      internal static var preferences: String { return L10n.tr("Localizable", "settings.section.preferences", fallback: "PREFERENCES") }
+    }
+    internal enum Theme {
+      /// System
+      internal static var system: String { return L10n.tr("Localizable", "settings.theme.system", fallback: "System") }
+    }
+  }
 }
 // swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:enable nesting type_body_length type_name vertical_whitespace_opening_braces

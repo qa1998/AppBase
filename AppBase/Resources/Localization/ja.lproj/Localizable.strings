@@ -1,10 +1,44 @@
-/* 
+/*
   Localizable.strings
   AppBase
-
-  Created by QuangAnh on 7/5/26.
-  
 */
-"Helllo" = "Xin chào";
-"Goodbye" = "Tạm biệt";
-"Hi" = "Xin chào";
+
+/* App */
+"app.name" = "MC Teleprompter";
+"app.tagline.prompting" = "かんたんテロップ。";
+"app.tagline.focus" = "コンテンツに集中。";
+
+/* Onboarding */
+"onboard.start" = "始める";
+
+/* Login */
+"login.title" = "ログイン";
+"login.register.title" = "登録";
+
+/* Settings */
+"settings.title" = "設定";
+"settings.section.preferences" = "環境設定";
+"settings.theme" = "テーマ";
+"settings.theme.system" = "システム";
+"settings.language" = "言語";
+"settings.notifications" = "通知";
+"settings.appearance" = "外観";
+"settings.section.general" = "一般";
+"settings.privacy" = "プライバシー";
+"settings.security" = "セキュリティ";
+"settings.backup" = "バックアップと同期";
+"settings.storage" = "ストレージ";
+"settings.section.about" = "情報";
+"settings.appVersion" = "アプリバージョン";
+"settings.appVersion.value" = "1.2.3 (123)";
+"settings.rateUs" = "評価する";
+"settings.help" = "ヘルプとサポート";
+"settings.terms" = "利用規約";
+
+/* Language */
+"language.english" = "English";
+"language.vietnamese" = "Tiếng Việt";
+"language.japanese" = "日本語";
+
+/* Common */
+"common.loading" = "読み込み中...";

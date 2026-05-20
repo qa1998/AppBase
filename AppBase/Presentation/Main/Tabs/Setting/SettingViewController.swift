@@ -13,7 +13,7 @@ class SettingViewController<VM: SettingViewModel>: TIOViewController<VM> {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Setting"
+        title = L10n.Settings.title
         
         let swiftUIView = SettingView()
         

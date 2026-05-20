@@ -8,39 +8,41 @@
 import UIKit
 import BaseMVVM
 import Combine
+
 class TIOListViewModel: TIOViewModel {
-    
+
     let dataDidChange = PassthroughSubject<Void, Never>()
     let dataDidInsert = PassthroughSubject<(start: Int, count: Int), Never>()
-    
+
     func numberOfSections() -> Int {
         return 1
     }
-    
+
     func numOfItemsInSection(_ section: Int) -> Int {
         return 0
     }
-    
+
     func item(at indexPath: IndexPath) -> Any? {
         return nil
     }
-    
+
     func didSelectItem(at: IndexPath) {
-        
+
     }
-    
+
     func refreshAndGetListData() {
-        
+
     }
-    
+
     func loadMoreData() {
-        
+
     }
-    
-    func canLoadMore() -> Bool {
+
+    /// `true` when there is no next page (footer should show "no more data").
+    func hasReachedEnd() -> Bool {
         return false
     }
-    
+
     func isEmpty() -> Bool {
         var total: Int = 0
         for section in 0..<numberOfSections() {
@@ -49,4 +51,3 @@ class TIOListViewModel: TIOViewModel {
         return total == 0
     }
 }
-

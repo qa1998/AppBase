@@ -6,33 +6,30 @@
 //
 
 import SwiftUI
+
 struct SplashView: View {
-    
+
     var body: some View {
         VStack {
             Spacer()
             VStack(spacing: 32) {
-                
-                // MARK: - Icon
-                
+
                 Image(systemName: "doc.text")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 90, height: 90)
                     .foregroundColor(.black)
-                
-                // MARK: - Content
-                
+
                 VStack(spacing: 20) {
-                    
-                    Text("MC Teleprompter")
+
+                    Text(L10n.App.name)
                         .font(.system(size: 38, weight: .bold))
                         .foregroundColor(.black)
                     VStack(spacing: 12) {
-                        
-                        Text("Nhắc chữ dễ dàng.")
-                        
-                        Text("Tập trung vào nội dung của bạn.")
+
+                        Text(L10n.App.Tagline.prompting)
+
+                        Text(L10n.App.Tagline.focus)
                     }
                     .font(.system(size: 22, weight: .regular))
                     .foregroundColor(.gray)

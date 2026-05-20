@@ -20,19 +20,11 @@ extension UITableView: TIOListView {
         
     }
     func notifyInsertItems(at indexPaths: [IndexPath]) {
-        var total: Int = 0
-        for section in 0..<self.numberOfSections {
-            total += numberOfRows(inSection: section)
+        if numberOfSections == 0 || indexPaths.isEmpty {
+            reloadData()
+            return
         }
-        if #available(iOS 15.0, *) {
-            if total == 0 {
-                self.reconfigureRows(at: indexPaths)
-            } else {
-                self.insertRows(at: indexPaths, with: .none)
-            }
-        } else {
-            self.insertRows(at: indexPaths, with: .none)
-        }
+        insertRows(at: indexPaths, with: .none)
     }
     
     func notiDeleteItems(at indexPaths: [IndexPath]) {

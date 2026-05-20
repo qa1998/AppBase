@@ -6,7 +6,8 @@ description: >-
   Enforces SnapKit for all programmatic Auto Layout. Use when the user asks to
   review, refactor, optimize, add UI/layout, constraints, or list/screen features
   in AppBase, or mentions TIO, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
-  or TIOPagingKit.
+  or TIOPagingKit. For UI text and copy, use skill `appbase-localization` (L10n +
+  SwiftGen) — never hardcode user-facing strings.
 ---
 
 # AppBase iOS Presentation
@@ -231,8 +232,13 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
 | Cells not registered | `registerNibs()` empty | Return cell types; base calls `registerNibs(for:)` in `setupUI` |
 | Layout warnings / broken UI | Anchor/NSLayoutConstraint mix | Migrate to SnapKit; use `remakeConstraints` when re-parenting |
 
+## User-facing text
+
+All labels, titles, buttons, alerts → skill **`appbase-localization`**: add to `Localizable.strings`, run SwiftGen, use `L10n`. Do not hardcode strings in VCs/cells.
+
 ## Files to consult
 
+- Localization: `.cursor/skills/appbase-localization/SKILL.md`
 - Detailed checklist: [checklist.md](checklist.md)
 - Foundation: `AppBase/Presentation/Foundation/`
 - List abstractions: `AppBase/Core/UI/ListView/TIOListView.swift`, `UITableView+ListView.swift`

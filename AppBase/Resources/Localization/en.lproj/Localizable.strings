@@ -1,10 +1,44 @@
-/* 
+/*
   Localizable.strings
   AppBase
-
-  Created by QuangAnh on 7/5/26.
-  
 */
-"Helllo" = "Xin chào";
-"Goodbye" = "Tạm biệt";
-"Hi" = "Xin chào";
+
+/* App */
+"app.name" = "MC Teleprompter";
+"app.tagline.prompting" = "Easy teleprompter.";
+"app.tagline.focus" = "Focus on your content.";
+
+/* Onboarding */
+"onboard.start" = "Get Started";
+
+/* Login */
+"login.title" = "Login";
+"login.register.title" = "Register";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.section.preferences" = "PREFERENCES";
+"settings.theme" = "Theme";
+"settings.theme.system" = "System";
+"settings.language" = "Language";
+"settings.notifications" = "Notifications";
+"settings.appearance" = "Appearance";
+"settings.section.general" = "GENERAL";
+"settings.privacy" = "Privacy";
+"settings.security" = "Security";
+"settings.backup" = "Backup & Sync";
+"settings.storage" = "Storage";
+"settings.section.about" = "ABOUT";
+"settings.appVersion" = "App Version";
+"settings.appVersion.value" = "1.2.3 (123)";
+"settings.rateUs" = "Rate Us";
+"settings.help" = "Help & Support";
+"settings.terms" = "Terms of Service";
+
+/* Language */
+"language.english" = "English";
+"language.vietnamese" = "Vietnamese";
+"language.japanese" = "Japanese";
+
+/* Common */
+"common.loading" = "Loading...";

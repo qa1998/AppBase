@@ -8,11 +8,22 @@
 import UIKit
 
 extension UICollectionView {
-    func registerClass(cell: TIOCollectionViewCell.Type){
+    func registerClass(cell: TIOCollectionViewCell.Type) {
         register(cell, forCellWithReuseIdentifier: cell.reuseIdentifier)
     }
+
     func registerNib(cell: TIOCollectionViewCell.Type) {
         register(UINib(nibName: cell.reuseIdentifier, bundle: .main), forCellWithReuseIdentifier: cell.reuseIdentifier)
+    }
+
+    func registerCells(_ cellClasses: [TIOCollectionViewCell.Type], useNib: Bool = false) {
+        for cellClass in cellClasses {
+            if useNib {
+                registerNib(cell: cellClass)
+            } else {
+                registerClass(cell: cellClass)
+            }
+        }
     }
     
     func dequeueReusableCell<T: TIOCollectionViewCell>(type: T.Type,
