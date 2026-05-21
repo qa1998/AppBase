@@ -43,8 +43,20 @@ final class MainViewController: ESTabBarController {
     private var themeCancel: AnyCancellable?
     private var localizationCancel: AnyCancellable?
 
+    private let dependencies: AppDependencies
+
     private var coordinators: [Coordinator<VoidMeta>] = []
     private var navigationControllers: [UINavigationController] = []
+
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        self.dependencies = AppDependencies.make()
+        super.init(coder: coder)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -79,7 +91,10 @@ final class MainViewController: ESTabBarController {
     ) -> Coordinator<VoidMeta> {
         switch Tab(rawValue: index) {
         case .home:
-            let coordinator = HomeCoordinator(navigationController: navigationController)
+            let coordinator = HomeCoordinator(
+                navigationController: navigationController,
+                dependencies: dependencies
+            )
             coordinator.start()
             return coordinator
         case .scripts:
@@ -91,7 +106,10 @@ final class MainViewController: ESTabBarController {
             coordinator.start()
             return coordinator
         case .library:
-            let coordinator = LibraryCoordinator(navigationController: navigationController)
+            let coordinator = LibraryCoordinator(
+                navigationController: navigationController,
+                dependencies: dependencies
+            )
             coordinator.start()
             return coordinator
         case .settings:

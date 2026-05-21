@@ -26,9 +26,14 @@ class AppCoordinator: Coordinator<VoidMeta> {
     }
 
     private let window: UIWindow
+    private let dependencies: AppDependencies
 
-    init(window: UIWindow) {
+    init(
+        window: UIWindow,
+        dependencies: AppDependencies = AppDependencies.make()
+    ) {
         self.window = window
+        self.dependencies = dependencies
     }
 
     private func bind() {
@@ -125,7 +130,7 @@ extension AppCoordinator {
     }
 
     private func mainCoor() -> Coordinator<VoidMeta> {
-        MainCoordinator()
+        MainCoordinator(dependencies: dependencies)
     }
 
     private func onBoardCoor() -> Coordinator<VoidMeta> {

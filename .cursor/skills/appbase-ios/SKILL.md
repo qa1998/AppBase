@@ -9,7 +9,13 @@ description: >-
   TIOPagingKit, TrackLoading, shimmer, skeleton loading, UIView-Shimmer, Font,
   FontSize, Lato typography, Spacing, Radius, ThemeManager, TIOThemable, palette, or dark/light mode,
   Coordinator, NavigationCoordinator, cancelBag, lazy tab, push/pop navigation.
-  For UI text and copy, use skill `appbase-localization` (L10n + SwiftGen) — never
+  For ads (AdsKit, AdMob, banner, interstitial, rewarded), use skill `appbase-ads`.
+  For APIService, UseCase, Repository, Service, BaseResponse, DataPage, DI — use skill
+  `appbase-network`.   For remote images (URL → UIImageView), use **Kingfisher only** (`kf.setImage`).
+  For error/success toasts, use **SwiftEntryKit** via `trackError` / `trackSuccess` on
+  `TIOViewModel` (not UIAlert for normal errors). Project layout & DI: repo root
+  `ARCHITECTURE.md`. For UI text and copy, use skill
+  `appbase-localization` (L10n + SwiftGen) — never
   hardcode user-facing strings. **Every new view/screen must apply theme** (see below).
 ---
 
@@ -29,7 +35,7 @@ List loading: shimmer **trong cell** (`shimmerHost`), không shimmer `listView`.
 
 | Layer | Responsibility |
 |-------|----------------|
-| **ViewModel** | Data, `dataDidChange` / `dataDidInsert`, `hasReachedEnd()`, API calls |
+| **ViewModel** | Data, `dataDidChange` / `dataDidInsert`, `hasReachedEnd()`, bind **UseCase** (không gọi APIService) |
 | **List VC** | Bind subjects, MJRefresh, EmptyDataSet, **never** replace table `delegate` |
 | **Table VC** | `registerNibs()`, `cellForRowAt` (override required), table delegate |
 | **Collection VC** | `registerCells()`, `cellForItemAt` (override required), flow layout size |
@@ -48,6 +54,110 @@ TIOView                    // base + ShimmeringViewProtocol
 ```
 
 **Không** gọi `setTemplateWithSubviews` trực tiếp trên `UITableViewCell` / toàn cell — sẽ shimmer `textLabel` và bị lệch trái. Luôn dùng `applyListShimmer(_:)`.
+
+## Remote images — **Kingfisher only**
+
+SPM: `Kingfisher` (đã link trong `AppBase.xcodeproj`). **Chỉ** dùng Kingfisher để load ảnh từ URL — **không** `URLSession.dataTask`, `Data(contentsOf:)`, hay cache ảnh tự viết.
+
+| Dùng | Không dùng |
+|------|------------|
+| `imageView.kf.setImage(with:placeholder:options:)` | `URLSession` + `UIImage(data:)` cho avatar/logo/banner |
+| `imageView.kf.cancelDownloadTask()` trong `prepareForReuse` | Giữ request cũ khi cell reuse |
+| `UIImageView`, `UIButton` (KF extension) | Tải ảnh trong ViewModel |
+
+### UIKit — cell / image view
+
+```swift
+import Kingfisher
+
+// Load
+imageView?.contentMode = .scaleAspectFit
+imageView?.kf.setImage(
+    with: url,  // URL? — nil → chỉ placeholder
+    placeholder: UIImage(systemName: "building.2"),
+    options: [.transition(.fade(0.2)), .cacheOriginalImage]
+)
+
+// Reuse (UITableView / UICollectionView)
+override func prepareForReuse() {
+    super.prepareForReuse()
+    imageView?.kf.cancelDownloadTask()
+    imageView?.image = placeholder
+}
+```
+
+- URL từ model (vd. `Bank.logoURL`) — ViewModel chỉ truyền model/URL, **cell** gọi `kf.setImage`.
+- Placeholder: SF Symbol hoặc asset local; không để imageView trống khi đang load.
+- Shimmer list: vẫn `applyListShimmer` — khi hết loading mới `configure` + Kingfisher.
+
+### SwiftUI (nếu cần)
+
+```swift
+import Kingfisher
+
+KFImage(url)
+    .placeholder { ProgressView() }
+    .fade(duration: 0.2)
+    .resizable()
+    .scaledToFit()
+```
+
+### Tham chiếu
+
+- Demo: `HomeBankCell` — logo ngân hàng VietQR.
+- Docs: [Kingfisher](https://github.com/onevcat/Kingfisher).
+
+## Feedback — SwiftEntryKit (`trackError` / `trackSuccess`)
+
+SPM: `SwiftEntryKit`. Toast **top** (`EKAttributes.topFloat`), theme `ThemeManager`.
+
+### `TIOViewModel` publishers
+
+| Publisher / API | Khi nào |
+|-----------------|--------|
+| `trackError` → `presentError` | Toast lỗi (đỏ) — **không** phải lúc nào fail cũng toast |
+| `trackSuccess` → `presentSuccess` | Toast thành công — **chỉ khi bật** (xem bảng dưới) |
+| Gọi tay `presentError` / `presentSuccess` | Ads, nút test, hành động user rõ ràng |
+
+`TIOViewController.onBind` subscribe `trackError` + `trackSuccess` → `TIOEntryPresenter`.
+
+### Khi nào toast tự bật (UseCase + `bindUseCase`)
+
+Flags trên **`TrackableUseCaseInput`** (mỗi lần `run`), giống `showsLoading`:
+
+| Flag | Mặc định | Ý nghĩa |
+|------|----------|---------|
+| `showsLoading` | `true` | Skeleton / shimmer |
+| `showsSuccessToast` | **`false`** | `true` + `successToastMessage` → toast success sau `onSuccess` |
+| `showsErrorToast` | `true` | `true` + không có `onFailure` → `presentError` |
+| `successToastMessage` | `nil` | Copy toast success (L10n) |
+
+`bindUseCase` thêm `showsErrorToast: Bool = true` — tắt nếu list/empty state xử lý lỗi (`showsErrorToast: false` + `onFailure`).
+
+```swift
+// List Home — không toast lỗi/success khi load bank (chỉ EmptyDataSet)
+bindUseCase(
+    useCase: bankListUseCase,
+    storeIn: &cancellables,
+    showsErrorToast: false,
+    onSuccess: { self?.showBanks($0) },
+    onFailure: { self?.showLoadError(message: $0.message) }
+)
+bankListUseCase.run(showsLoading: true)  // showsSuccessToast mặc định false
+
+// Lưu form — có toast success
+getProfileUseCase.run(
+    showsLoading: true,
+    showsSuccessToast: true,
+    successToastMessage: L10n.Profile.saved
+)
+
+// Ads / test — gọi tay
+presentSuccess(L10n.Scripts.Ads.success("Banner loaded"))
+```
+
+- **Không** `UIAlertController` cho lỗi thường — `showTIOAlert` chỉ retry dialog.
+- Files: `TrackError.swift`, `TIOEntryPresenter.swift`, `TrackableUseCaseInput.swift`, `UseCaseBinding.swift`.
 
 ## Typography (`Font` + `FontSize`)
 
@@ -328,7 +438,9 @@ enum TrackLoading<Event> {
 enum TIOLoadingTarget: Hashable { case screen }  // list loading mặc định
 
 class TIOViewModel<Event: Hashable>: BaseViewModel {
+    var cancellables = Set<AnyCancellable>()  // subclass dùng chung — không khai báo lại
     let trackLoading = PassthroughSubject<TrackLoading<Event>, Never>()
+    let trackError, trackSuccess  // → SwiftEntryKit (TIOViewController)
     func startLoading(_ event: Event)
     func stopLoading(_ event: Event)
 }
@@ -411,18 +523,17 @@ class ProfileViewController: TIOViewController<ProfileViewModel, ProfileLoadingE
 
 `startLoading(.header)` / `stopLoading(.header)` — VC giữ `Set` active events, không shimmer chồng nhầm.
 
-### Fake API (test)
+### Network / UseCase (ViewModel)
 
-Tách `*FakeAPI` (delay ~1.5s), gọi từ ViewModel:
+ViewModel **không** gọi `APIService` trực tiếp. Inject `GetXxxUseCaseProtocol`, `bindUseCase`, gọi `run`:
 
 ```swift
-final class HomeFakeAPI {
-    static let shared = HomeFakeAPI()
-    func fetchItems(page: Int, completion: @escaping (Result<HomeListResponse, Error>) -> Void)
-}
+bankListUseCase.run(showsLoading: true)
 ```
 
-Files: `TrackLoading.swift`, `TIOViewModel.swift`, `TIOViewController.swift`, `TIOListViewModel.swift`, `TIOListViewController.swift`, `TIOListCell+Shimmer.swift`, `TIOTableViewCell.swift`, `TIOCollectionViewCell.swift`.
+Chi tiết APIService, Repository, TrackableUseCase, DI → skill **`appbase-network`**.
+
+Files: `TrackLoading.swift`, `TIOViewModel.swift`, `TIOViewController.swift`, `TIOListViewModel.swift`, `TIOListViewController.swift`, `Domain/UseCaseBinding.swift`.
 
 ## Before changing code
 
@@ -446,8 +557,20 @@ Files: `TrackLoading.swift`, `TIOViewModel.swift`, `TIOViewController.swift`, `T
 
 ### Combine / memory
 
-- **VC** bindings → `cancelBag` trên `TIOViewController` only (not duplicated on `TIOViewModel`).
-- **Coordinator** bindings → `cancelBag` trên `Coordinator` base (không tạo `Set<AnyCancellable>` riêng trong subclass).
+| Layer | Bag | Ghi chú |
+|-------|-----|---------|
+| **TIOViewModel** (và subclass `TIOListViewModel`, …) | `cancellables` | Đã có trên base — `bindUseCase`, sink Combine trong VM → `&cancellables`. **Không** tạo `private var useCaseCancellables` / `cancellables` trùng trong subclass. |
+| **TIOViewController** | `cancelBag` | Bind `trackLoading` / `trackError` / `trackSuccess` từ VM → VC. **Không** duplicate trên VM. |
+| **Coordinator** | `cancelBag` (base) | Navigation / tab — không `Set<AnyCancellable>` riêng trong subclass coordinator. |
+
+```swift
+// ✅ HomeViewModel — dùng inherited cancellables
+bindUseCase(..., storeIn: &cancellables, onSuccess: { ... })
+
+// ❌ Không cần
+private var useCaseCancellables = Set<AnyCancellable>()
+```
+
 - Always `[weak self]` in sinks that capture `self` / coordinator.
 
 ### Empty state
@@ -620,7 +743,7 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
    - Override `numOfItemsInSection`, `refreshAndGetListData`, `loadMoreData`.
    - On full replace: `dataDidChange.send()` on main queue.
    - On append: `dataDidInsert.send((start: items.count - n, count: n))`.
-   - Override `hasReachedEnd()` when API has a last page (use `maxPage`, not magic numbers inline).
+   - Override `hasReachedEnd()` when API has a last page (`DataPage.canLoadMore` / `hasMorePage()` — skill **appbase-network**).
 
 2. **ViewController** — subclass `TIOTableViewController<YourViewModel>`:
    - `registerCellClasses()` hoặc `registerNibs()`; dequeue trong `cellForRowAt`.
@@ -668,6 +791,9 @@ Typography → **`Font`** + **`FontSize`** (section above); không hardcode `UIF
 
 ## Files to consult
 
+- Architecture overview: `ARCHITECTURE.md` (repo root)
+- Network / UseCase / APIService: `.cursor/skills/appbase-network/SKILL.md`
+- Ads: `.cursor/skills/appbase-ads/SKILL.md`
 - Localization: `.cursor/skills/appbase-localization/SKILL.md`
 - Detailed checklist: [checklist.md](checklist.md)
 - Layout tokens: `AppBase/Core/Layout/Spacing.swift`, `Radius.swift`

@@ -9,12 +9,19 @@ import UIKit
 import BaseMVVM
 import Combine
 
+enum TIOListDisplayState: Equatable {
+    case content
+    case empty
+    case error(message: String?)
+}
+
 class TIOListViewModel: TIOViewModel<TIOLoadingTarget> {
 
     let dataDidChange = PassthroughSubject<Void, Never>()
     let dataDidInsert = PassthroughSubject<(start: Int, count: Int), Never>()
 
     private(set) var isListCellLoading = false
+    private(set) var listDisplayState: TIOListDisplayState = .content
 
     /// Số skeleton cell khi đang load (shimmer trong cell).
     var skeletonPlaceholderCount: Int { 8 }
@@ -66,5 +73,21 @@ class TIOListViewModel: TIOViewModel<TIOLoadingTarget> {
             total += numOfItemsInSection(section)
         }
         return total == 0
+    }
+
+    func setListContentState(_ state: TIOListDisplayState) {
+        listDisplayState = state
+    }
+
+    func clearListError() {
+        if case .error = listDisplayState {
+            listDisplayState = .content
+        }
+    }
+
+    /// Gọi từ EmptyDataSet nút Retry hoặc subclass.
+    func retryListLoad() {
+        clearListError()
+        refreshAndGetListData()
     }
 }

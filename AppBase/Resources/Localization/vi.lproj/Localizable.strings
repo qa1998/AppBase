@@ -8,6 +8,31 @@
 "app.tagline.prompting" = "Nhắc chữ dễ dàng.";
 "app.tagline.focus" = "Tập trung vào nội dung của bạn.";
 
+/* Home */
+"home.nav.testEmpty" = "Trống";
+"home.nav.testError" = "Lỗi";
+"home.nav.testToastError" = "Toast−";
+"home.nav.testToastSuccess" = "Toast+";
+"home.toast.testError" = "Toast lỗi demo (SwiftEntryKit).";
+"home.toast.testSuccess" = "Toast thành công demo.";
+
+/* Scripts — Ads demo */
+"scripts.ads.hint" = "Load rồi bấm Show từng loại quảng cáo (AdMob test).";
+"scripts.ads.status" = "Trạng thái: %@";
+"scripts.ads.loading" = "Đang tải…";
+"scripts.ads.loadBanner" = "Load banner";
+"scripts.ads.showBanner" = "Hiện banner";
+"scripts.ads.hideBanner" = "Ẩn banner";
+"scripts.ads.loadInterstitial" = "Load interstitial";
+"scripts.ads.showInterstitial" = "Hiện interstitial";
+"scripts.ads.loadRewarded" = "Load rewarded";
+"scripts.ads.showRewarded" = "Hiện rewarded";
+"scripts.ads.loadAppOpen" = "Load app open";
+"scripts.ads.showAppOpen" = "Hiện app open";
+"scripts.ads.success" = "Thành công: %@";
+"scripts.ads.failed" = "Lỗi: %@";
+"scripts.ads.reward" = "Thưởng: %d %@";
+
 /* Tab bar */
 "tab.home" = "Trang chủ";
 "tab.scripts" = "Kịch bản";
@@ -65,3 +90,14 @@
 /* Common */
 "common.loading" = "Đang tải...";
 "common.cancel" = "Hủy";
+"common.ok" = "OK";
+"common.retry" = "Thử lại";
+"common.error.title" = "Lỗi";
+"common.error.message" = "Đã xảy ra lỗi. Vui lòng thử lại.";
+"common.success.title" = "Thành công";
+
+/* List empty / error */
+"list.empty.title" = "Chưa có mục nào";
+"list.empty.message" = "Kéo xuống để làm mới.";
+"list.error.title" = "Không tải được";
+"list.error.message" = "Kiểm tra kết nối và thử lại.";

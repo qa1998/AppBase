@@ -46,10 +46,7 @@ class TIOCollectionViewCell: UICollectionViewCell, ShimmeringViewProtocol, TIOLi
 
     func applyListShimmer(_ isLoading: Bool) {
         shimmerHost.isHidden = !isLoading
-        shimmerHost.setTemplateWithSubviews(
-            isLoading,
-            viewBackgroundColor: ThemeManager.shared.palette.backgroundSecondary
-        )
+        shimmerHost.applyTIOShimmer(isLoading)
     }
 
     func setupLayout() {

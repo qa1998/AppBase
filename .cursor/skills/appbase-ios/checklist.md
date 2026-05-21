@@ -2,6 +2,22 @@
 
 Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 
+## Feedback (SwiftEntryKit)
+
+- [ ] `trackError` / `trackSuccess` qua `TIOViewModel` — không alert trừ retry
+- [ ] List/load thường: `showsSuccessToast: false` trên `run` — không toast mỗi lần API OK
+- [ ] List lỗi: `bindUseCase(..., showsErrorToast: false)` + `onFailure` hoặc EmptyDataSet
+- [ ] Toast success chỉ khi `showsSuccessToast: true` + `successToastMessage`
+- [ ] Copy toast qua `L10n`
+
+## Remote images (Kingfisher)
+
+- [ ] `import Kingfisher` — load URL chỉ qua `kf.setImage` / `KFImage`
+- [ ] Không `URLSession.dataTask` / cache ảnh thủ công cho UI
+- [ ] `prepareForReuse`: `kf.cancelDownloadTask()` + placeholder
+- [ ] Placeholder khi `url == nil` hoặc đang load
+- [ ] Ảnh load trong cell/view — không trong ViewModel / Repository
+
 ## SnapKit layout
 
 - [ ] `import SnapKit` in files with programmatic layout
@@ -107,6 +123,7 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 
 ## TIOListViewModel
 
+- [ ] VM subclass: `bindUseCase` / Combine → `&cancellables` (inherited), không `private var cancellables` riêng
 - [ ] `TIOViewModel<TIOLoadingTarget>` hoặc custom `Event` (không default generic)
 - [ ] `hasReachedEnd()` semantics documented in subclass
 - [ ] `setListCellLoading` chỉ qua `trackLoading` / `handleTrackLoading` trên list VC

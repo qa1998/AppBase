@@ -17,8 +17,6 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
 
     private var listView: TIOListView?
 
-    private var isListLoading: Bool = false
-
     lazy var containerView: TIOContentView = {
         TIOContentView()
     }()
@@ -61,6 +59,7 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
         viewModel.dataDidChange.sink { [weak self] in
             guard let self, let lv = self.listView else { return }
             lv.reloadData()
+            lv.reloadEmptyDataSet()
             if lv.isRefresh {
                 lv.endRefreshing()
                 lv.resetNoMoreData()
@@ -87,14 +86,13 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
         }.store(in: &cancelBag)
     }
 
+    @available(*, deprecated, message: "Dùng skeleton cell: startLoading() / stopLoading() trên ViewModel.")
     func showListLoading() {
-        guard !isListLoading else { return }
-        isListLoading = true
         listView?.reloadEmptyDataSet()
     }
 
+    @available(*, deprecated, message: "Dùng skeleton cell: startLoading() / stopLoading() trên ViewModel.")
     func hideListLoading() {
-        isListLoading = false
         listView?.reloadEmptyDataSet()
     }
 
@@ -102,10 +100,27 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
         if viewModel.isListCellLoading {
             return false
         }
-        if isListLoading {
+        switch viewModel.listDisplayState {
+        case .error:
             return true
+        case .empty:
+            return viewModel.isEmpty()
+        case .content:
+            return viewModel.isEmpty()
         }
-        return viewModel.isEmpty()
+    }
+
+    /// Cho phép kéo (MJRefresh) khi empty / error — mặc định EmptyDataSet tắt scroll.
+    func emptyDataSetShouldAllowScroll(_ scrollView: UIScrollView) -> Bool {
+        if viewModel.isListCellLoading {
+            return false
+        }
+        switch viewModel.listDisplayState {
+        case .empty, .error:
+            return true
+        case .content:
+            return viewModel.isEmpty()
+        }
     }
 
     func backgroundColor(forEmptyDataSet scrollView: UIScrollView) -> UIColor? {
@@ -121,16 +136,38 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
     }
 
     func title(forEmptyDataSet scrollView: UIScrollView) -> NSAttributedString? {
-        return nil
+        switch viewModel.listDisplayState {
+        case .error:
+            return TIOEmptyDataSetStyle.title(L10n.List.Error.title)
+        case .empty:
+            return TIOEmptyDataSetStyle.title(L10n.List.Empty.title)
+        case .content:
+            return nil
+        }
     }
 
     func description(forEmptyDataSet scrollView: UIScrollView) -> NSAttributedString? {
-        guard isListLoading else { return nil }
-        return NSAttributedString(string: L10n.Common.loading)
+        switch viewModel.listDisplayState {
+        case .error(let message):
+            return TIOEmptyDataSetStyle.description(message ?? L10n.List.Error.message)
+        case .empty:
+            return TIOEmptyDataSetStyle.description(L10n.List.Empty.message)
+        case .content:
+            return nil
+        }
+    }
+
+    func buttonTitle(forEmptyDataSet scrollView: UIScrollView, for state: UIControl.State) -> NSAttributedString? {
+        guard case .error = viewModel.listDisplayState, state == .normal else { return nil }
+        return TIOEmptyDataSetStyle.buttonTitle(L10n.Common.retry)
     }
 
     func image(forEmptyDataSet scrollView: UIScrollView) -> UIImage? {
         return nil
+    }
+
+    func emptyDataSet(_ scrollView: UIScrollView, didTapButton button: UIButton) {
+        viewModel.retryListLoad()
     }
 
     func createListView() -> TIOListView {
@@ -147,6 +184,7 @@ class TIOListViewController<VM: TIOListViewModel>: TIOScreenViewController<VM>,
 
     private func configListContent() {
         guard let lv = listView else { return }
+        lv.alwaysBounceVertical = true
         containerView.addSubview(lv)
         lv.snp.makeConstraints {
             $0.edges.equalToSuperview()

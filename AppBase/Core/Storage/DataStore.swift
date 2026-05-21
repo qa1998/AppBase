@@ -54,8 +54,8 @@ extension DataStore {
 
 extension DataStore {
     
-    func remove(forKey key: String ) {
-        userDefaults.removeObject(forKey: key)
+    func remove(forKey key: StorageKey) {
+        userDefaults.removeObject(forKey: key.rawValue)
     }
     
     func clear() {

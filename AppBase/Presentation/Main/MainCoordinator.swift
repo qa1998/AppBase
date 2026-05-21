@@ -6,18 +6,21 @@
 //
 
 import UIKit
+
 class MainCoordinator: Coordinator<VoidMeta> {
-    
-    private lazy var rootVc: UIViewController = {
-        let vc = MainViewController()
-        return vc
-    }()
-    
-    override var rootViewController: UIViewController {
-        return rootVc
+
+    private let dependencies: AppDependencies
+
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
+        super.init()
     }
 
+    private lazy var rootVc: UIViewController = {
+        MainViewController(dependencies: dependencies)
+    }()
+
+    override var rootViewController: UIViewController {
+        rootVc
+    }
 }
-
-
-

@@ -15,7 +15,7 @@ protocol DataStoreProtocol {
     func value<T: Decodable>(forKey key: StorageKey,type: T.Type) -> T?
 
     // MARK: - Remove
-    func remove(forKey key: String)
+    func remove(forKey key: StorageKey)
     
     // MARK: - Clear
     func clear()

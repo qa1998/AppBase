@@ -6,84 +6,110 @@
 //
 
 import BaseMVVM
-import Foundation
 import Combine
-
+import Foundation
+import UIKit
 class HomeViewModel: TIOListViewModel {
 
-    private let fakeAPI = HomeFakeAPI.shared
+    private let bankListUseCase: any GetBankListUseCaseProtocol
 
-    private(set) var items: [Int] = []
-    private(set) var page: Int = 0
+    private(set) var banks: [Bank] = []
+
+    init(bankListUseCase: any GetBankListUseCaseProtocol) {
+        self.bankListUseCase = bankListUseCase
+        super.init()
+    }
 
     override func numOfItemsInSection(_ section: Int) -> Int {
-        return items.count
+        banks.count
+    }
+
+    override func item(at indexPath: IndexPath) -> Any? {
+        guard indexPath.row < banks.count else { return nil }
+        return banks[indexPath.row]
     }
 
     override func viewModelDidReady() {
         super.viewModelDidReady()
-        loadInitialData()
-    }
-
-    func loadInitialData() {
-        page = 0
-        items = []
-        fetchPage(1, isRefresh: false)
+        bindBankListUseCase()
+        loadBanks()
     }
 
     override func refreshAndGetListData() {
-        fetchPage(1, isRefresh: true)
+        loadBanks()
     }
 
     override func loadMoreData() {
-        guard fakeAPI.hasMorePages(after: page) else { return }
-        fetchPage(page + 1, isRefresh: false, isLoadMore: true)
+        // VietQR trả full list một lần — không phân trang.
     }
 
     override func hasReachedEnd() -> Bool {
-        !fakeAPI.hasMorePages(after: page)
+        switch listDisplayState {
+        case .content:
+            return !banks.isEmpty
+        case .empty, .error:
+            return true
+        }
     }
 
-    // MARK: - Private
+    // MARK: - Demo empty / error (nav bar test buttons)
 
-    private func fetchPage(_ page: Int, isRefresh: Bool, isLoadMore: Bool = false) {
-        if isRefresh || !isLoadMore {
-            startLoading()
-        }
+    func showTestEmptyState() {
+        stopLoading()
+        banks = []
+        setListContentState(.empty)
+        dataDidChange.send()
+    }
 
-        fakeAPI.fetchItems(page: page) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                if isRefresh || !isLoadMore {
-                    self.stopLoading()
-                }
+    func showTestErrorState() {
+        stopLoading()
+        banks = []
+        setListContentState(.error(message: L10n.List.Error.message))
+        dataDidChange.send()
+    }
 
-                switch result {
-                case .success(let response):
-                    self.apply(response: response, isLoadMore: isLoadMore)
-                case .failure:
-                    if isLoadMore {
-                        self.dataDidChange.send()
-                        return
-                    }
-                    self.page = 0
-                    self.items = []
-                    self.dataDidChange.send()
-                }
+    /// SwiftEntryKit — toast lỗi (không đổi list state).
+    func showTestToastError() {
+        presentError(message: L10n.Home.Toast.testError)
+    }
+
+    /// SwiftEntryKit — toast thành công.
+    func showTestToastSuccess() {
+        presentSuccess(L10n.Home.Toast.testSuccess)
+    }
+
+    // MARK: - Fetch
+
+    private func loadBanks() {
+        clearListError()
+        bankListUseCase.run(showsLoading: true)
+    }
+
+    // MARK: - UseCase binding
+
+    private func bindBankListUseCase() {
+        bindUseCase(
+            useCase: bankListUseCase,
+            storeIn: &cancellables,
+            showsErrorToast: false,
+            onSuccess: { [weak self] banks in
+                self?.showBanks(banks)
+            },
+            onFailure: { [weak self] error in
+                self?.showLoadError(message: error.message)
             }
-        }
+        )
     }
 
-    private func apply(response: HomeListResponse, isLoadMore: Bool) {
-        page = response.page
+    private func showBanks(_ banks: [Bank]) {
+        self.banks = banks
+        setListContentState(banks.isEmpty ? .empty : .content)
+        dataDidChange.send()
+    }
 
-        if isLoadMore {
-            let startIndex = items.count
-            items.append(contentsOf: response.items)
-            dataDidInsert.send((start: startIndex, count: response.items.count))
-        } else {
-            items = response.items
-            dataDidChange.send()
-        }
+    private func showLoadError(message: String?) {
+        banks = []
+        setListContentState(.error(message: message))
+        dataDidChange.send()
     }
 }

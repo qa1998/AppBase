@@ -15,7 +15,7 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
 
     var cancelBag = Set<AnyCancellable>()
 
-    private var activeLoadingEvents = Set<AnyHashable>()
+    private var activeLoadingEvents = Set<Event>()
 
     /// Vùng shimmer mặc định. List VC override → `listView`; màn khác → `view` hoặc `TIOView` con.
     var shimmerContentView: UIView {
@@ -52,6 +52,14 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
     private func bindScreenTheme() {
         bindTheme { [weak self] colors in
             self?.applyScreenTheme(colors)
+            self?.refreshActiveShimmerIfNeeded()
+        }
+    }
+
+    private func refreshActiveShimmerIfNeeded() {
+        guard !activeLoadingEvents.isEmpty else { return }
+        for event in activeLoadingEvents {
+            applyShimmerLoading(true, on: shimmerViews(for: event))
         }
     }
 
@@ -67,6 +75,25 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
                 self?.handleTrackLoading(track)
             }
             .store(in: &cancelBag)
+
+        viewModel.trackError
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                self?.handleTrackError(error)
+            }
+            .store(in: &cancelBag)
+
+        viewModel.trackSuccess
+            .receive(on: DispatchQueue.main)
+            .sink { success in
+                TIOEntryPresenter.showSuccess(success)
+            }
+            .store(in: &cancelBag)
+    }
+
+    /// Mặc định toast (SwiftEntryKit). Retry dialog: gọi `showTIOError(_:onRetry:)` trực tiếp.
+    open func handleTrackError(_ error: TIOUserFacingError) {
+        TIOEntryPresenter.showError(error)
     }
 
     open func shimmerViews(for event: Event) -> [UIView] {
@@ -74,23 +101,19 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
     }
 
     open func handleTrackLoading(_ track: TrackLoading<Event>) {
-        let key = AnyHashable(track.event)
         if track.isLoading {
-            activeLoadingEvents.insert(key)
+            activeLoadingEvents.insert(track.event)
         } else {
-            activeLoadingEvents.remove(key)
+            activeLoadingEvents.remove(track.event)
         }
-        let isLoading = activeLoadingEvents.contains(key)
+        let isLoading = activeLoadingEvents.contains(track.event)
         applyShimmerLoading(isLoading, on: shimmerViews(for: track.event))
     }
 
     func applyShimmerLoading(_ isLoading: Bool, on views: [UIView]) {
-        let shimmerBackground = ThemeManager.shared.palette.backgroundSecondary
+        let palette = ThemeManager.shared.palette
         for target in views {
-            target.setTemplateWithSubviews(
-                isLoading,
-                viewBackgroundColor: target.backgroundColor ?? shimmerBackground
-            )
+            target.applyTIOShimmer(isLoading, palette: palette)
         }
     }
 

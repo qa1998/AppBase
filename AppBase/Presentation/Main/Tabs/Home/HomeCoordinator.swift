@@ -9,16 +9,26 @@ import UIKit
 import BaseMVVM
 
 class HomeCoordinator: NavigationCoordinator<VoidMeta> {
-    
+
+    private let dependencies: AppDependencies
+
+    init(
+        navigationController: UINavigationController,
+        dependencies: AppDependencies
+    ) {
+        self.dependencies = dependencies
+        super.init(navigationController: navigationController)
+    }
+
     private lazy var rootVC: UIViewController = {
-        let vc = HomeViewController()
-        let vm = HomeViewModel()
-        vc.invoke(viewModel: vm)
-        return vc
+        let viewController = HomeViewController()
+        let viewModel = HomeViewModel(bankListUseCase: dependencies.bankList)
+        viewController.invoke(viewModel: viewModel)
+        return viewController
     }()
-    
+
     override func start() {
         super.start()
-        self.navigate(to: .set([rootVC]))
+        navigate(to: .set([rootVC]), transitioning: .none)
     }
 }

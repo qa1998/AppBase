@@ -72,11 +72,7 @@ class TIOTableViewCell: UITableViewCell, ShimmeringViewProtocol, TIOListCellShim
 
     func applyListShimmer(_ isLoading: Bool) {
         shimmerHost.isHidden = !isLoading
-        let shimmerBackground = ThemeManager.shared.palette.backgroundSecondary
-        shimmerHost.setTemplateWithSubviews(
-            isLoading,
-            viewBackgroundColor: shimmerBackground
-        )
+        shimmerHost.applyTIOShimmer(isLoading)
         textLabel?.isHidden = isLoading
         detailTextLabel?.isHidden = isLoading
         imageView?.isHidden = isLoading

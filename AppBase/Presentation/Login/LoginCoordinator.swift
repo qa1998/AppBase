@@ -2,6 +2,8 @@
 //  LoginCoordinator.swift
 //  AppBase
 //
+//  Demo UI only — chưa nối AuthUseCase / AppDependencies. Register → AppState.main.
+//
 //  Created by QuangAnh on 8/5/26.
 //
 

@@ -140,4 +140,5 @@ See [checklist.md](checklist.md) for PR/review pass.
 ## Related
 
 - UI layout: skill `appbase-ios` (SnapKit, TIO VCs)
+- Ads UI copy: skill `appbase-ads` (`scripts.ads.*`, …)
 - Empty/loading copy in base classes should use `L10n` (e.g. list loading), not raw `"Loading..."`

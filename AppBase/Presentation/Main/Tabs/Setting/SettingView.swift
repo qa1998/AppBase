@@ -106,7 +106,7 @@ struct SettingView: View {
             .padding(.top, Spacing.s16)
             .padding(.bottom, Spacing.s40)
         }
-        .background(Color(uiColor: themeManager.palette.backgroundSecondary))
+        .tioScreenBackground()
         .confirmationDialog(
             L10n.Settings.theme,
             isPresented: $showThemePicker,
@@ -128,7 +128,7 @@ struct SettingView: View {
                 }
             )
         }
-        .id(localization.currentLanguage)
+        .tioLocalizationAware()
     }
 }
 

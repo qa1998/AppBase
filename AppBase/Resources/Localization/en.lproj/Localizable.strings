@@ -8,6 +8,31 @@
 "app.tagline.prompting" = "Easy teleprompter.";
 "app.tagline.focus" = "Focus on your content.";
 
+/* Home */
+"home.nav.testEmpty" = "Empty";
+"home.nav.testError" = "Error";
+"home.nav.testToastError" = "Toast−";
+"home.nav.testToastSuccess" = "Toast+";
+"home.toast.testError" = "This is a demo error toast (SwiftEntryKit).";
+"home.toast.testSuccess" = "Demo success toast — banks loaded.";
+
+/* Scripts — Ads demo */
+"scripts.ads.hint" = "Load then show each ad type (AdMob test IDs).";
+"scripts.ads.status" = "Status: %@";
+"scripts.ads.loading" = "Loading…";
+"scripts.ads.loadBanner" = "Load banner";
+"scripts.ads.showBanner" = "Show banner";
+"scripts.ads.hideBanner" = "Hide banner";
+"scripts.ads.loadInterstitial" = "Load interstitial";
+"scripts.ads.showInterstitial" = "Show interstitial";
+"scripts.ads.loadRewarded" = "Load rewarded";
+"scripts.ads.showRewarded" = "Show rewarded";
+"scripts.ads.loadAppOpen" = "Load app open";
+"scripts.ads.showAppOpen" = "Show app open";
+"scripts.ads.success" = "Success: %@";
+"scripts.ads.failed" = "Failed: %@";
+"scripts.ads.reward" = "Reward: %d %@";
+
 /* Tab bar */
 "tab.home" = "Home";
 "tab.scripts" = "Scripts";
@@ -65,3 +90,14 @@
 /* Common */
 "common.loading" = "Loading...";
 "common.cancel" = "Cancel";
+"common.ok" = "OK";
+"common.retry" = "Retry";
+"common.error.title" = "Error";
+"common.error.message" = "Something went wrong. Please try again.";
+"common.success.title" = "Success";
+
+/* List empty / error */
+"list.empty.title" = "No items yet";
+"list.empty.message" = "Pull down to refresh.";
+"list.error.title" = "Couldn't load";
+"list.error.message" = "Check your connection and try again.";

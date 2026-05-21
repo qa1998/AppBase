@@ -8,9 +8,20 @@ import BaseMVVM
 
 class LibraryCoordinator: NavigationCoordinator<VoidMeta> {
 
+    private let dependencies: AppDependencies
+
+    init(
+        navigationController: UINavigationController,
+        dependencies: AppDependencies
+    ) {
+        self.dependencies = dependencies
+        super.init(navigationController: navigationController)
+    }
+
     private lazy var rootVC: UIViewController = {
         let viewController = LibraryViewController()
-        viewController.invoke(viewModel: LibraryViewModel())
+        let viewModel = LibraryViewModel(repository: dependencies.libraryRepository)
+        viewController.invoke(viewModel: viewModel)
         return viewController
     }()
 

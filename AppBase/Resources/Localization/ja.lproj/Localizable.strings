@@ -8,6 +8,31 @@
 "app.tagline.prompting" = "かんたんテロップ。";
 "app.tagline.focus" = "コンテンツに集中。";
 
+/* Home */
+"home.nav.testEmpty" = "空";
+"home.nav.testError" = "エラー";
+"home.nav.testToastError" = "Toast−";
+"home.nav.testToastSuccess" = "Toast+";
+"home.toast.testError" = "デモ用エラートースト（SwiftEntryKit）。";
+"home.toast.testSuccess" = "デモ用成功トースト。";
+
+/* Scripts — Ads demo */
+"scripts.ads.hint" = "読み込んでから各広告を表示（AdMobテストID）。";
+"scripts.ads.status" = "状態: %@";
+"scripts.ads.loading" = "読み込み中…";
+"scripts.ads.loadBanner" = "バナーを読み込み";
+"scripts.ads.showBanner" = "バナーを表示";
+"scripts.ads.hideBanner" = "バナーを非表示";
+"scripts.ads.loadInterstitial" = "インタースティシャルを読み込み";
+"scripts.ads.showInterstitial" = "インタースティシャルを表示";
+"scripts.ads.loadRewarded" = "リワードを読み込み";
+"scripts.ads.showRewarded" = "リワードを表示";
+"scripts.ads.loadAppOpen" = "アプリ起動広告を読み込み";
+"scripts.ads.showAppOpen" = "アプリ起動広告を表示";
+"scripts.ads.success" = "成功: %@";
+"scripts.ads.failed" = "失敗: %@";
+"scripts.ads.reward" = "報酬: %d %@";
+
 /* Tab bar */
 "tab.home" = "ホーム";
 "tab.scripts" = "スクリプト";
@@ -65,3 +90,14 @@
 /* Common */
 "common.loading" = "読み込み中...";
 "common.cancel" = "キャンセル";
+"common.ok" = "OK";
+"common.retry" = "再試行";
+"common.error.title" = "エラー";
+"common.error.message" = "問題が発生しました。もう一度お試しください。";
+"common.success.title" = "成功";
+
+/* List empty / error */
+"list.empty.title" = "項目がありません";
+"list.empty.message" = "下に引いて更新してください。";
+"list.error.title" = "読み込めませんでした";
+"list.error.message" = "接続を確認して再試行してください。";

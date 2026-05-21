@@ -25,6 +25,38 @@ internal enum L10n {
     internal static var cancel: String { return L10n.tr("Localizable", "common.cancel", fallback: "Cancel") }
     /// Common
     internal static var loading: String { return L10n.tr("Localizable", "common.loading", fallback: "Loading...") }
+    /// OK
+    internal static var ok: String { return L10n.tr("Localizable", "common.ok", fallback: "OK") }
+    /// Retry
+    internal static var retry: String { return L10n.tr("Localizable", "common.retry", fallback: "Retry") }
+    internal enum Error {
+      /// Something went wrong. Please try again.
+      internal static var message: String { return L10n.tr("Localizable", "common.error.message", fallback: "Something went wrong. Please try again.") }
+      /// Error
+      internal static var title: String { return L10n.tr("Localizable", "common.error.title", fallback: "Error") }
+    }
+    internal enum Success {
+      /// Success
+      internal static var title: String { return L10n.tr("Localizable", "common.success.title", fallback: "Success") }
+    }
+  }
+  internal enum Home {
+    internal enum Nav {
+      /// Home
+      internal static var testEmpty: String { return L10n.tr("Localizable", "home.nav.testEmpty", fallback: "Empty") }
+      /// Error
+      internal static var testError: String { return L10n.tr("Localizable", "home.nav.testError", fallback: "Error") }
+      /// Toast−
+      internal static var testToastError: String { return L10n.tr("Localizable", "home.nav.testToastError", fallback: "Toast−") }
+      /// Toast+
+      internal static var testToastSuccess: String { return L10n.tr("Localizable", "home.nav.testToastSuccess", fallback: "Toast+") }
+    }
+    internal enum Toast {
+      /// This is a demo error toast (SwiftEntryKit).
+      internal static var testError: String { return L10n.tr("Localizable", "home.toast.testError", fallback: "This is a demo error toast (SwiftEntryKit).") }
+      /// Demo success toast — banks loaded.
+      internal static var testSuccess: String { return L10n.tr("Localizable", "home.toast.testSuccess", fallback: "Demo success toast — banks loaded.") }
+    }
   }
   internal enum Language {
     /// Language
@@ -58,6 +90,20 @@ internal enum L10n {
       internal static var hint: String { return L10n.tr("Localizable", "library.subtitle.hint", fallback: "Tap a button to test shimmer") }
     }
   }
+  internal enum List {
+    internal enum Empty {
+      /// Pull down to refresh.
+      internal static var message: String { return L10n.tr("Localizable", "list.empty.message", fallback: "Pull down to refresh.") }
+      /// List empty / error
+      internal static var title: String { return L10n.tr("Localizable", "list.empty.title", fallback: "No items yet") }
+    }
+    internal enum Error {
+      /// Check your connection and try again.
+      internal static var message: String { return L10n.tr("Localizable", "list.error.message", fallback: "Check your connection and try again.") }
+      /// Couldn't load
+      internal static var title: String { return L10n.tr("Localizable", "list.error.title", fallback: "Couldn't load") }
+    }
+  }
   internal enum Login {
     /// Login
     internal static var title: String { return L10n.tr("Localizable", "login.title", fallback: "Login") }
@@ -75,6 +121,48 @@ internal enum L10n {
   internal enum Onboard {
     /// Onboarding
     internal static var start: String { return L10n.tr("Localizable", "onboard.start", fallback: "Get Started") }
+  }
+  internal enum Scripts {
+    internal enum Ads {
+      /// Failed: %@
+      internal static func failed(_ p1: Any) -> String {
+        return L10n.tr("Localizable", "scripts.ads.failed", String(describing: p1), fallback: "Failed: %@")
+      }
+      /// Hide banner
+      internal static var hideBanner: String { return L10n.tr("Localizable", "scripts.ads.hideBanner", fallback: "Hide banner") }
+      /// Scripts — Ads demo
+      internal static var hint: String { return L10n.tr("Localizable", "scripts.ads.hint", fallback: "Load then show each ad type (AdMob test IDs).") }
+      /// Load app open
+      internal static var loadAppOpen: String { return L10n.tr("Localizable", "scripts.ads.loadAppOpen", fallback: "Load app open") }
+      /// Load banner
+      internal static var loadBanner: String { return L10n.tr("Localizable", "scripts.ads.loadBanner", fallback: "Load banner") }
+      /// Loading…
+      internal static var loading: String { return L10n.tr("Localizable", "scripts.ads.loading", fallback: "Loading…") }
+      /// Load interstitial
+      internal static var loadInterstitial: String { return L10n.tr("Localizable", "scripts.ads.loadInterstitial", fallback: "Load interstitial") }
+      /// Load rewarded
+      internal static var loadRewarded: String { return L10n.tr("Localizable", "scripts.ads.loadRewarded", fallback: "Load rewarded") }
+      /// Reward: %d %@
+      internal static func reward(_ p1: Int, _ p2: Any) -> String {
+        return L10n.tr("Localizable", "scripts.ads.reward", p1, String(describing: p2), fallback: "Reward: %d %@")
+      }
+      /// Show app open
+      internal static var showAppOpen: String { return L10n.tr("Localizable", "scripts.ads.showAppOpen", fallback: "Show app open") }
+      /// Show banner
+      internal static var showBanner: String { return L10n.tr("Localizable", "scripts.ads.showBanner", fallback: "Show banner") }
+      /// Show interstitial
+      internal static var showInterstitial: String { return L10n.tr("Localizable", "scripts.ads.showInterstitial", fallback: "Show interstitial") }
+      /// Show rewarded
+      internal static var showRewarded: String { return L10n.tr("Localizable", "scripts.ads.showRewarded", fallback: "Show rewarded") }
+      /// Status: %@
+      internal static func status(_ p1: Any) -> String {
+        return L10n.tr("Localizable", "scripts.ads.status", String(describing: p1), fallback: "Status: %@")
+      }
+      /// Success: %@
+      internal static func success(_ p1: Any) -> String {
+        return L10n.tr("Localizable", "scripts.ads.success", String(describing: p1), fallback: "Success: %@")
+      }
+    }
   }
   internal enum Settings {
     /// Appearance
