@@ -86,9 +86,18 @@ class AppCoordinator: Coordinator<VoidMeta> {
 
 extension AppCoordinator {
     private func runMainFlow() {
-        let main = mainCoor()
-        add(main)
-        replaceRoot(main.rootViewController)
+        applyFootballWindowStyle()
+        let football = footballCoor()
+        add(football)
+        football.start()
+        replaceRoot(football.rootViewController, animated: true)
+    }
+
+    private func applyFootballWindowStyle() {
+        if ThemeManager.shared.mode == .system {
+            ThemeManager.shared.mode = .dark
+        }
+        FootballAppearance.syncFromThemeManager()
     }
 
     private func runSignInFlow() {
@@ -129,8 +138,8 @@ extension AppCoordinator {
         }
     }
 
-    private func mainCoor() -> Coordinator<VoidMeta> {
-        MainCoordinator(dependencies: dependencies)
+    private func footballCoor() -> FootballCoordinator {
+        FootballCoordinator(entryPoint: .tabs)
     }
 
     private func onBoardCoor() -> Coordinator<VoidMeta> {

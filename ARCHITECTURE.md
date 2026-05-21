@@ -28,6 +28,10 @@ DEBUG: `AppDependencies.make(useFakeData: false)` → API thật; `true` → ban
 
 **Chỉ demo UI** — không gọi API, không inject `AuthUseCase`. Onboarding/Register chuyển `AppState` thủ công.
 
+## Main flow
+
+`AppState.main` → **`FootballCoordinator`** (Lineup Builder). Legacy `MainCoordinator` / 5-tab ESTabBar không còn là root.
+
 ## Feedback
 
 `trackError` / `trackSuccess` → **SwiftEntryKit** (`TIOEntryPresenter`). Toast success/error **không** mặc định mỗi API OK — bật qua `TrackableUseCaseInput.showsSuccessToast` / `bindUseCase(showsErrorToast:)`.

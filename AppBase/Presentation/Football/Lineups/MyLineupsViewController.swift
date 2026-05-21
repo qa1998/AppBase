@@ -1,0 +1,266 @@
+//
+//  MyLineupsViewController.swift
+//  AppBase
+//
+
+import BaseMVVM
+import Combine
+import SnapKit
+import UIKit
+
+final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewModel> {
+
+    var onCreateLineup: (() -> Void)?
+    var onOpenLineup: ((FootballLineup) -> Void)?
+    var onPremiumTap: (() -> Void)?
+
+    private let headerStack = UIStackView()
+    private let titleButton = UIButton(type: .system)
+    private let premiumButton = UIView()
+    private let premiumGradient = FootballGradientView()
+    private let crownIcon = UIImageView()
+    private let filterScroll = UIScrollView()
+    private let filterStack = UIStackView()
+    private var filterButtons: [LineupFilterChipButton] = []
+    private let tableView = UITableView(frame: .zero, style: .plain)
+    private let fabContainer = FootballGradientView()
+    private let fabButton = UIButton(type: .system)
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+
+    override func setupUI() {
+        super.setupUI()
+        buildHeader()
+        buildFilters()
+        buildTable()
+        buildFAB()
+        layoutViews()
+        refreshLocalization()
+    }
+
+    override func refreshLocalization() {
+        updateTitleButton()
+        updateFilterChipTitles()
+    }
+
+    override func onBind() {
+        super.onBind()
+        viewModel.$lineups
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancelBag)
+
+        viewModel.$selectedFilter
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] filter in
+                self?.syncFilterSelection(filter)
+            }
+            .store(in: &cancelBag)
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        view.backgroundColor = FootballPalette.background
+        filterButtons.forEach { $0.applyStyle(); $0.isSelected = $0.tag == viewModel.selectedFilter.rawValue }
+        tableView.reloadData()
+        fabContainer.layer.shadowColor = FootballPalette.accentRed.cgColor
+    }
+
+    // MARK: - Build UI
+
+    private func buildHeader() {
+        headerStack.axis = .horizontal
+        headerStack.alignment = .center
+        headerStack.distribution = .equalSpacing
+
+        titleButton.setImage(UIImage(systemName: "chevron.down"), for: .normal)
+        titleButton.semanticContentAttribute = .forceRightToLeft
+        titleButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: -8)
+        titleButton.setTitleColor(FootballPalette.textPrimary, for: .normal)
+        titleButton.titleLabel?.font = FootballPalette.headline(28)
+        titleButton.addTarget(self, action: #selector(titleTapped), for: .touchUpInside)
+
+        premiumButton.layer.cornerRadius = Radius.s12
+        premiumButton.clipsToBounds = true
+        premiumButton.addSubview(premiumGradient)
+        premiumGradient.snp.makeConstraints { $0.edges.equalToSuperview() }
+        crownIcon.image = UIImage(systemName: "crown.fill")
+        crownIcon.tintColor = UIColor(red: 1, green: 0.84, blue: 0, alpha: 1)
+        crownIcon.contentMode = .scaleAspectFit
+        premiumButton.addSubview(crownIcon)
+        crownIcon.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(22) }
+        premiumButton.snp.makeConstraints { $0.size.equalTo(44) }
+        let premiumTap = UITapGestureRecognizer(target: self, action: #selector(premiumTapped))
+        premiumButton.addGestureRecognizer(premiumTap)
+
+        headerStack.addArrangedSubview(titleButton)
+        headerStack.addArrangedSubview(premiumButton)
+    }
+
+    private func buildFilters() {
+        filterStack.axis = .horizontal
+        filterStack.spacing = Spacing.s8
+        filterScroll.showsHorizontalScrollIndicator = false
+        filterScroll.addSubview(filterStack)
+        filterStack.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.height.equalToSuperview()
+        }
+        filterButtons = LineupListFilter.allCases.map { filter in
+            let chip = LineupFilterChipButton(title: filter.title)
+            chip.tag = filter.rawValue
+            chip.addTarget(self, action: #selector(filterTapped(_:)), for: .touchUpInside)
+            filterStack.addArrangedSubview(chip)
+            return chip
+        }
+        syncFilterSelection(.allTeams)
+    }
+
+    private func buildTable() {
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = false
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
+        tableView.register(LineupListCell.self, forCellReuseIdentifier: LineupListCell.reuseId)
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.rowHeight = 128
+    }
+
+    private func buildFAB() {
+        fabContainer.layer.cornerRadius = 28
+        fabContainer.layer.shadowColor = FootballPalette.accentRed.cgColor
+        fabContainer.layer.shadowOpacity = 0.45
+        fabContainer.layer.shadowRadius = 12
+        fabContainer.layer.shadowOffset = CGSize(width: 0, height: 4)
+        fabButton.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 24, weight: .bold)), for: .normal)
+        fabButton.tintColor = .white
+        fabButton.addTarget(self, action: #selector(fabTapped), for: .touchUpInside)
+        fabContainer.addSubview(fabButton)
+        fabButton.snp.makeConstraints { $0.edges.equalToSuperview() }
+    }
+
+    private func layoutViews() {
+        view.addSubview(headerStack)
+        view.addSubview(filterScroll)
+        view.addSubview(tableView)
+        view.addSubview(fabContainer)
+
+        headerStack.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s8)
+            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
+        }
+        filterScroll.snp.makeConstraints { make in
+            make.top.equalTo(headerStack.snp.bottom).offset(Spacing.s20)
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(40)
+        }
+        tableView.snp.makeConstraints { make in
+            make.top.equalTo(filterScroll.snp.bottom).offset(Spacing.s16)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+        fabContainer.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(Spacing.s24)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(88)
+            make.size.equalTo(56)
+        }
+    }
+
+    private func updateTitleButton() {
+        titleButton.setTitle(L10n.Football.Lineups.title, for: .normal)
+    }
+
+    /// Chỉ cập nhật title khi đổi ngôn ngữ — text lấy từ `LineupListFilter.title` (L10n), không tạo chip lần nữa.
+    private func updateFilterChipTitles() {
+        filterButtons.forEach { chip in
+            guard let filter = LineupListFilter(rawValue: chip.tag) else { return }
+            chip.setTitle(filter.title, for: .normal)
+        }
+    }
+
+    private func syncFilterSelection(_ filter: LineupListFilter) {
+        filterButtons.forEach { $0.isSelected = $0.tag == filter.rawValue }
+    }
+
+    // MARK: - Actions
+
+    @objc private func filterTapped(_ sender: LineupFilterChipButton) {
+        guard let filter = LineupListFilter(rawValue: sender.tag) else { return }
+        viewModel.selectFilter(filter)
+    }
+
+    @objc private func fabTapped() {
+        viewModel.createLineup()
+        onCreateLineup?()
+    }
+
+    func showPremiumHint() {
+        viewModel.presentSuccess(L10n.Football.Lineups.premiumHint)
+    }
+
+    @objc private func premiumTapped() {
+        onPremiumTap?()
+    }
+
+    @objc private func titleTapped() {
+        let sheet = UIAlertController(title: L10n.Football.Lineups.sortTitle, message: nil, preferredStyle: .actionSheet)
+        sheet.addAction(UIAlertAction(title: L10n.Football.Lineups.sortRecent, style: .default) { [weak self] _ in
+            self?.viewModel.selectFilter(.recent)
+        })
+        sheet.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
+        present(sheet, animated: true)
+    }
+
+    private func showMoreMenu(for lineup: FootballLineup, source: UIView) {
+        let sheet = UIAlertController(title: lineup.title, message: nil, preferredStyle: .actionSheet)
+        let favTitle = lineup.isFavorite
+            ? L10n.Football.Lineups.unfavorite
+            : L10n.Football.Lineups.favorite
+        sheet.addAction(UIAlertAction(title: favTitle, style: .default) { [weak self] _ in
+            self?.viewModel.toggleFavorite(lineup)
+        })
+        sheet.addAction(UIAlertAction(title: L10n.Football.Editor.title, style: .default) { [weak self] _ in
+            self?.viewModel.openLineup(lineup)
+            self?.onOpenLineup?(lineup)
+        })
+        sheet.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
+        if let popover = sheet.popoverPresentationController {
+            popover.sourceView = source
+            popover.sourceRect = source.bounds
+        }
+        present(sheet, animated: true)
+    }
+}
+
+extension MyLineupsViewController: UITableViewDataSource, UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        viewModel.lineups.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: LineupListCell.reuseId,
+            for: indexPath
+        ) as! LineupListCell
+        let lineup = viewModel.lineups[indexPath.row]
+        cell.configure(with: lineup)
+        cell.applyTheme()
+        cell.onMoreTap = { [weak self, weak cell] in
+            guard let self, let cell else { return }
+            self.showMoreMenu(for: lineup, source: cell)
+        }
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let lineup = viewModel.lineups[indexPath.row]
+        viewModel.openLineup(lineup)
+        onOpenLineup?(lineup)
+    }
+}
