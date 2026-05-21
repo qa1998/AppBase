@@ -22,6 +22,8 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
     private let avatarImageView = UIImageView()
     private let avatarHintLabel = UILabel()
     private let nameField = UITextField()
+    private let jerseyTitleLabel = UILabel()
+    private let jerseyField = UITextField()
     private let positionTitleLabel = UILabel()
     private let positionStack = UIStackView()
     private var positionButtons: [UIButton] = []
@@ -44,6 +46,8 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
         headerTitleLabel.text = L10n.Football.Players.editorTitle
         avatarHintLabel.text = L10n.Football.Players.avatarHint
         nameField.placeholder = L10n.Football.Players.namePlaceholder
+        jerseyTitleLabel.text = L10n.Football.Players.jerseyTitle
+        jerseyField.placeholder = L10n.Football.Players.jerseyPlaceholder
         positionTitleLabel.text = L10n.Football.Players.positionTitle
         saveButton.setTitle(L10n.Football.Players.save.uppercased(), for: .normal)
     }
@@ -105,6 +109,17 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
         nameField.leftViewMode = .always
         nameField.addTarget(self, action: #selector(nameChanged), for: .editingChanged)
 
+        jerseyTitleLabel.font = FootballPalette.caption()
+        jerseyTitleLabel.textColor = FootballPalette.textSecondary
+        jerseyField.font = FootballPalette.title(16)
+        jerseyField.textColor = FootballPalette.textPrimary
+        jerseyField.backgroundColor = FootballPalette.surface
+        jerseyField.layer.cornerRadius = Radius.s12
+        jerseyField.keyboardType = .numberPad
+        jerseyField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 12))
+        jerseyField.leftViewMode = .always
+        jerseyField.addTarget(self, action: #selector(jerseyChanged), for: .editingChanged)
+
         positionTitleLabel.font = FootballPalette.caption()
         positionTitleLabel.textColor = FootballPalette.textSecondary
         positionStack.axis = .horizontal
@@ -138,9 +153,12 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
         contentStack.addArrangedSubview(avatarRow)
         contentStack.addArrangedSubview(avatarHintLabel)
         contentStack.addArrangedSubview(nameField)
+        contentStack.addArrangedSubview(jerseyTitleLabel)
+        contentStack.addArrangedSubview(jerseyField)
         contentStack.addArrangedSubview(positionTitleLabel)
         contentStack.addArrangedSubview(positionStack)
         nameField.snp.makeConstraints { $0.height.equalTo(48) }
+        jerseyField.snp.makeConstraints { $0.height.equalTo(48) }
         positionStack.snp.makeConstraints { $0.height.equalTo(44) }
 
         scrollView.addSubview(contentStack)
@@ -172,6 +190,11 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
 
     private func syncFromPlayer(_ player: FootballPlayer) {
         nameField.text = player.name
+        if let number = player.jerseyNumber, number > 0 {
+            jerseyField.text = "\(number)"
+        } else {
+            jerseyField.text = ""
+        }
         if let image = player.avatarImage {
             avatarImageView.image = image
             avatarImageView.isHidden = false
@@ -196,6 +219,15 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
 
     @objc private func nameChanged() {
         viewModel.updateName(nameField.text ?? "")
+    }
+
+    @objc private func jerseyChanged() {
+        let text = jerseyField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if text.isEmpty {
+            viewModel.setJerseyNumber(nil)
+            return
+        }
+        viewModel.setJerseyNumber(Int(text))
     }
 
     @objc private func positionTapped(_ sender: UIButton) {

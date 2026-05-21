@@ -35,8 +35,7 @@ final class CreateMatchViewModel: TIOViewModel<TIOLoadingTarget> {
     }
 
     func applySavedTeam(_ team: FootballTeam, side: MatchTeamSide) {
-        pitchSize = team.pitchSize
-        var roster = team.toMatchRoster()
+        var roster = team.toMatchRoster(for: pitchSize)
         if side == .home {
             homeTeam = team.name
             homeRoster = roster

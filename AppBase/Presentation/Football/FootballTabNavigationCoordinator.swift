@@ -29,6 +29,7 @@ class FootballTabNavigationCoordinator<M: CoordinationMeta>: NavigationCoordinat
             animated: animated
         )
         tabController?.updateTabBarVisibility(for: navigationController)
+        tabController?.updateDemoBanner(for: navigationController)
     }
 
     override func navigationController(
@@ -38,5 +39,6 @@ class FootballTabNavigationCoordinator<M: CoordinationMeta>: NavigationCoordinat
     ) {
         super.navigationController(navigationController, didShow: viewController, animated: animated)
         tabController?.updateTabBarVisibility(for: navigationController)
+        tabController?.updateDemoBanner(for: navigationController)
     }
 }

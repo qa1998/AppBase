@@ -83,6 +83,6 @@ final class FootballTeamsCoordinator: FootballTabNavigationCoordinator<VoidMeta>
         }
         let nav = UINavigationController(rootViewController: vc)
         nav.applyFootballNavigationChrome()
-        presenter.present(nav, animated: true)
+        navigate(to: .present(nav), animated: true)
     }
 }

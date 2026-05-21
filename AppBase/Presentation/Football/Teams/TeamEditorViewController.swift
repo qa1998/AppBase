@@ -51,6 +51,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         layoutChrome()
         syncPitchSizeSelection()
         reloadSquad()
+        
     }
 
     override func refreshLocalization() {
@@ -167,7 +168,9 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         pitchCard.backgroundColor = FootballPalette.surface
         pitchCard.layer.cornerRadius = Radius.s16
         pitchCard.addSubview(pitchView)
-
+        
+        pitchView.displayOptions = .init(showsGrid: true)
+        
         hintLabel.font = FootballPalette.caption()
         hintLabel.textColor = FootballPalette.textSecondary
         hintLabel.numberOfLines = 0

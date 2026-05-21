@@ -21,7 +21,16 @@ final class MyPlayersViewController: FootballScreenViewController<MyPlayersViewM
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        let isPushed = (navigationController?.viewControllers.count ?? 0) > 1
+        navigationController?.setNavigationBarHidden(!isPushed, animated: false)
+        titleLabel.isHidden = isPushed
+        if isPushed {
+            title = L10n.Football.Players.libraryTitle
+            tableView.snp.remakeConstraints { make in
+                make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s8)
+                make.leading.trailing.bottom.equalToSuperview()
+            }
+        }
     }
 
     override func setupUI() {

@@ -10,8 +10,15 @@ import UIKit
 
 final class FootballSettingsViewController: FootballScreenViewController<FootballSettingsViewModel> {
 
+    var onManagePlayers: (() -> Void)?
+
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
+    private let squadTitleLabel = UILabel()
+    private let managePlayersCard = FootballGlassView()
+    private let managePlayersTitleLabel = UILabel()
+    private let managePlayersSubtitleLabel = UILabel()
+    private let managePlayersChevron = UIImageView()
     private let appearanceTitleLabel = UILabel()
     private let themeRowStack = UIStackView()
     private let darkCard = FootballGlassView()
@@ -29,6 +36,36 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
 
         contentStack.axis = .vertical
         contentStack.spacing = Spacing.s16
+
+        squadTitleLabel.font = FootballPalette.title(16)
+        squadTitleLabel.textColor = FootballPalette.textPrimary
+
+        managePlayersTitleLabel.font = FootballPalette.title(15)
+        managePlayersTitleLabel.textColor = FootballPalette.textPrimary
+        managePlayersSubtitleLabel.font = FootballPalette.caption()
+        managePlayersSubtitleLabel.textColor = FootballPalette.textSecondary
+        managePlayersSubtitleLabel.numberOfLines = 2
+        managePlayersChevron.image = UIImage(systemName: "chevron.right")
+        managePlayersChevron.tintColor = FootballPalette.textSecondary
+        managePlayersChevron.contentMode = .scaleAspectFit
+
+        let playersStack = UIStackView(arrangedSubviews: [managePlayersTitleLabel, managePlayersSubtitleLabel])
+        playersStack.axis = .vertical
+        playersStack.spacing = Spacing.s4
+        playersStack.alignment = .leading
+        managePlayersCard.addSubview(playersStack)
+        managePlayersCard.addSubview(managePlayersChevron)
+        playersStack.snp.makeConstraints { make in
+            make.leading.top.bottom.equalToSuperview().inset(Spacing.s12)
+            make.trailing.lessThanOrEqualTo(managePlayersChevron.snp.leading).offset(-Spacing.s8)
+        }
+        managePlayersChevron.snp.makeConstraints { make in
+            make.trailing.centerY.equalToSuperview().inset(Spacing.s12)
+            make.size.equalTo(18)
+        }
+        let playersTap = UITapGestureRecognizer(target: self, action: #selector(didTapManagePlayers))
+        managePlayersCard.addGestureRecognizer(playersTap)
+        managePlayersCard.isUserInteractionEnabled = true
 
         appearanceTitleLabel.font = FootballPalette.title(16)
         appearanceTitleLabel.textColor = FootballPalette.textPrimary
@@ -74,8 +111,11 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
 
         view.addSubview(scrollView)
         scrollView.addSubview(contentStack)
+        contentStack.addArrangedSubview(squadTitleLabel)
+        contentStack.addArrangedSubview(managePlayersCard)
         contentStack.addArrangedSubview(appearanceTitleLabel)
         contentStack.addArrangedSubview(themeRowStack)
+        managePlayersCard.snp.makeConstraints { $0.height.greaterThanOrEqualTo(64) }
 
         scrollView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
         contentStack.snp.makeConstraints { make in
@@ -87,6 +127,9 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
 
     override func refreshLocalization() {
         title = L10n.Football.Settings.title
+        squadTitleLabel.text = L10n.Football.Settings.squadSection
+        managePlayersTitleLabel.text = L10n.Football.Settings.managePlayers
+        managePlayersSubtitleLabel.text = L10n.Football.Settings.managePlayersHint
         appearanceTitleLabel.text = L10n.Football.Settings.appearance
         darkTitleLabel.text = L10n.Football.Settings.Theme.dark
         lightTitleLabel.text = L10n.Football.Settings.Theme.light
@@ -106,6 +149,10 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
 
     override func refreshFootballTheme() {
         super.refreshFootballTheme()
+        squadTitleLabel.textColor = FootballPalette.textPrimary
+        managePlayersTitleLabel.textColor = FootballPalette.textPrimary
+        managePlayersSubtitleLabel.textColor = FootballPalette.textSecondary
+        managePlayersChevron.tintColor = FootballPalette.textSecondary
         appearanceTitleLabel.textColor = FootballPalette.textPrimary
         [darkTitleLabel, lightTitleLabel].forEach { $0.textColor = FootballPalette.textPrimary }
         [darkSubtitleLabel, lightSubtitleLabel].forEach { $0.textColor = FootballPalette.textSecondary }
@@ -138,6 +185,10 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
         darkCard.neonColor = FootballPalette.accentGreen
         lightCard.showsNeonBorder = viewModel.isLightSelected
         lightCard.neonColor = FootballPalette.accentGreen
+    }
+
+    @objc private func didTapManagePlayers() {
+        onManagePlayers?()
     }
 
     @objc private func didTapDark() {

@@ -89,7 +89,8 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
 
     private func presentLineOptions(from presenter: UIViewController?) {
         guard let presenter else { return }
-        let sheet = LineOptionsViewController(options: LineupStore.shared.tacticalLineOptions)
+        let sheet = LineOptionsViewController()
+        sheet.invoke(viewModel: LineOptionsViewModel(options: LineupStore.shared.tacticalLineOptions))
         sheet.onSave = { options in
             LineupStore.shared.tacticalLineOptions = options
             (presenter as? LineupEditorViewController)?.refreshPitchAndLineOptions()

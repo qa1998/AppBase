@@ -372,6 +372,10 @@ internal enum L10n {
       internal static var deleteConfirm: String { return L10n.tr("Localizable", "football.players.deleteConfirm", fallback: "Delete") }
       /// Create player
       internal static var editorTitle: String { return L10n.tr("Localizable", "football.players.editorTitle", fallback: "Create player") }
+      /// 1–99 (optional)
+      internal static var jerseyPlaceholder: String { return L10n.tr("Localizable", "football.players.jerseyPlaceholder", fallback: "1–99 (optional)") }
+      /// Shirt number
+      internal static var jerseyTitle: String { return L10n.tr("Localizable", "football.players.jerseyTitle", fallback: "Shirt number") }
       /// No players yet. Tap + to create a player.
       internal static var libraryEmpty: String { return L10n.tr("Localizable", "football.players.libraryEmpty", fallback: "No players yet. Tap + to create a player.") }
       /// My Players
@@ -388,6 +392,8 @@ internal enum L10n {
       internal static var search: String { return L10n.tr("Localizable", "football.players.search", fallback: "Search players") }
       /// Select player
       internal static var title: String { return L10n.tr("Localizable", "football.players.title", fallback: "Select player") }
+      /// Shirt number must be between 1 and 99.
+      internal static var validationJersey: String { return L10n.tr("Localizable", "football.players.validationJersey", fallback: "Shirt number must be between 1 and 99.") }
       /// Enter a player name.
       internal static var validationName: String { return L10n.tr("Localizable", "football.players.validationName", fallback: "Enter a player name.") }
       internal enum Filter {
@@ -404,6 +410,12 @@ internal enum L10n {
     internal enum Settings {
       /// Appearance
       internal static var appearance: String { return L10n.tr("Localizable", "football.settings.appearance", fallback: "Appearance") }
+      /// Manage players
+      internal static var managePlayers: String { return L10n.tr("Localizable", "football.settings.managePlayers", fallback: "Manage players") }
+      /// Create players with name, photo and shirt number.
+      internal static var managePlayersHint: String { return L10n.tr("Localizable", "football.settings.managePlayersHint", fallback: "Create players with name, photo and shirt number.") }
+      /// Squad
+      internal static var squadSection: String { return L10n.tr("Localizable", "football.settings.squadSection", fallback: "Squad") }
       /// Settings
       internal static var title: String { return L10n.tr("Localizable", "football.settings.title", fallback: "Settings") }
       internal enum Theme {

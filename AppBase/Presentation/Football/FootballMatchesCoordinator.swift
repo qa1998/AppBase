@@ -60,7 +60,6 @@ final class FootballMatchesCoordinator: FootballTabNavigationCoordinator<VoidMet
     }
 
     private func presentTeamPicker(onSelect: @escaping (FootballTeam) -> Void) {
-        guard let presenter = navigationController.topViewController else { return }
         let vc = TeamPickerViewController()
         vc.invoke(viewModel: TeamPickerViewModel())
         vc.onSelect = { team in
@@ -68,7 +67,7 @@ final class FootballMatchesCoordinator: FootballTabNavigationCoordinator<VoidMet
         }
         let nav = UINavigationController(rootViewController: vc)
         nav.applyFootballNavigationChrome()
-        presenter.present(nav, animated: true)
+        navigate(to: .present(nav), animated: true)
     }
 
     private func pushMatchTeamsSetup(viewModel: CreateMatchViewModel) {

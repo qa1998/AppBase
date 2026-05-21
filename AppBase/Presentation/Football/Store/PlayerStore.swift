@@ -96,16 +96,7 @@ final class PlayerStore {
         }
         let fileName = FootballPlayerAvatarStorage.save(image, playerId: currentPlayer.id)
         var copy = currentPlayer
-        copy = FootballPlayer(
-            id: copy.id,
-            name: copy.name,
-            club: copy.club,
-            nation: copy.nation,
-            position: copy.position,
-            rating: copy.rating,
-            initials: copy.initials,
-            avatarFileName: fileName
-        )
+        copy = copy.updating(avatarFileName: fileName)
         currentPlayer = copy
         notifyCurrent()
     }

@@ -16,8 +16,8 @@ final class LineupListCell: UITableViewCell {
     private let miniPitch = LineupMiniPitchView()
     private let titleLabel = UILabel()
     private let moreButton = UIButton(type: .system)
-    private let formationTag = UILabel()
-    private let styleTag = UILabel()
+    private let formationTag = PaddingLabel()
+    private let styleTag = PaddingLabel()
     private let editedIcon = UIImageView()
     private let editedLabel = UILabel()
 

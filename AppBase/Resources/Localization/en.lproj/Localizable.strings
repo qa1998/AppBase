@@ -208,6 +208,9 @@
 "football.match.event.neutral" = "Neutral";
 "football.match.timeline.emptyHalf" = "No events this half";
 "football.settings.title" = "Settings";
+"football.settings.squadSection" = "Squad";
+"football.settings.managePlayers" = "Manage players";
+"football.settings.managePlayersHint" = "Create players with name, photo and shirt number.";
 "football.settings.appearance" = "Appearance";
 "football.settings.theme.dark" = "Dark mode";
 "football.settings.theme.light" = "Light mode";
@@ -261,6 +264,9 @@
 "football.players.libraryEmpty" = "No players yet. Tap + to create a player.";
 "football.players.editorTitle" = "Create player";
 "football.players.namePlaceholder" = "Player name";
+"football.players.jerseyTitle" = "Shirt number";
+"football.players.jerseyPlaceholder" = "1–99 (optional)";
+"football.players.validationJersey" = "Shirt number must be between 1 and 99.";
 "football.players.positionTitle" = "Position";
 "football.players.avatarHint" = "Tap to choose a photo";
 "football.players.save" = "Save player";

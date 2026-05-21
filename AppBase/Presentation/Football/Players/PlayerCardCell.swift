@@ -77,10 +77,11 @@ final class PlayerCardCell: UITableViewCell {
             avatarLabel.isHidden = false
             avatarLabel.text = player.initials
         }
-        let meta = [player.club, player.nation, player.position.label]
-            .filter { !$0.isEmpty }
-            .joined(separator: " · ")
-        metaLabel.text = meta.isEmpty ? player.position.label : meta
+        var parts: [String] = []
+        if let jersey = player.jerseyDisplay { parts.append("#\(jersey)") }
+        parts.append(player.position.label)
+        if !player.club.isEmpty { parts.append(player.club) }
+        metaLabel.text = parts.joined(separator: " · ")
         ratingLabel.isHidden = !showsRating || player.rating == 0
         ratingLabel.text = player.rating > 0 ? "\(player.rating)" : ""
     }

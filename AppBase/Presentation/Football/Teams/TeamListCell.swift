@@ -99,10 +99,15 @@ final class TeamListCell: UITableViewCell {
     func configure(_ team: FootballTeam, showsDelete: Bool = true) {
         deleteButton.isHidden = !showsDelete
         titleLabel.text = team.name.isEmpty ? L10n.Football.Teams.unnamed : team.name
-        sizeTag.text = "  \(L10n.Football.Match.Create.pitchPlayers(team.pitchSize.playerCount))  "
+        let sizeLabels = MatchPitchSize.allCases
+            .map { L10n.Football.Match.Create.pitchPlayers($0.playerCount) }
+            .joined(separator: " · ")
+        sizeTag.text = "  \(sizeLabels)  "
         formationTag.text = "  \(team.formation.name)  "
-        playersLabel.text = L10n.Football.Teams.rosterCount(team.filledPitchSlots, team.assignments.count)
-        miniPitch.assignments = team.assignments
+        let filled = MatchPitchSize.allCases.map { team.setup(for: $0).filledPitchSlots }.max() ?? 0
+        let slots = team.activeSetup.assignments.count
+        playersLabel.text = L10n.Football.Teams.rosterCount(filled, slots)
+        miniPitch.assignments = team.activeSetup.assignments
         miniPitch.setNeedsDisplay()
     }
 

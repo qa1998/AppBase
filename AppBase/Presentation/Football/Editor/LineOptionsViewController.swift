@@ -3,15 +3,15 @@
 //  AppBase
 //
 
+import BaseMVVM
+import Combine
 import SnapKit
 import UIKit
 
 /// Bottom sheet — solid/dashed, straight/curved, pointer, color for tactical lines.
-final class LineOptionsViewController: UIViewController {
+final class LineOptionsViewController: FootballScreenViewController<LineOptionsViewModel> {
 
     var onSave: ((TacticalLineOptions) -> Void)?
-
-    private var draft: TacticalLineOptions
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -27,22 +27,34 @@ final class LineOptionsViewController: UIViewController {
     private var colorButtons: [LineColorOptionButton] = []
     private let saveButton = UIButton(type: .system)
 
-    init(options: TacticalLineOptions = LineupStore.shared.tacticalLineOptions) {
-        draft = options
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = FootballPalette.background
         setupSheet()
+    }
+
+    override func setupUI() {
+        super.setupUI()
         buildUI()
         layoutViews()
         syncUI()
+    }
+
+    override func refreshLocalization() {
+        titleLabel.text = L10n.Football.LineOptions.title
+        styleSegment.setTitle(L10n.Football.LineOptions.solid, forSegmentAt: 0)
+        styleSegment.setTitle(L10n.Football.LineOptions.dashed, forSegmentAt: 1)
+        saveButton.setTitle(L10n.Football.LineOptions.save, for: .normal)
+        syncUI()
+    }
+
+    override func onBind() {
+        super.onBind()
+        viewModel.$draft
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.syncUI()
+            }
+            .store(in: &cancelBag)
     }
 
     private func setupSheet() {
@@ -55,7 +67,6 @@ final class LineOptionsViewController: UIViewController {
     }
 
     private func buildUI() {
-        titleLabel.text = L10n.Football.LineOptions.title
         titleLabel.font = FootballPalette.title(18)
         titleLabel.textColor = FootballPalette.textPrimary
 
@@ -66,8 +77,8 @@ final class LineOptionsViewController: UIViewController {
         headerBar.addSubview(titleLabel)
         headerBar.addSubview(closeButton)
 
-        styleSegment.insertSegment(withTitle: L10n.Football.LineOptions.solid, at: 0, animated: false)
-        styleSegment.insertSegment(withTitle: L10n.Football.LineOptions.dashed, at: 1, animated: false)
+        styleSegment.insertSegment(withTitle: "", at: 0, animated: false)
+        styleSegment.insertSegment(withTitle: "", at: 1, animated: false)
         styleSegment.selectedSegmentIndex = 0
         styleSegment.backgroundColor = FootballPalette.surface
         styleSegment.selectedSegmentTintColor = FootballPalette.surfaceElevated
@@ -81,16 +92,7 @@ final class LineOptionsViewController: UIViewController {
         )
         styleSegment.addTarget(self, action: #selector(styleChanged), for: .valueChanged)
 
-        straightRow.configure(
-            title: L10n.Football.LineOptions.straight,
-            preview: .straight(dashed: false)
-        )
         straightRow.addTarget(self, action: #selector(straightTapped), for: .touchUpInside)
-
-        curvedRow.configure(
-            title: L10n.Football.LineOptions.curved,
-            preview: .curved(dashed: false)
-        )
         curvedRow.addTarget(self, action: #selector(curvedTapped), for: .touchUpInside)
 
         pointerGrid.axis = .vertical
@@ -127,7 +129,6 @@ final class LineOptionsViewController: UIViewController {
             colorStack.addArrangedSubview(button)
         }
 
-        saveButton.setTitle(L10n.Football.LineOptions.save, for: .normal)
         saveButton.setTitleColor(.white, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
         saveButton.backgroundColor = FootballPalette.accentRed
@@ -149,6 +150,8 @@ final class LineOptionsViewController: UIViewController {
         view.addSubview(headerBar)
         view.addSubview(scrollView)
         view.addSubview(saveButton)
+
+        refreshLocalization()
     }
 
     private func layoutViews() {
@@ -199,6 +202,7 @@ final class LineOptionsViewController: UIViewController {
     }
 
     private func syncUI() {
+        let draft = viewModel.draft
         styleSegment.selectedSegmentIndex = draft.lineStyle == .solid ? 0 : 1
         let dashed = draft.lineStyle == .dashed
         straightRow.configure(
@@ -224,32 +228,29 @@ final class LineOptionsViewController: UIViewController {
     }
 
     @objc private func styleChanged() {
-        draft.lineStyle = styleSegment.selectedSegmentIndex == 0 ? .solid : .dashed
-        syncUI()
+        viewModel.mutateDraft { draft in
+            draft.lineStyle = styleSegment.selectedSegmentIndex == 0 ? .solid : .dashed
+        }
     }
 
     @objc private func straightTapped() {
-        draft.pathType = .straight
-        syncUI()
+        viewModel.mutateDraft { $0.pathType = .straight }
     }
 
     @objc private func curvedTapped() {
-        draft.pathType = .curved
-        syncUI()
+        viewModel.mutateDraft { $0.pathType = .curved }
     }
 
     @objc private func pointerTapped(_ sender: LinePointerOptionButton) {
-        draft.pointer = sender.pointer
-        syncUI()
+        viewModel.mutateDraft { $0.pointer = sender.pointer }
     }
 
     @objc private func colorTapped(_ sender: LineColorOptionButton) {
-        draft.color = sender.lineColor
-        syncUI()
+        viewModel.mutateDraft { $0.color = sender.lineColor }
     }
 
     @objc private func saveTapped() {
-        onSave?(draft)
+        onSave?(viewModel.draft)
         dismiss(animated: true)
     }
 }

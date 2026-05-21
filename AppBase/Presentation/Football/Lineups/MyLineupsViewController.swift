@@ -19,9 +19,9 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
     private let premiumButton = UIView()
     private let premiumGradient = FootballGradientView()
     private let crownIcon = UIImageView()
-    private let filterScroll = UIScrollView()
-    private let filterStack = UIStackView()
-    private var filterButtons: [LineupFilterChipButton] = []
+//    private let filterScroll = UIScrollView()
+//    private let filterStack = UIStackView()
+//    private var filterButtons: [LineupFilterChipButton] = []
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let fabContainer = FootballGradientView()
     private let fabButton = UIButton(type: .system)
@@ -34,7 +34,7 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
     override func setupUI() {
         super.setupUI()
         buildHeader()
-        buildFilters()
+//        buildFilters()
         buildTable()
         buildFAB()
         layoutViews()
@@ -43,7 +43,7 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
 
     override func refreshLocalization() {
         updateTitleButton()
-        updateFilterChipTitles()
+//        updateFilterChipTitles()
     }
 
     override func onBind() {
@@ -55,18 +55,18 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
             }
             .store(in: &cancelBag)
 
-        viewModel.$selectedFilter
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] filter in
-                self?.syncFilterSelection(filter)
-            }
-            .store(in: &cancelBag)
+//        viewModel.$selectedFilter
+//            .receive(on: DispatchQueue.main)
+//            .sink { [weak self] filter in
+//                self?.syncFilterSelection(filter)
+//            }
+//            .store(in: &cancelBag)
     }
 
     override func refreshFootballTheme() {
         super.refreshFootballTheme()
         view.backgroundColor = FootballPalette.background
-        filterButtons.forEach { $0.applyStyle(); $0.isSelected = $0.tag == viewModel.selectedFilter.rawValue }
+//        filterButtons.forEach { $0.applyStyle(); $0.isSelected = $0.tag == viewModel.selectedFilter.rawValue }
         tableView.reloadData()
         fabContainer.layer.shadowColor = FootballPalette.accentRed.cgColor
     }
@@ -102,24 +102,24 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
         headerStack.addArrangedSubview(premiumButton)
     }
 
-    private func buildFilters() {
-        filterStack.axis = .horizontal
-        filterStack.spacing = Spacing.s8
-        filterScroll.showsHorizontalScrollIndicator = false
-        filterScroll.addSubview(filterStack)
-        filterStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-            make.height.equalToSuperview()
-        }
-        filterButtons = LineupListFilter.allCases.map { filter in
-            let chip = LineupFilterChipButton(title: filter.title)
-            chip.tag = filter.rawValue
-            chip.addTarget(self, action: #selector(filterTapped(_:)), for: .touchUpInside)
-            filterStack.addArrangedSubview(chip)
-            return chip
-        }
-        syncFilterSelection(.allTeams)
-    }
+//    private func buildFilters() {
+//        filterStack.axis = .horizontal
+//        filterStack.spacing = Spacing.s8
+//        filterScroll.showsHorizontalScrollIndicator = false
+//        filterScroll.addSubview(filterStack)
+//        filterStack.snp.makeConstraints { make in
+//            make.edges.equalToSuperview()
+//            make.height.equalToSuperview()
+//        }
+//        filterButtons = LineupListFilter.allCases.map { filter in
+//            let chip = LineupFilterChipButton(title: filter.title)
+//            chip.tag = filter.rawValue
+//            chip.addTarget(self, action: #selector(filterTapped(_:)), for: .touchUpInside)
+//            filterStack.addArrangedSubview(chip)
+//            return chip
+//        }
+//        syncFilterSelection(.allTeams)
+//    }
 
     private func buildTable() {
         tableView.backgroundColor = .clear
@@ -147,7 +147,7 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
 
     private func layoutViews() {
         view.addSubview(headerStack)
-        view.addSubview(filterScroll)
+//        view.addSubview(filterScroll)
         view.addSubview(tableView)
         view.addSubview(fabContainer)
 
@@ -155,13 +155,9 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
             make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s8)
             make.leading.trailing.equalToSuperview().inset(Spacing.s20)
         }
-        filterScroll.snp.makeConstraints { make in
-            make.top.equalTo(headerStack.snp.bottom).offset(Spacing.s20)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(40)
-        }
+        
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(filterScroll.snp.bottom).offset(Spacing.s16)
+            make.top.equalTo(headerStack.snp.bottom).offset(Spacing.s16)
             make.leading.trailing.bottom.equalToSuperview()
         }
         fabContainer.snp.makeConstraints { make in
@@ -176,16 +172,16 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
     }
 
     /// Chỉ cập nhật title khi đổi ngôn ngữ — text lấy từ `LineupListFilter.title` (L10n), không tạo chip lần nữa.
-    private func updateFilterChipTitles() {
-        filterButtons.forEach { chip in
-            guard let filter = LineupListFilter(rawValue: chip.tag) else { return }
-            chip.setTitle(filter.title, for: .normal)
-        }
-    }
-
-    private func syncFilterSelection(_ filter: LineupListFilter) {
-        filterButtons.forEach { $0.isSelected = $0.tag == filter.rawValue }
-    }
+//    private func updateFilterChipTitles() {
+//        filterButtons.forEach { chip in
+//            guard let filter = LineupListFilter(rawValue: chip.tag) else { return }
+//            chip.setTitle(filter.title, for: .normal)
+//        }
+//    }
+//
+//    private func syncFilterSelection(_ filter: LineupListFilter) {
+//        filterButtons.forEach { $0.isSelected = $0.tag == filter.rawValue }
+//    }
 
     // MARK: - Actions
 

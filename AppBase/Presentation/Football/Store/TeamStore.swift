@@ -21,7 +21,11 @@ final class TeamStore {
             forKey: .footballTeams,
             type: FootballTeamsSnapshot.self
         ) {
-            teams = snapshot.teams
+            teams = snapshot.teams.map { team in
+                var copy = team
+                copy.ensureAllSetups()
+                return copy
+            }
             if let id = snapshot.currentTeamId,
                let team = teams.first(where: { $0.id == id }) {
                 currentTeam = team
@@ -44,22 +48,27 @@ final class TeamStore {
     }
 
     func loadTeam(_ team: FootballTeam) {
-        currentTeam = team
-        currentTeamDidChange.send(team)
+        var copy = team
+        copy.ensureAllSetups()
+        currentTeam = copy
+        currentTeamDidChange.send(copy)
     }
 
     func updateCurrent(_ team: FootballTeam) {
-        currentTeam = team
-        if let index = teams.firstIndex(where: { $0.id == team.id }) {
-            teams[index] = team
+        var copy = team
+        copy.ensureAllSetups()
+        currentTeam = copy
+        if let index = teams.firstIndex(where: { $0.id == copy.id }) {
+            teams[index] = copy
         }
         persist()
-        currentTeamDidChange.send(team)
+        currentTeamDidChange.send(copy)
         teamsDidChange.send()
     }
 
     func saveCurrentTeam() {
         var copy = currentTeam
+        copy.ensureAllSetups()
         copy.updatedAt = Date()
         currentTeam = copy
         if let index = teams.firstIndex(where: { $0.id == copy.id }) {
@@ -80,48 +89,58 @@ final class TeamStore {
         teamsDidChange.send()
     }
 
+    /// Chuyển tab cỡ sân — giữ nguyên đội hình từng sân đã lưu trong `setups`.
     func setPitchSize(_ size: MatchPitchSize) {
         var team = currentTeam
-        guard team.pitchSize != size else { return }
-        team.pitchSize = size
-        let formation = FootballFormation.formations(playerCount: size.playerCount).first ?? .default
-        team.formationId = formation.id
-        team.assignments = formation.slots.enumerated().map { index, point in
-            PitchSlotAssignment(slotIndex: index, normalizedPosition: point, player: nil)
-        }
-        team.benchPlayerIds = Array(repeating: "", count: MatchTeamRoster.benchSlotCount)
+        guard team.activePitchSize != size else { return }
+        team.ensureAllSetups()
+        team.activePitchSize = size
         currentTeam = team
         notify()
     }
 
     func applyFormation(_ formation: FootballFormation) {
         var team = currentTeam
-        team.formationId = formation.id
-        team.assignments = formation.slots.enumerated().map { index, point in
-            let existing = team.assignments[safe: index]?.player
-            return PitchSlotAssignment(slotIndex: index, normalizedPosition: point, player: existing)
+        var setup = team.activeSetup
+        setup.formationId = formation.id
+        setup.assignments = formation.slots.enumerated().map { index, point in
+            let existing = setup.assignments[safe: index]?.player
+            return PitchSlotAssignment(
+                slotIndex: index,
+                normalizedPosition: point,
+                player: existing
+            )
         }
+        team.writeActiveSetup(setup)
         currentTeam = team
         notify()
     }
 
     func assignPlayer(_ player: FootballPlayer, pitchSlot index: Int) {
-        guard currentTeam.assignments.indices.contains(index) else { return }
-        currentTeam.assignments[index].player = player
+        var team = currentTeam
+        var setup = team.activeSetup
+        guard setup.assignments.indices.contains(index) else { return }
+        setup.assignments[index].player = player
+        team.writeActiveSetup(setup)
+        currentTeam = team
         notify()
     }
 
     func setBenchPlayer(_ player: FootballPlayer?, at index: Int) {
         guard index >= 0, index < MatchTeamRoster.benchSlotCount else { return }
-        while currentTeam.benchPlayerIds.count < MatchTeamRoster.benchSlotCount {
-            currentTeam.benchPlayerIds.append("")
+        var team = currentTeam
+        var setup = team.activeSetup
+        while setup.benchPlayerIds.count < MatchTeamRoster.benchSlotCount {
+            setup.benchPlayerIds.append("")
         }
-        currentTeam.benchPlayerIds[index] = player?.id ?? ""
+        setup.benchPlayerIds[index] = player?.id ?? ""
+        team.writeActiveSetup(setup)
+        currentTeam = team
         notify()
     }
 
     func benchPlayer(at index: Int) -> FootballPlayer? {
-        guard let id = currentTeam.benchPlayerIds[safe: index], !id.isEmpty else { return nil }
+        guard let id = currentTeam.activeSetup.benchPlayerIds[safe: index], !id.isEmpty else { return nil }
         return FootballPlayer.resolved(id: id)
     }
 

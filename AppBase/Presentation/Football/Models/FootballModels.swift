@@ -30,6 +30,33 @@ struct FootballPlayer: Identifiable, Equatable, Codable {
     let initials: String
     /// File name under player avatars directory.
     let avatarFileName: String?
+    /// Squad number (1–99); nil for catalog / unset.
+    let jerseyNumber: Int?
+
+    var jerseyDisplay: String? {
+        guard let jerseyNumber, jerseyNumber > 0 else { return nil }
+        return "\(jerseyNumber)"
+    }
+
+    func updating(
+        name: String? = nil,
+        position: FootballPosition? = nil,
+        initials: String? = nil,
+        avatarFileName: String? = nil,
+        jerseyNumber: Int? = nil
+    ) -> FootballPlayer {
+        FootballPlayer(
+            id: id,
+            name: name ?? self.name,
+            club: club,
+            nation: nation,
+            position: position ?? self.position,
+            rating: rating,
+            initials: initials ?? self.initials,
+            avatarFileName: avatarFileName ?? self.avatarFileName,
+            jerseyNumber: jerseyNumber ?? self.jerseyNumber
+        )
+    }
 
     var avatarImage: UIImage? {
         guard let avatarFileName else { return nil }
@@ -54,6 +81,7 @@ struct FootballPlayer: Identifiable, Equatable, Codable {
     static func custom(
         name: String,
         position: FootballPosition,
+        jerseyNumber: Int? = nil,
         avatarFileName: String? = nil
     ) -> FootballPlayer {
         FootballPlayer(
@@ -64,7 +92,8 @@ struct FootballPlayer: Identifiable, Equatable, Codable {
             position: position,
             rating: 0,
             initials: makeInitials(from: name),
-            avatarFileName: avatarFileName
+            avatarFileName: avatarFileName,
+            jerseyNumber: jerseyNumber
         )
     }
 
@@ -77,22 +106,23 @@ struct FootballPlayer: Identifiable, Equatable, Codable {
         position: .mid,
         rating: 0,
         initials: "—",
-        avatarFileName: nil
+        avatarFileName: nil,
+        jerseyNumber: nil
     )
 
     static let catalog: [FootballPlayer] = [
-        FootballPlayer(id: "1", name: "Erling Haaland", club: "Man City", nation: "NOR", position: .fwd, rating: 91, initials: "EH", avatarFileName: nil),
-        FootballPlayer(id: "2", name: "Kevin De Bruyne", club: "Man City", nation: "BEL", position: .mid, rating: 90, initials: "KD", avatarFileName: nil),
-        FootballPlayer(id: "3", name: "Virgil van Dijk", club: "Liverpool", nation: "NED", position: .def, rating: 89, initials: "VV", avatarFileName: nil),
-        FootballPlayer(id: "4", name: "Alisson Becker", club: "Liverpool", nation: "BRA", position: .gk, rating: 88, initials: "AB", avatarFileName: nil),
-        FootballPlayer(id: "5", name: "Bukayo Saka", club: "Arsenal", nation: "ENG", position: .fwd, rating: 87, initials: "BS", avatarFileName: nil),
-        FootballPlayer(id: "6", name: "Martin Ødegaard", club: "Arsenal", nation: "NOR", position: .mid, rating: 87, initials: "MØ", avatarFileName: nil),
-        FootballPlayer(id: "7", name: "William Saliba", club: "Arsenal", nation: "FRA", position: .def, rating: 86, initials: "WS", avatarFileName: nil),
-        FootballPlayer(id: "8", name: "Pedri", club: "Barcelona", nation: "ESP", position: .mid, rating: 86, initials: "PE", avatarFileName: nil),
-        FootballPlayer(id: "9", name: "Lamine Yamal", club: "Barcelona", nation: "ESP", position: .fwd, rating: 85, initials: "LY", avatarFileName: nil),
-        FootballPlayer(id: "10", name: "Jude Bellingham", club: "Real Madrid", nation: "ENG", position: .mid, rating: 90, initials: "JB", avatarFileName: nil),
-        FootballPlayer(id: "11", name: "Vinícius Jr", club: "Real Madrid", nation: "BRA", position: .fwd, rating: 89, initials: "VJ", avatarFileName: nil),
-        FootballPlayer(id: "12", name: "Thibaut Courtois", club: "Real Madrid", nation: "BEL", position: .gk, rating: 88, initials: "TC", avatarFileName: nil),
+        FootballPlayer(id: "1", name: "Erling Haaland", club: "Man City", nation: "NOR", position: .fwd, rating: 91, initials: "EH", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "2", name: "Kevin De Bruyne", club: "Man City", nation: "BEL", position: .mid, rating: 90, initials: "KD", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "3", name: "Virgil van Dijk", club: "Liverpool", nation: "NED", position: .def, rating: 89, initials: "VV", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "4", name: "Alisson Becker", club: "Liverpool", nation: "BRA", position: .gk, rating: 88, initials: "AB", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "5", name: "Bukayo Saka", club: "Arsenal", nation: "ENG", position: .fwd, rating: 87, initials: "BS", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "6", name: "Martin Ødegaard", club: "Arsenal", nation: "NOR", position: .mid, rating: 87, initials: "MØ", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "7", name: "William Saliba", club: "Arsenal", nation: "FRA", position: .def, rating: 86, initials: "WS", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "8", name: "Pedri", club: "Barcelona", nation: "ESP", position: .mid, rating: 86, initials: "PE", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "9", name: "Lamine Yamal", club: "Barcelona", nation: "ESP", position: .fwd, rating: 85, initials: "LY", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "10", name: "Jude Bellingham", club: "Real Madrid", nation: "ENG", position: .mid, rating: 90, initials: "JB", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "11", name: "Vinícius Jr", club: "Real Madrid", nation: "BRA", position: .fwd, rating: 89, initials: "VJ", avatarFileName: nil, jerseyNumber: nil),
+        FootballPlayer(id: "12", name: "Thibaut Courtois", club: "Real Madrid", nation: "BEL", position: .gk, rating: 88, initials: "TC", avatarFileName: nil, jerseyNumber: nil),
     ]
 }
 

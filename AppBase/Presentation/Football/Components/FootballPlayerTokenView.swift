@@ -97,15 +97,17 @@ final class FootballPlayerTokenView: UIView {
         plusLabel.isHidden = !isEmpty
 
         if let player {
+            let circleText = player.jerseyDisplay ?? player.initials
             if let image = player.avatarImage {
                 avatarImageView.image = image
                 avatarImageView.isHidden = false
-                avatarLabel.isHidden = true
+                avatarLabel.isHidden = player.jerseyDisplay == nil
+                avatarLabel.text = player.jerseyDisplay
             } else {
                 avatarImageView.image = nil
                 avatarImageView.isHidden = true
                 avatarLabel.isHidden = false
-                avatarLabel.text = player.initials
+                avatarLabel.text = circleText
             }
             namePill.text = FootballPlayerTokenView.displayName(player)
             innerGlow.backgroundColor = FootballPalette.accentRed.withAlphaComponent(0.35).cgColor

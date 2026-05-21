@@ -208,6 +208,9 @@
 "football.match.event.neutral" = "Trung lập";
 "football.match.timeline.emptyHalf" = "Chưa có sự kiện trong hiệp này";
 "football.settings.title" = "Cài đặt";
+"football.settings.squadSection" = "Đội hình & cầu thủ";
+"football.settings.managePlayers" = "Quản lý cầu thủ";
+"football.settings.managePlayersHint" = "Tạo cầu thủ: tên, ảnh, số áo, vị trí.";
 "football.settings.appearance" = "Giao diện";
 "football.settings.theme.dark" = "Chế độ tối";
 "football.settings.theme.light" = "Chế độ sáng";
@@ -261,6 +264,9 @@
 "football.players.libraryEmpty" = "Chưa có cầu thủ. Bấm + để tạo.";
 "football.players.editorTitle" = "Tạo cầu thủ";
 "football.players.namePlaceholder" = "Tên cầu thủ";
+"football.players.jerseyTitle" = "Số áo";
+"football.players.jerseyPlaceholder" = "1–99 (tùy chọn)";
+"football.players.validationJersey" = "Số áo phải từ 1 đến 99.";
 "football.players.positionTitle" = "Vị trí";
 "football.players.avatarHint" = "Chạm để chọn ảnh";
 "football.players.save" = "Lưu cầu thủ";

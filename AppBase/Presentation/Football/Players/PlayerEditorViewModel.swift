@@ -24,33 +24,27 @@ final class PlayerEditorViewModel: TIOViewModel<TIOLoadingTarget> {
     }
 
     func updateName(_ name: String) {
-        apply {
+        apply { $0.updating(name: name, initials: FootballPlayer.makeInitials(from: name)) }
+    }
+
+    func setJerseyNumber(_ number: Int?) {
+        apply { player in
             FootballPlayer(
-                id: $0.id,
-                name: name,
-                club: $0.club,
-                nation: $0.nation,
-                position: $0.position,
-                rating: $0.rating,
-                initials: FootballPlayer.makeInitials(from: name),
-                avatarFileName: $0.avatarFileName
+                id: player.id,
+                name: player.name,
+                club: player.club,
+                nation: player.nation,
+                position: player.position,
+                rating: player.rating,
+                initials: player.initials,
+                avatarFileName: player.avatarFileName,
+                jerseyNumber: number
             )
         }
     }
 
     func setPosition(_ position: FootballPosition) {
-        apply { copy in
-            FootballPlayer(
-                id: copy.id,
-                name: copy.name,
-                club: copy.club,
-                nation: copy.nation,
-                position: position,
-                rating: copy.rating,
-                initials: copy.initials,
-                avatarFileName: copy.avatarFileName
-            )
-        }
+        apply { $0.updating(position: position) }
     }
 
     func setAvatar(_ image: UIImage) {
@@ -63,13 +57,16 @@ final class PlayerEditorViewModel: TIOViewModel<TIOLoadingTarget> {
             presentError(message: L10n.Football.Players.validationName)
             return false
         }
+        if let jersey = player.jerseyNumber, !(1...99).contains(jersey) {
+            presentError(message: L10n.Football.Players.validationJersey)
+            return false
+        }
         PlayerStore.shared.saveCurrentPlayer()
         presentSuccess(L10n.Football.Players.saved)
         return true
     }
 
     private func apply(_ transform: (FootballPlayer) -> FootballPlayer) {
-        var copy = transform(player)
-        PlayerStore.shared.updateCurrent(copy)
+        PlayerStore.shared.updateCurrent(transform(player))
     }
 }

@@ -208,6 +208,9 @@
 "football.match.event.neutral" = "中立";
 "football.match.timeline.emptyHalf" = "このハーフにイベントはありません";
 "football.settings.title" = "設定";
+"football.settings.squadSection" = "チーム";
+"football.settings.managePlayers" = "選手管理";
+"football.settings.managePlayersHint" = "名前・写真・背番号・ポジションで選手を作成。";
 "football.settings.appearance" = "外観";
 "football.settings.theme.dark" = "ダークモード";
 "football.settings.theme.light" = "ライトモード";
@@ -261,6 +264,9 @@
 "football.players.libraryEmpty" = "保存された選手はありません。＋で作成してください。";
 "football.players.editorTitle" = "選手を作成";
 "football.players.namePlaceholder" = "選手名";
+"football.players.jerseyTitle" = "背番号";
+"football.players.jerseyPlaceholder" = "1–99（任意）";
+"football.players.validationJersey" = "背番号は1〜99の間で入力してください。";
 "football.players.positionTitle" = "ポジション";
 "football.players.avatarHint" = "タップして写真を選択";
 "football.players.save" = "選手を保存";

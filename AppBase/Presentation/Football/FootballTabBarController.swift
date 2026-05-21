@@ -12,9 +12,8 @@ final class FootballTabBarController: ESTabBarController {
     enum Tab: Int, CaseIterable {
         case lineups = 0
         case teams = 1
-        case players = 2
-        case matches = 3
-        case settings = 4
+        case matches = 2
+        case settings = 3
     }
 
     private var themeCancel: AnyCancellable?
@@ -37,7 +36,6 @@ final class FootballTabBarController: ESTabBarController {
         guard let items = tabBar.items, items.count >= Tab.allCases.count else { return }
         items[Tab.lineups.rawValue].title = L10n.Football.Tab.lineups
         items[Tab.teams.rawValue].title = L10n.Football.Tab.teams
-        items[Tab.players.rawValue].title = L10n.Football.Tab.players
         items[Tab.matches.rawValue].title = L10n.Football.Tab.matches
         items[Tab.settings.rawValue].title = L10n.Football.Tab.settings
     }
@@ -59,10 +57,6 @@ final class FootballTabBarController: ESTabBarController {
                 navigationController: navigationControllers[Tab.teams.rawValue],
                 tabController: self
             ),
-            FootballPlayersCoordinator(
-                navigationController: navigationControllers[Tab.players.rawValue],
-                tabController: self
-            ),
             FootballMatchesCoordinator(
                 navigationController: navigationControllers[Tab.matches.rawValue],
                 tabController: self
@@ -77,6 +71,17 @@ final class FootballTabBarController: ESTabBarController {
         viewControllers = navigationControllers
         selectedIndex = Tab.lineups.rawValue
         refreshLocalization()
+        if selectedIndex < navigationControllers.count {
+            FootballDemoBannerAdPresenter.shared.updateForNavigationStack(
+                navigationControllers[selectedIndex]
+            )
+        }
+    }
+
+    /// Banner demo chỉ trên tab đang chọn và màn root (không push).
+    func updateDemoBanner(for navigationController: UINavigationController) {
+        guard selectedViewController === navigationController else { return }
+        FootballDemoBannerAdPresenter.shared.updateForNavigationStack(navigationController)
     }
 
     private func makeTabBarItem(for tab: Tab) -> UITabBarItem {
@@ -91,12 +96,6 @@ final class FootballTabBarController: ESTabBarController {
             return UITabBarItem(
                 title: L10n.Football.Tab.teams,
                 image: UIImage(systemName: "person.3.fill"),
-                tag: tab.rawValue
-            )
-        case .players:
-            return UITabBarItem(
-                title: L10n.Football.Tab.players,
-                image: UIImage(systemName: "person.crop.circle.badge.plus"),
                 tag: tab.rawValue
             )
         case .matches:
@@ -135,7 +134,6 @@ final class FootballTabBarController: ESTabBarController {
     ) {
         let hideNav = viewController is MyLineupsViewController
             || viewController is MyTeamsViewController
-            || viewController is MyPlayersViewController
             || viewController is FootballMatchesViewController
             || viewController is FootballSettingsViewController
         navigationController.setNavigationBarHidden(hideNav, animated: animated)
@@ -154,9 +152,9 @@ extension FootballTabBarController: UITabBarControllerDelegate {
         let root = nav.viewControllers.first
         let hideNav = root is MyLineupsViewController
             || root is MyTeamsViewController
-            || root is MyPlayersViewController
             || root is FootballMatchesViewController
         nav.setNavigationBarHidden(hideNav, animated: false)
         updateTabBarVisibility(for: nav)
+        updateDemoBanner(for: nav)
     }
 }
