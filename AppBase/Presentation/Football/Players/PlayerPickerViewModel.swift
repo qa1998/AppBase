@@ -13,11 +13,20 @@ final class PlayerPickerViewModel: TIOViewModel<TIOLoadingTarget> {
     @Published private(set) var players: [FootballPlayer] = []
 
     let slotIndex: Int
+    private let onPlayerSelected: ((FootballPlayer) -> Void)?
 
-    init(slotIndex: Int) {
+    init(slotIndex: Int, onPlayerSelected: ((FootballPlayer) -> Void)? = nil) {
         self.slotIndex = slotIndex
+        self.onPlayerSelected = onPlayerSelected
         super.init()
         bindFilters()
+        PlayerStore.shared.playersDidChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                guard let self else { return }
+                self.applyFilters(query: self.searchText, position: self.positionFilter)
+            }
+            .store(in: &cancellables)
     }
 
     private func bindFilters() {
@@ -31,7 +40,7 @@ final class PlayerPickerViewModel: TIOViewModel<TIOLoadingTarget> {
     }
 
     private func applyFilters(query: String, position: FootballPosition?) {
-        var list = FootballPlayer.catalog
+        var list = PlayerStore.shared.allPlayers
         if let position {
             list = list.filter { $0.position == position }
         }
@@ -47,6 +56,10 @@ final class PlayerPickerViewModel: TIOViewModel<TIOLoadingTarget> {
     }
 
     func select(_ player: FootballPlayer) {
-        LineupStore.shared.assignPlayer(player, toSlot: slotIndex)
+        if let onPlayerSelected {
+            onPlayerSelected(player)
+        } else {
+            LineupStore.shared.assignPlayer(player, toSlot: slotIndex)
+        }
     }
 }

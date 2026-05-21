@@ -61,6 +61,7 @@ final class FootballPlayerTokenView: UIView {
     var tokenSize: FootballPlayerTokenSize = .pitch
 
     private let circleView = UIView()
+    private let avatarImageView = UIImageView()
     private let avatarLabel = UILabel()
     private let namePill = UILabel()
     private let innerGlow = CALayer()
@@ -89,13 +90,23 @@ final class FootballPlayerTokenView: UIView {
         self.player = player
         let isEmpty = player == nil
         circleView.isHidden = isEmpty
+        avatarImageView.isHidden = isEmpty
         avatarLabel.isHidden = isEmpty
         namePill.isHidden = isEmpty
         dashedLayer.isHidden = !isEmpty
         plusLabel.isHidden = !isEmpty
 
         if let player {
-            avatarLabel.text = player.initials
+            if let image = player.avatarImage {
+                avatarImageView.image = image
+                avatarImageView.isHidden = false
+                avatarLabel.isHidden = true
+            } else {
+                avatarImageView.image = nil
+                avatarImageView.isHidden = true
+                avatarLabel.isHidden = false
+                avatarLabel.text = player.initials
+            }
             namePill.text = FootballPlayerTokenView.displayName(player)
             innerGlow.backgroundColor = FootballPalette.accentRed.withAlphaComponent(0.35).cgColor
         }
@@ -145,12 +156,20 @@ final class FootballPlayerTokenView: UIView {
         innerGlow.cornerRadius = (circle - 8) / 2
         circleView.layer.insertSublayer(innerGlow, at: 0)
 
+        avatarImageView.contentMode = .scaleAspectFill
+        avatarImageView.clipsToBounds = true
+        avatarImageView.layer.cornerRadius = (circle - 8) / 2
+
         avatarLabel.font = FootballPalette.caption(metrics.initialsFontSize)
         avatarLabel.textColor = .white
         avatarLabel.textAlignment = .center
 
+        circleView.addSubview(avatarImageView)
         circleView.addSubview(avatarLabel)
 
+        avatarImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(4)
+        }
         avatarLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }

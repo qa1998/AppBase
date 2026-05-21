@@ -39,7 +39,7 @@ final class LineupEditorViewModel: TIOViewModel<TIOLoadingTarget> {
 
     var benchPlayers: [FootballPlayer] {
         lineup.benchPlayerIds.compactMap { id in
-            FootballPlayer.catalog.first { $0.id == id }
+            FootballPlayer.resolved(id: id)
         }
     }
 

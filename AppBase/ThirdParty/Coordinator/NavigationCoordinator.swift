@@ -75,6 +75,7 @@ open class NavigationCoordinator<M: CoordinationMeta>: Coordinator<M>, UINavigat
                 finish()
             }
         case let .push(controller):
+            controller.hidesBottomBarWhenPushed = true
             viewControllers.append(controller) // Updating of viewControllers
             navigationController.pushViewController(controller, animated: animated, completion: completion)
         case .root:

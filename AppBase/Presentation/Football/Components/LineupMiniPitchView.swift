@@ -12,6 +12,11 @@ final class LineupMiniPitchView: UIView {
         didSet { setNeedsDisplay() }
     }
 
+    /// Preview khi không có full `FootballLineup` (vd. team list).
+    var assignments: [PitchSlotAssignment] = [] {
+        didSet { setNeedsDisplay() }
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = FootballPalette.surfaceElevated
@@ -24,14 +29,15 @@ final class LineupMiniPitchView: UIView {
     }
 
     override func draw(_ rect: CGRect) {
-        guard let lineup else { return }
+        let slots = lineup?.assignments ?? assignments
+        guard !slots.isEmpty else { return }
         let inset: CGFloat = 6
         let field = rect.insetBy(dx: inset, dy: inset)
 
         FootballPalette.pitchGreen.setFill()
         UIBezierPath(roundedRect: field, cornerRadius: 4).fill()
 
-        for (index, assignment) in lineup.assignments.enumerated() {
+        for (index, assignment) in slots.enumerated() {
             let point = assignment.normalizedPosition
             let x = field.minX + point.x * field.width
             let y = field.minY + point.y * field.height

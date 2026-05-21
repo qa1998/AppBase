@@ -12,4 +12,8 @@ enum StorageKey: String {
     case token = "token"
     case isFirstLaunch = "isFirstLaunch"
     case theme = "Theme"
+    case footballMatches = "football.matches"
+    case footballLineups = "football.lineups"
+    case footballTeams = "football.teams"
+    case footballPlayers = "football.players.saved"
 }

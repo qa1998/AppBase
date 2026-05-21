@@ -139,7 +139,7 @@ extension AppCoordinator {
     }
 
     private func footballCoor() -> FootballCoordinator {
-        FootballCoordinator(entryPoint: .tabs)
+        FootballCoordinator()
     }
 
     private func onBoardCoor() -> Coordinator<VoidMeta> {

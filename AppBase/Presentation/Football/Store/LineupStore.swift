@@ -35,9 +35,23 @@ final class LineupStore {
     var canRedoStroke: Bool { !strokeRedoStack.isEmpty }
 
     private init() {
-        savedLineups = LineupStore.sampleLineups()
-        currentLineup = savedLineups[0]
-        applyDrawingState(from: currentLineup)
+        if let snapshot = DataStore.shared.value(
+            forKey: .footballLineups,
+            type: FootballLineupsSnapshot.self
+        ), !snapshot.savedLineups.isEmpty {
+            savedLineups = snapshot.savedLineups
+            currentLineup = snapshot.currentLineup
+            tacticalStrokes = snapshot.tacticalStrokes
+            strokeUndoStack = snapshot.strokeUndoStack
+            strokeRedoStack = snapshot.strokeRedoStack
+            tacticalLineOptions = snapshot.tacticalLineOptions
+            pitchDisplayOptions = snapshot.pitchDisplayOptions
+        } else {
+            savedLineups = LineupStore.sampleLineups()
+            currentLineup = savedLineups[0]
+            applyDrawingState(from: currentLineup)
+            persist()
+        }
     }
 
     static func sampleLineups() -> [FootballLineup] {
@@ -135,6 +149,7 @@ final class LineupStore {
         } else {
             savedLineups.insert(currentLineup, at: 0)
         }
+        persist()
         notify()
     }
 
@@ -225,12 +240,27 @@ final class LineupStore {
     }
 
     private func notifyDrawing() {
+        persist()
         tacticalDrawingDidChange.send()
     }
 
     private func notify() {
+        persist()
         currentLineupDidChange.send(currentLineup)
         lineupsDidChange.send()
+    }
+
+    private func persist() {
+        let snapshot = FootballLineupsSnapshot(
+            savedLineups: savedLineups,
+            currentLineup: currentLineup,
+            tacticalStrokes: tacticalStrokes,
+            strokeUndoStack: strokeUndoStack,
+            strokeRedoStack: strokeRedoStack,
+            tacticalLineOptions: tacticalLineOptions,
+            pitchDisplayOptions: pitchDisplayOptions
+        )
+        DataStore.shared.set(snapshot, forKey: .footballLineups)
     }
 
     static func makeLineup(title: String, formation: FootballFormation) -> FootballLineup {

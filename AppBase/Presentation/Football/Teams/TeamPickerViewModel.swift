@@ -1,21 +1,21 @@
 //
-//  FootballMatchesViewModel.swift
+//  TeamPickerViewModel.swift
 //  AppBase
 //
 
 import Combine
 import Foundation
 
-final class FootballMatchesViewModel: TIOViewModel<TIOLoadingTarget> {
+final class TeamPickerViewModel: TIOViewModel<TIOLoadingTarget> {
 
-    @Published private(set) var matches: [FootballMatch] = []
+    @Published private(set) var teams: [FootballTeam] = []
 
     private var storeCancel: AnyCancellable?
 
     override init() {
         super.init()
         reload()
-        storeCancel = MatchStore.shared.matchesDidChange
+        storeCancel = TeamStore.shared.teamsDidChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.reload()
@@ -23,6 +23,6 @@ final class FootballMatchesViewModel: TIOViewModel<TIOLoadingTarget> {
     }
 
     func reload() {
-        matches = MatchStore.shared.matches
+        teams = TeamStore.shared.teams.sorted { $0.updatedAt > $1.updatedAt }
     }
 }

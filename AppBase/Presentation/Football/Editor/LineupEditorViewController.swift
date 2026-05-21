@@ -18,12 +18,10 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
 
     init() {
         super.init(nibName: nil, bundle: nil)
-        hidesBottomBarWhenPushed = true
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        hidesBottomBarWhenPushed = true
     }
 
     private let headerBar = UIView()

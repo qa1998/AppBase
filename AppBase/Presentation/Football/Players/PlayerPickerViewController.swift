@@ -104,7 +104,7 @@ extension PlayerPickerViewController: UITableViewDataSource, UITableViewDelegate
             withIdentifier: PlayerCardCell.reuseId,
             for: indexPath
         ) as! PlayerCardCell
-        cell.configure(player: viewModel.players[indexPath.row])
+        cell.configure(player: viewModel.players[indexPath.row], showsRating: true)
         return cell
     }
 
@@ -119,65 +119,5 @@ extension PlayerPickerViewController: UISearchBarDelegate {
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         viewModel.searchText = searchText
-    }
-}
-
-private final class PlayerCardCell: UITableViewCell {
-
-    static let reuseId = "PlayerCardCell"
-    private let card = FootballGlassView()
-    private let avatarLabel = UILabel()
-    private let nameLabel = UILabel()
-    private let metaLabel = UILabel()
-    private let ratingLabel = UILabel()
-
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = .clear
-        selectionStyle = .none
-        contentView.addSubview(card)
-        card.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16))
-        }
-        [avatarLabel, nameLabel, metaLabel, ratingLabel].forEach { card.addSubview($0) }
-        avatarLabel.font = FootballPalette.title(14)
-        avatarLabel.textColor = FootballPalette.textPrimary
-        avatarLabel.textAlignment = .center
-        avatarLabel.backgroundColor = FootballPalette.surfaceElevated
-        avatarLabel.layer.cornerRadius = 22
-        avatarLabel.clipsToBounds = true
-        nameLabel.font = FootballPalette.title(15)
-        nameLabel.textColor = FootballPalette.textPrimary
-        metaLabel.font = FootballPalette.caption()
-        metaLabel.textColor = FootballPalette.textSecondary
-        ratingLabel.font = FootballPalette.headline(18)
-        ratingLabel.textColor = FootballPalette.accentGreen
-        avatarLabel.snp.makeConstraints { make in
-            make.leading.centerY.equalToSuperview().inset(Spacing.s12)
-            make.size.equalTo(44)
-        }
-        nameLabel.snp.makeConstraints { make in
-            make.leading.equalTo(avatarLabel.snp.trailing).offset(Spacing.s12)
-            make.top.equalToSuperview().offset(Spacing.s14)
-        }
-        metaLabel.snp.makeConstraints { make in
-            make.leading.equalTo(nameLabel)
-            make.top.equalTo(nameLabel.snp.bottom).offset(2)
-        }
-        ratingLabel.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(Spacing.s16)
-            make.centerY.equalToSuperview()
-        }
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    func configure(player: FootballPlayer) {
-        avatarLabel.text = player.initials
-        nameLabel.text = player.name
-        metaLabel.text = "\(player.club) · \(player.nation) · \(player.position.label)"
-        ratingLabel.text = "\(player.rating)"
     }
 }

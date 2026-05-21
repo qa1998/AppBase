@@ -29,6 +29,8 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Cho phép chọn ảnh đại diện cầu thủ.</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Chúng tôi sử dụng định danh này để cung cấp quảng cáo được cá nhân hóa và cải thiện trải nghiệm của bạn.</string>
 	<key>GADApplicationIdentifier</key>
