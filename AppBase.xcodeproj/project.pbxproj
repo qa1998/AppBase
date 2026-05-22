@@ -18,7 +18,7 @@
 
 /* Begin PBXFileReference section */
 		0F24E0692FAC49C300C48B33 /* AppBase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppBase.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		0F8862A12FBEA94F00599A9E /* AdsKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = AdsKit; path = AdsKit/AdsKit; sourceTree = "<group>"; };
+		0F8864392FBFFB4800599A9E /* AdsKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = AdsKit; path = AdsKit/AdsKit; sourceTree = "<group>"; };
 		0FE2BEFA2FADC078006641DB /* BaseMVVM */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BaseMVVM; path = BaseMVVM/BaseMVVM; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -76,7 +76,7 @@
 		0F24E0602FAC49C300C48B33 = {
 			isa = PBXGroup;
 			children = (
-				0F8862A12FBEA94F00599A9E /* AdsKit */,
+				0F8864392FBFFB4800599A9E /* AdsKit */,
 				0FE2BEFA2FADC078006641DB /* BaseMVVM */,
 				0F24E06B2FAC49C300C48B33 /* AppBase */,
 				0FE2BEFB2FADC08C006641DB /* Frameworks */,
