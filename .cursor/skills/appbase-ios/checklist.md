@@ -112,20 +112,30 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 - [ ] `containerView` added in `viewDidLoad` after `super` (which already ran `setupUI`)
 - [ ] `containerView` and `listView` constrained with SnapKit (`edges.equalToSuperview()`)
 
+## List cells (TIOTableViewCell / TIOCollectionViewCell)
+
+- [ ] Cell kế thừa `TIOTableViewCell` / `TIOCollectionViewCell` — không `UITableViewCell` / `UICollectionViewCell` thuần
+- [ ] Table: override `class func cellHeight(for data: Any?) -> CGFloat` trên cell
+- [ ] Collection: override `class func cellSize(data: Any?) -> CGSize` trên cell
+- [ ] VC table: `heightForRowAt` gọi `MyCell.cellHeight(for:)` — không hardcode height trong VC
+- [ ] VC collection: `cellSize` được base gọi; trả size ≠ `.zero` theo `data` (fallback 56 chỉ khi chưa implement)
+- [ ] Skeleton: `cellHeight(for: nil)` / `cellSize(nil)` chiều cao placeholder cố định
+- [ ] `applyListShimmer` / `dequeueListCell`; `prepareForReuse` + cancel Kingfisher nếu có ảnh
+
 ## TIOTableViewController
 
 - [ ] `tableView.delegate` and `dataSource` remain `self` on table VC
 - [ ] `registerNibs()` / `registerCellClasses()` implemented in subclass
-- [ ] `cellForRowAt` overridden; `applyListShimmer` khi loading
+- [ ] `cellForRowAt` overridden; `dequeueListCell` + shimmer khi loading
 - [ ] Row count từ `displayItemCount` — không override trừ khi custom sections
-- [ ] `heightForRowAt` ổn định khi dùng skeleton (optional nhưng khuyến nghị)
+- [ ] `heightForRowAt` → `CellType.cellHeight(for: viewModel.item(at:))`
 
 ## TIOCollectionViewController
 
 - [ ] `collectionView.delegate` and `dataSource` remain `self` on collection VC
 - [ ] Never set `listView.delegate` on list base (same as table)
-- [ ] `registerCells()` implemented when using `TIOCollectionViewCell`
-- [ ] `cellForItemAt` overridden in every concrete collection VC
+- [ ] `registerCells()` → `[TIOCollectionViewCell subclass]`
+- [ ] `cellForItemAt` overridden; `cellSize(data:)` trên cell cho dynamic height/width
 - [ ] `createCollectionViewLayout()` overridden if not using default flow layout
 - [ ] Pagination inserts use `IndexPath(item:)` via `makeListIndexPath`
 

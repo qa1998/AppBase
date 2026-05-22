@@ -5,7 +5,8 @@ description: >-
   TIOListViewController, TIOTableViewController, TIOListViewModel, TIOListView).
   Enforces SnapKit for all programmatic Auto Layout. Use when the user asks to
   review, refactor, optimize, add UI/layout, constraints, or list/screen features
-  in AppBase, or mentions TIO, TIOView, TIOContentView, custom UIView, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
+  in AppBase, or mentions TIO, TIOView, TIOContentView, TIOTableViewCell, TIOCollectionViewCell,
+  UITableViewCell, UICollectionViewCell, cellSize, cellHeight, custom UIView, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
   TIOPagingKit, TrackLoading, shimmer, skeleton loading, UIView-Shimmer, Font,
   FontSize, Lato typography, Spacing, Radius, ThemeManager, TIOThemable, palette, or dark/light mode,
   Coordinator, NavigationCoordinator, cancelBag, lazy tab, push/pop navigation.
@@ -56,6 +57,102 @@ TIOView                    // base + ShimmeringViewProtocol
 ```
 
 **Không** gọi `setTemplateWithSubviews` trực tiếp trên `UITableViewCell` / toàn cell — sẽ shimmer `textLabel` và bị lệch trái. Luôn dùng `applyListShimmer(_:)`.
+
+## List cells (`TIOTableViewCell` / `TIOCollectionViewCell`)
+
+Mỗi row/item list **ưu tiên subclass** `TIOTableViewCell` hoặc `TIOCollectionViewCell` — **không** `UITableViewCell` / `UICollectionViewCell` thuần (mất theme + `applyListShimmer` + `shimmerHost`).
+
+| Loại | Base cell | API tính kích thước dynamic | Ai gọi |
+|------|-----------|----------------------------|--------|
+| **Table** | `TIOTableViewCell` | `class func cellHeight(for data: Any?) -> CGFloat` | Subclass VC override `heightForRowAt` → gọi `MyCell.cellHeight(for: viewModel.item(at:))` |
+| **Collection** | `TIOCollectionViewCell` | `class func cellSize(data: Any?) -> CGSize` | `TIOCollectionViewController` gọi sẵn trong `sizeForItemAt` |
+
+**Không** hardcode `72` / `56` trong ViewController — logic height/size nằm trên **cell class** (theo `data` từng row).
+
+### Table — `cellHeight(for:)`
+
+```swift
+final class FeedCell: TIOTableViewCell {
+
+    private let bodyLabel = TIOLabel()
+
+    override func commonInit() {
+        super.commonInit()
+        contentView.addSubview(bodyLabel)
+        bodyLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(Spacing.s16)
+        }
+    }
+
+    func configure(with item: FeedItem) {
+        bodyLabel.text = item.body
+    }
+
+    override class func cellHeight(for data: Any?) -> CGFloat {
+        guard let item = data as? FeedItem else { return 56 }
+        let width = UIScreen.main.bounds.width - Spacing.s16 * 2
+        let textHeight = (item.body as NSString).boundingRect(
+            with: CGSize(width: width, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: Font.default(size: .text17)],
+            context: nil
+        ).height
+        return ceil(textHeight) + Spacing.s16 * 2
+    }
+}
+
+// ViewController
+override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    if viewModel.isListCellLoading {
+        return FeedCell.cellHeight(for: nil)  // chiều cao skeleton ổn định
+    }
+    return FeedCell.cellHeight(for: viewModel.item(at: indexPath))
+}
+```
+
+- `dequeueListCell(_:from:for:)` (base) đã gọi `applyListShimmerIfNeeded` — ưu tiên dùng helper này.
+- `registerCellClasses()` / `registerNibs()` → `[MyCell.self]`; configure trong `cellForRowAt` qua `configure(with:)`.
+- Chỉ dùng `UITableView.automaticDimension` khi cell self-sizing hoàn toàn bằng constraints; vẫn nên có `cellHeight` cho skeleton loading.
+
+### Collection — `cellSize(data:)`
+
+```swift
+final class BannerCell: TIOCollectionViewCell {
+
+    override func setupLayout() {
+        // SnapKit subviews trong contentView
+    }
+
+    override func updateDisplay(data: Any?) {
+        // bind model
+    }
+
+    override class func cellSize(data: Any?) -> CGSize {
+        guard let banner = data as? Banner else {
+            return CGSize(width: UIScreen.main.bounds.width, height: 120)
+        }
+        let width = UIScreen.main.bounds.width
+        let aspect: CGFloat = banner.imageHeight / max(banner.imageWidth, 1)
+        return CGSize(width: width, height: width * aspect)
+    }
+}
+
+override func registerCells() -> [TIOCollectionViewCell.Type] { [BannerCell.self] }
+```
+
+- Base `sizeForItemAt` lấy `registerCells().first` → mỗi VC **một cell type** hoặc override `sizeForItemAt` khi nhiều loại cell (gọi đúng `CellType.cellSize(data:)` theo indexPath).
+- `cellSize` trả `.zero` → fallback full width × `56` (tránh layout 0); production **luôn** trả size hợp lệ theo `data`.
+- Skeleton loading: `applyListShimmer` trong `cellForItemAt`; `cellSize(for: nil)` nên trả chiều cao placeholder cố định.
+
+### Cell subclass checklist
+
+- [ ] Kế thừa `TIOTableViewCell` / `TIOCollectionViewCell`
+- [ ] Theme: override `applyTheme` + `super`; subview = `TIOLabel` / `TIOView`
+- [ ] Shimmer: `applyListShimmer` từ VC / `dequeueListCell` — không shimmer root cell
+- [ ] Dynamic size: `cellHeight(for:)` (table) hoặc `cellSize(data:)` (collection) — không magic number trong VC
+- [ ] `prepareForReuse`: cancel Kingfisher, reset UI
+
+Files: `TIOTableViewCell.swift`, `TIOCollectionViewCell.swift`, `TIOTableViewController.swift`, `TIOCollectionViewController.swift`.
 
 ## Custom view (kế thừa TIO* common views)
 
@@ -606,12 +703,12 @@ if viewModel.isListCellLoading {
 return cell
 ```
 
-**Cell registration:**
+**Cell registration & height:**
 
-- Programmatic: `override func registerCellClasses() -> [TIOTableViewCell.Type] { [MyCell.self] }`
-- Nib: `registerNibs() -> [MyCell.self]`
-- **Dequeue** bắt buộc — không `TIOTableViewCell()` tay
-- Row height cố định khi skeleton (vd. `72`) tránh layout nhảy
+- Programmatic: `registerCellClasses() -> [MyCell.self]`; Nib: `registerNibs()`
+- **Dequeue** bắt buộc — `dequeueListCell` / `dequeueReusableCell(type:for:)`; không `TIOTableViewCell()` tay
+- Dynamic height: override `MyCell.cellHeight(for:)`; VC `heightForRowAt` → gọi `cellHeight` (kể cả khi `isListCellLoading`) — xem **List cells**
+- Collection: override `cellSize(data:)` — base VC đã delegate `sizeForItemAt`
 
 ### Non-list screen — shimmer theo vùng
 
@@ -806,6 +903,7 @@ Copy and track:
 - [ ] Layout uses SnapKit (`import SnapKit`, `snp.makeConstraints` / `remakeConstraints`)
 - [ ] No raw `NSLayoutConstraint` / anchor APIs on new or touched code
 - [ ] Typography: `Font` / `FontSize` — no `UIFont.systemFont` / `.font(.system(...))` in AppBase code
+- [ ] List cell: `TIOTableViewCell` / `TIOCollectionViewCell`; `cellHeight(for:)` / `cellSize(data:)` — không height magic trong VC
 - [ ] Custom UIView: subclass TIO* (`TIOView`, `TIOContentView`, …) — `super.commonInit` / `applyTheme`; không `startTheming()` duplicate
 - [ ] Theme: TIO* views or `bindTheme`; no `.systemBackground` / `.white` / `.label` for main UI
 - [ ] Spacing / Radius: no raw `12`, `16`, `20` for padding or corner radius
@@ -856,9 +954,9 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
    - Override `hasReachedEnd()` when API has a last page (`DataPage.canLoadMore` / `hasMorePage()` — skill **appbase-network**).
 
 2. **ViewController** — subclass `TIOTableViewController<YourViewModel>`:
-   - `registerCellClasses()` hoặc `registerNibs()`; dequeue trong `cellForRowAt`.
-   - `applyListShimmer(true/false)` theo `viewModel.isListCellLoading`.
-   - `heightForRowAt` cố định nếu cần skeleton đẹp (vd. 72).
+   - Cell subclass `TIOTableViewCell`; `registerCellClasses()` / `registerNibs()`.
+   - `cellForRowAt`: `dequeueListCell` + `configure`; shimmer qua helper/base.
+   - `heightForRowAt` → `YourCell.cellHeight(for: viewModel.item(at:))` (skeleton: `cellHeight(for: nil)`).
    - Override `tableView(_:cellForRowAt:)` — row count từ `displayItemCount` (base).
    - UI-only code sau `super.viewDidLoad()`; SnapKit trong `setupUI()`.
 
@@ -869,9 +967,10 @@ Severity: **Critical** = broken behavior / leaks / wrong delegate; **Suggestion*
 
 1. **ViewModel** — same as table (`TIOListViewModel` + `dataDidChange` / `dataDidInsert` / `hasReachedEnd`).
 2. **ViewController** — subclass `TIOCollectionViewController<YourViewModel>`:
-   - Override `registerCells()` → `[YourCell.self]`.
-   - Override `collectionView(_:cellForItemAt:)`.
-   - Optional: `createCollectionViewLayout()`, `sizeForItemAt`, `registerCells(_, useNib: true)` for nib cells.
+   - Cell subclass `TIOCollectionViewCell`; `registerCells()` → `[YourCell.self]`.
+   - Override `cellSize(data:)` trên cell cho dynamic size (base gọi trong `sizeForItemAt`).
+   - Override `collectionView(_:cellForItemAt:)` + `applyListShimmer`.
+   - Optional: `createCollectionViewLayout()`; nhiều cell type → override `sizeForItemAt` gọi đúng `CellType.cellSize`.
 3. **Theme** — `TIOCollectionViewCell`; list `backgroundColor(forEmptyDataSet:)` → `palette.backgroundSecondary`.
 
 ## Common fixes
