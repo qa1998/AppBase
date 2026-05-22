@@ -297,4 +297,8 @@
 "football.export.social" = "SNSストーリー";
 "football.export.download" = "ダウンロード";
 "football.export.share" = "共有";
+"football.share.title" = "編成を共有";
+"football.share.shareAction" = "共有";
+"football.share.viewFlat" = "平面";
+"football.share.view3D" = "3D表示";
 "football.export.saved" = "共有の準備ができました";

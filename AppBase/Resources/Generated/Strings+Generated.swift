@@ -449,6 +449,16 @@ internal enum L10n {
         internal static var lightHint: String { return L10n.tr("Localizable", "football.settings.theme.lightHint", fallback: "Clean pitch · daylight UI") }
       }
     }
+    internal enum Share {
+      /// Share
+      internal static var shareAction: String { return L10n.tr("Localizable", "football.share.shareAction", fallback: "Share") }
+      /// Share lineup
+      internal static var title: String { return L10n.tr("Localizable", "football.share.title", fallback: "Share lineup") }
+      /// 3D view
+      internal static var view3D: String { return L10n.tr("Localizable", "football.share.view3D", fallback: "3D view") }
+      /// Flat view
+      internal static var viewFlat: String { return L10n.tr("Localizable", "football.share.viewFlat", fallback: "Flat view") }
+    }
     internal enum Tab {
       /// Lineups
       internal static var lineups: String { return L10n.tr("Localizable", "football.tab.lineups", fallback: "Lineups") }

@@ -12,6 +12,7 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
 
     var onCreateLineup: (() -> Void)?
     var onOpenLineup: ((FootballLineup) -> Void)?
+    var onShareLineup: ((FootballLineup) -> Void)?
     var onPremiumTap: (() -> Void)?
 
 //    private let filterScroll = UIScrollView()
@@ -129,6 +130,9 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
         sheet.addAction(UIAlertAction(title: L10n.Football.Editor.title, style: .default) { [weak self] _ in
             self?.viewModel.openLineup(lineup)
             self?.onOpenLineup?(lineup)
+        })
+        sheet.addAction(UIAlertAction(title: L10n.Football.Share.shareAction, style: .default) { [weak self] _ in
+            self?.onShareLineup?(lineup)
         })
         sheet.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
         if let popover = sheet.popoverPresentationController {

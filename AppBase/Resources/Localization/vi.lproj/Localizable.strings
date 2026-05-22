@@ -297,4 +297,8 @@
 "football.export.social" = "Story mạng xã hội";
 "football.export.download" = "Tải xuống";
 "football.export.share" = "Chia sẻ";
+"football.share.title" = "Chia sẻ sơ đồ";
+"football.share.shareAction" = "Chia sẻ";
+"football.share.viewFlat" = "Mặt phẳng";
+"football.share.view3D" = "Góc 3D";
 "football.export.saved" = "Ảnh sẵn sàng chia sẻ";

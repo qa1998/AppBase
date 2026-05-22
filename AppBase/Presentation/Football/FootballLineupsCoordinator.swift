@@ -21,6 +21,9 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
         vc.onOpenLineup = { [weak self] _ in
             self?.pushEditor(animated: true)
         }
+        vc.onShareLineup = { [weak self] lineup in
+            self?.pushLineupShare(lineup)
+        }
         vc.onPremiumTap = { [weak vc] in
             (vc as? MyLineupsViewController)?.showPremiumHint()
         }
@@ -67,6 +70,12 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
         vc.onPickSettings = { [weak self, weak vc] in
             self?.pushLineupSettings(from: vc)
         }
+    }
+
+    private func pushLineupShare(_ lineup: FootballLineup) {
+        let vc = LineupShareViewController()
+        vc.invoke(viewModel: LineupShareViewModel(lineup: lineup))
+        navigate(to: .push(vc))
     }
 
     private func pushLineupSettings(from presenter: UIViewController?) {

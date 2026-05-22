@@ -297,4 +297,8 @@
 "football.export.social" = "Social story";
 "football.export.download" = "Download";
 "football.export.share" = "Share";
+"football.share.title" = "Share lineup";
+"football.share.shareAction" = "Share";
+"football.share.viewFlat" = "Flat view";
+"football.share.view3D" = "3D view";
 "football.export.saved" = "Graphic ready to share";
