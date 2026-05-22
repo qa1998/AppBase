@@ -30,6 +30,7 @@ struct FootballPlayer: Identifiable, Equatable, Codable {
     let initials: String
     /// File name under player avatars directory.
     let avatarFileName: String?
+    var avatarUrlString: String? = nil
     /// Squad number (1–99); nil for catalog / unset.
     let jerseyNumber: Int?
 
@@ -54,6 +55,7 @@ struct FootballPlayer: Identifiable, Equatable, Codable {
             rating: rating,
             initials: initials ?? self.initials,
             avatarFileName: avatarFileName ?? self.avatarFileName,
+            avatarUrlString: nil,
             jerseyNumber: jerseyNumber ?? self.jerseyNumber
         )
     }
@@ -93,6 +95,7 @@ struct FootballPlayer: Identifiable, Equatable, Codable {
             rating: 0,
             initials: makeInitials(from: name),
             avatarFileName: avatarFileName,
+            avatarUrlString: nil,
             jerseyNumber: jerseyNumber
         )
     }
@@ -107,6 +110,7 @@ struct FootballPlayer: Identifiable, Equatable, Codable {
         rating: 0,
         initials: "—",
         avatarFileName: nil,
+        avatarUrlString: nil,
         jerseyNumber: nil
     )
 

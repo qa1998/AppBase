@@ -119,7 +119,7 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
     }
 
     private func showMoreMenu(for lineup: FootballLineup, source: UIView) {
-        let sheet = UIAlertController(title: lineup.title, message: nil, preferredStyle: .actionSheet)
+        let sheet = UIAlertController(title: lineup.displayTitle, message: nil, preferredStyle: .actionSheet)
         let favTitle = lineup.isFavorite
             ? L10n.Football.Lineups.unfavorite
             : L10n.Football.Lineups.favorite

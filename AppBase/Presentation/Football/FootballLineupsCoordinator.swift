@@ -65,21 +65,18 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
             self?.presentTeamPickerForLineup(from: vc)
         }
         vc.onPickSettings = { [weak self, weak vc] in
-            self?.presentLineupSettings(from: vc)
+            self?.pushLineupSettings(from: vc)
         }
     }
 
-    private func presentLineupSettings(from presenter: UIViewController?) {
+    private func pushLineupSettings(from presenter: UIViewController?) {
         guard let presenter else { return }
         let lineup = LineupStore.shared.currentLineup
-        let sheet = LineupEditorSettingsViewController(title: lineup.title)
-        sheet.onSave = { [weak presenter] title in
-            guard let editor = presenter as? LineupEditorViewController else { return }
-            editor.viewModel.updateTitle(title)
-            editor.updateNavigationTitle()
-            editor.viewModel.presentSuccess(L10n.Football.Editor.Settings.nameSaved)
+        let settings = LineupEditorSettingsViewController()
+        settings.invoke(viewModel: LineupEditorSettingsViewModel(title: lineup.title))
+        settings.onDidSave = { [weak presenter] in
         }
-        presenter.present(sheet, animated: true)
+        navigate(to: .push(settings))
     }
 
     private func presentTeamPickerForLineup(from presenter: UIViewController?) {

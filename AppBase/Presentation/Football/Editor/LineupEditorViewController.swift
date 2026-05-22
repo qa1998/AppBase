@@ -49,16 +49,22 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     override func viewDidLoad() {
         super.viewDidLoad()
     }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: animated)
-        updateNavigationTitle()
+    
+    override var navSetting: NavigationSetting {
+        var setting = super.navSetting
+        setting.title = viewModel.displayTitle
+        let rightBar  = UIBarButtonItem(
+            image: UIImage(systemName: "gearshape"),
+            style: .plain,
+            target: self,
+            action: #selector(settingsTapped)
+        )
+        setting.rightButtons = [rightBar]
+        return setting
     }
     
     override func setupUI() {
         super.setupUI()
-        setupNavigationItems()
         buildFormationButton()
         buildArrowsButton()
         buildImportTeamButton()
@@ -72,11 +78,9 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         syncDrawingOverlayStrokes()
         updateTacticalActions()
         refreshLocalization()
-        updateNavigationTitle()
     }
     
     override func refreshLocalization() {
-        updateNavigationTitle()
         benchTitleLabel.text = L10n.Football.Editor.benchPlayers
         saveButton.setTitle(L10n.Football.Editor.save.uppercased(), for: .normal)
         importTeamButton.configuration?.title = L10n.Football.Editor.importTeam
@@ -102,7 +106,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         viewModel.$lineup
             .receive(on: DispatchQueue.main)
             .sink { [weak self] lineup in
-                self?.updateNavigationTitle()
+                self?.refreshNavigationTitle()
                 self?.reloadFormation(lineup)
                 self?.reloadPitch(lineup)
                 self?.reloadBench()
@@ -152,21 +156,10 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         super.viewDidLayoutSubviews()
         layoutTokens()
     }
-    
-    // MARK: - Navigation
 
-    private func setupNavigationItems() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "gearshape"),
-            style: .plain,
-            target: self,
-            action: #selector(settingsTapped)
-        )
-        updateNavigationTitle()
-    }
 
-    func updateNavigationTitle() {
-        navigationItem.title = viewModel.displayTitle
+    private func refreshNavigationTitle() {
+        setupNavigation(navSetting)
     }
 
     @objc private func settingsTapped() {

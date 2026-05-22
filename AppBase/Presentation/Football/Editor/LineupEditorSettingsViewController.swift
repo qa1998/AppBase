@@ -3,140 +3,139 @@
 //  AppBase
 //
 
+import BaseMVVM
 import SnapKit
 import UIKit
 
-/// Bottom sheet — edit tactical / lineup display name for the current editor session.
-final class LineupEditorSettingsViewController: UIViewController {
+/// Pushed screen — tactical / lineup metadata (name and more fields later).
+final class LineupEditorSettingsViewController: FootballScreenViewController<LineupEditorSettingsViewModel> {
 
-    var onSave: ((String) -> Void)?
+    var onDidSave: (() -> Void)?
 
-    private let initialTitle: String
-    private var draftTitle: String
-
-    private let headerBar = UIView()
-    private let titleLabel = UILabel()
-    private let closeButton = UIButton(type: .system)
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
+    private let fieldsStack = UIStackView()
     private let nameLabel = UILabel()
+    private let nameFieldContainer = UIView()
     private let nameField = UITextField()
     private let saveButton = UIButton(type: .system)
 
-    init(title: String) {
-        initialTitle = title
-        draftTitle = title
-        super.init(nibName: nil, bundle: nil)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = FootballPalette.background
-        setupSheet()
+    override func setupUI() {
+        super.setupUI()
         buildUI()
         layoutViews()
-        syncUI()
+        applyNameFieldStyle()
+        refreshLocalization()
     }
 
-    private func setupSheet() {
-        if let sheet = sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-            sheet.preferredCornerRadius = Radius.s20
-        }
+    override func onBind() {
+        super.onBind()
+        nameField.text = viewModel.initialTitle
+    }
+
+    override func refreshLocalization() {
+        navigationItem.title = L10n.Football.Editor.Settings.title
+        nameLabel.text = L10n.Football.Editor.Settings.nameLabel
+        saveButton.setTitle(L10n.Football.Editor.Settings.save, for: .normal)
+        applyNameFieldStyle()
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        nameLabel.textColor = FootballPalette.textSecondary
+        applyNameFieldStyle()
+        saveButton.backgroundColor = FootballPalette.accentRed
+    }
+
+    private func applyNameFieldStyle() {
+        nameFieldContainer.backgroundColor = FootballPalette.surfaceElevated
+        nameFieldContainer.layer.borderColor = FootballPalette.glassBorder.cgColor
+        nameField.textColor = FootballPalette.textPrimary
+        nameField.tintColor = FootballPalette.accentGreen
+        let placeholderColor = FootballPalette.textSecondary
+        nameField.attributedPlaceholder = NSAttributedString(
+            string: L10n.Football.Editor.Settings.namePlaceholder,
+            attributes: [.foregroundColor: placeholderColor]
+        )
     }
 
     private func buildUI() {
-        titleLabel.text = L10n.Football.Editor.Settings.title
-        titleLabel.font = FootballPalette.title(18)
-        titleLabel.textColor = FootballPalette.textPrimary
+        scrollView.alwaysBounceVertical = true
+        scrollView.keyboardDismissMode = .interactive
 
-        closeButton.setImage(UIImage(systemName: "xmark"), for: .normal)
-        closeButton.tintColor = FootballPalette.textPrimary
-        closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
+        fieldsStack.axis = .vertical
+        fieldsStack.spacing = Spacing.s10
+        fieldsStack.alignment = .fill
 
-        headerBar.addSubview(titleLabel)
-        headerBar.addSubview(closeButton)
-
-        nameLabel.text = L10n.Football.Editor.Settings.nameLabel
         nameLabel.font = FootballPalette.title(15)
-        nameLabel.textColor = FootballPalette.textSecondary
 
+        nameFieldContainer.layer.cornerRadius = Radius.s12
+        nameFieldContainer.layer.borderWidth = 1
+
+        nameField.borderStyle = .none
+        nameField.backgroundColor = .clear
         nameField.font = FootballPalette.title(16)
-        nameField.textColor = FootballPalette.textPrimary
-        nameField.backgroundColor = FootballPalette.surface
-        nameField.layer.cornerRadius = Radius.s12
-        nameField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: Spacing.s12, height: 1))
-        nameField.leftViewMode = .always
-        nameField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: Spacing.s12, height: 1))
-        nameField.rightViewMode = .always
         nameField.autocapitalizationType = .words
         nameField.returnKeyType = .done
         nameField.clearButtonMode = .whileEditing
-        nameField.placeholder = L10n.Football.Editor.Settings.namePlaceholder
-        nameField.addTarget(self, action: #selector(nameChanged), for: .editingChanged)
         nameField.delegate = self
 
-        saveButton.setTitle(L10n.Football.Editor.Settings.save, for: .normal)
+        nameFieldContainer.addSubview(nameField)
+
+        fieldsStack.addArrangedSubview(nameLabel)
+        fieldsStack.addArrangedSubview(nameFieldContainer)
+        nameFieldContainer.snp.makeConstraints { $0.height.equalTo(48) }
+        nameField.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(Spacing.s12)
+            make.top.bottom.equalToSuperview()
+        }
+
         saveButton.setTitleColor(.white, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
-        saveButton.backgroundColor = FootballPalette.accentRed
         saveButton.layer.cornerRadius = Radius.s12
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
 
-        view.addSubview(headerBar)
-        view.addSubview(nameLabel)
-        view.addSubview(nameField)
+        contentView.addSubview(fieldsStack)
+        scrollView.addSubview(contentView)
+        view.addSubview(scrollView)
         view.addSubview(saveButton)
     }
 
     private func layoutViews() {
-        headerBar.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s8)
-            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
-            make.height.equalTo(44)
-        }
-        titleLabel.snp.makeConstraints { $0.leading.centerY.equalToSuperview() }
-        closeButton.snp.makeConstraints { make in
-            make.trailing.centerY.equalToSuperview()
-            make.size.equalTo(36)
-        }
-
-        nameLabel.snp.makeConstraints { make in
-            make.top.equalTo(headerBar.snp.bottom).offset(Spacing.s24)
-            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
-        }
-        nameField.snp.makeConstraints { make in
-            make.top.equalTo(nameLabel.snp.bottom).offset(Spacing.s10)
-            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
-            make.height.equalTo(48)
-        }
-
         saveButton.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(Spacing.s20)
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Spacing.s16)
             make.height.equalTo(52)
         }
-    }
 
-    private func syncUI() {
-        nameField.text = draftTitle
-    }
+        scrollView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+            make.bottom.equalTo(saveButton.snp.top).offset(-Spacing.s16)
+        }
 
-    @objc private func closeTapped() {
-        dismiss(animated: true)
-    }
+        contentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.equalTo(scrollView.snp.width)
+        }
 
-    @objc private func nameChanged() {
-        draftTitle = nameField.text ?? ""
+        fieldsStack.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(Spacing.s24)
+            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
+            make.bottom.equalToSuperview().inset(Spacing.s24)
+        }
     }
 
     @objc private func saveTapped() {
         nameField.resignFirstResponder()
-        onSave?(draftTitle.trimmingCharacters(in: .whitespacesAndNewlines))
-        dismiss(animated: true)
+        let title = (nameField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        viewModel.saveTitle(title)
+        onDidSave?()
+        navigationController?.popViewController(animated: true)
     }
 }
 

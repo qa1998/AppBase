@@ -24,7 +24,7 @@ final class LineupExportViewController: FootballScreenViewController<LineupExpor
 
         previewTitleLabel.font = FootballPalette.headline(22)
         previewTitleLabel.textColor = FootballPalette.textPrimary
-        previewTitleLabel.text = LineupStore.shared.currentLineup.title
+        previewTitleLabel.text = LineupStore.shared.currentLineup.displayTitle
 
         templateStack.axis = .horizontal
         templateStack.spacing = Spacing.s12
@@ -76,6 +76,11 @@ final class LineupExportViewController: FootballScreenViewController<LineupExpor
         renderPreviewTokens()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        previewTitleLabel.text = LineupStore.shared.currentLineup.displayTitle
+    }
+
     override func refreshLocalization() {
         title = L10n.Football.Export.title
         downloadButton.setTitle(L10n.Football.Export.download, for: .normal)
@@ -120,7 +125,7 @@ final class LineupExportViewController: FootballScreenViewController<LineupExpor
         let text = L10n.Football.Export.saved
         viewModel.presentSuccess(text)
         let activity = UIActivityViewController(
-            activityItems: [image, LineupStore.shared.currentLineup.title],
+            activityItems: [image, LineupStore.shared.currentLineup.displayTitle],
             applicationActivities: nil
         )
         present(activity, animated: true)

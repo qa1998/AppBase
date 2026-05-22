@@ -41,10 +41,6 @@ final class LineupEditorViewModel: TIOViewModel<TIOLoadingTarget> {
         lineup.displayTitle
     }
 
-    func updateTitle(_ title: String) {
-        LineupStore.shared.updateCurrentLineupTitle(title)
-    }
-
     var benchPlayers: [FootballPlayer] {
         lineup.benchPlayerIds.compactMap { id in
             FootballPlayer.resolved(id: id)

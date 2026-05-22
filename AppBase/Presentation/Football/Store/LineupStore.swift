@@ -151,7 +151,21 @@ final class LineupStore {
     }
 
     func updateCurrentLineupTitle(_ title: String) {
-        mutate { $0.title = title.trimmingCharacters(in: .whitespacesAndNewlines) }
+        pushUndoSnapshot()
+        var copy = currentLineup
+        copy.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        copy.updatedAt = Date()
+        currentLineup = copy
+        redoStack.removeAll()
+        syncSavedLineupRecordFromCurrent()
+        notify()
+    }
+
+    /// Mirrors lightweight edits on `currentLineup` into `savedLineups` (e.g. title from settings).
+    private func syncSavedLineupRecordFromCurrent() {
+        guard let index = savedLineups.firstIndex(where: { $0.id == currentLineup.id }) else { return }
+        savedLineups[index].title = currentLineup.title
+        savedLineups[index].updatedAt = currentLineup.updatedAt
     }
 
     func updateLineupMetadata(id: String, isFavorite: Bool? = nil, isDraft: Bool? = nil) {

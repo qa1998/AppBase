@@ -145,7 +145,7 @@ final class FootballHomeViewController: FootballScreenViewController<FootballHom
         for lineup in lineups.prefix(3) {
             let card = FootballGlassView()
             let label = UILabel()
-            label.text = lineup.title
+            label.text = lineup.displayTitle
             label.font = FootballPalette.title(15)
             label.textColor = FootballPalette.textPrimary
             card.addSubview(label)

@@ -9,7 +9,11 @@ import UIKit
 
 /// Dark tactical theme for all Football Lineup Builder screens.
 class FootballScreenViewController<VM: TIOViewModel<TIOLoadingTarget>>: TIOViewController<VM, TIOLoadingTarget> {
-
+    
+    override var navSetting: NavigationSetting {
+        return super.navSetting
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         applyFootballChrome()
