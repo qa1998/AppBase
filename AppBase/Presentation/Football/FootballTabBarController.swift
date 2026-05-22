@@ -72,16 +72,16 @@ final class FootballTabBarController: ESTabBarController {
         selectedIndex = Tab.lineups.rawValue
         refreshLocalization()
         if selectedIndex < navigationControllers.count {
-            FootballDemoBannerAdPresenter.shared.updateForNavigationStack(
-                navigationControllers[selectedIndex]
-            )
+//            FootballDemoBannerAdPresenter.shared.updateForNavigationStack(
+//                navigationControllers[selectedIndex]
+//            )
         }
     }
 
     /// Banner demo chỉ trên tab đang chọn và màn root (không push).
     func updateDemoBanner(for navigationController: UINavigationController) {
         guard selectedViewController === navigationController else { return }
-        FootballDemoBannerAdPresenter.shared.updateForNavigationStack(navigationController)
+//        FootballDemoBannerAdPresenter.shared.updateForNavigationStack(navigationController)
     }
 
     private func makeTabBarItem(for tab: Tab) -> UITabBarItem {
@@ -136,7 +136,6 @@ final class FootballTabBarController: ESTabBarController {
             || viewController is MyTeamsViewController
             || viewController is FootballMatchesViewController
             || viewController is FootballSettingsViewController
-        navigationController.setNavigationBarHidden(hideNav, animated: animated)
     }
 }
 
@@ -153,7 +152,6 @@ extension FootballTabBarController: UITabBarControllerDelegate {
         let hideNav = root is MyLineupsViewController
             || root is MyTeamsViewController
             || root is FootballMatchesViewController
-        nav.setNavigationBarHidden(hideNav, animated: false)
         updateTabBarVisibility(for: nav)
         updateDemoBanner(for: nav)
     }

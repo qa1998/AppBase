@@ -31,7 +31,7 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        
     }
 
     override func setupUI() {

@@ -21,7 +21,7 @@ final class MyTeamsViewController: FootballScreenViewController<MyTeamsViewModel
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        
     }
 
     override func setupUI() {

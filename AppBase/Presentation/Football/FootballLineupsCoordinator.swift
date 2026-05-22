@@ -61,7 +61,6 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
         vc.onSaveLineup = { [weak vc] in
             vc?.navigationController?.popViewController(animated: true)
         }
-        navigationController.setNavigationBarHidden(true, animated: false)
     }
 
     private func presentFormationPicker(from presenter: UIViewController?) {

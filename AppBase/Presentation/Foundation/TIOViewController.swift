@@ -10,6 +10,26 @@ import Combine
 import UIKit
 import SnapKit
 
+struct NavigationSetting {
+    var title: String? = nil
+    var backImage: String = "ic_arrow_left"
+    var navigationShadow: UIImage? = nil
+    var rightButtons: [UIBarButtonItem]? = nil
+    var leftButtons: [UIBarButtonItem]? = nil
+}
+
+extension NavigationSetting {
+    
+    static func singleTitle(_ title: String, rightItems: [UIBarButtonItem] = [], leftItems: [UIBarButtonItem] = []) -> Self {
+        return NavigationSetting(
+            title: title,
+            rightButtons: rightItems,
+            leftButtons: leftItems
+        )
+    }
+    
+}
+
 class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, LocalizationRefreshable
     where VM: TIOViewModel<Event> {
 
@@ -21,9 +41,14 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
     var shimmerContentView: UIView {
         view
     }
-
+    
+    var navSetting: NavigationSetting {
+        return NavigationSetting()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupNavigation(navSetting)
         bindScreenTheme()
         bindLocalization()
         layoutIFSContentViewsIfNeeded()
@@ -123,6 +148,38 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
                 make.edges.equalToSuperview()
             }
         }
+    }
+    
+    func setupNavigation(_ setting: NavigationSetting) {
+        title = setting.title
+        navigationItem.rightBarButtonItems = setting.rightButtons
+        
+        var leftItems: [UIBarButtonItem] = []
+        
+        // Chỉ hiện back khi không phải root VC
+        if (navigationController?.viewControllers.count ?? 0) > 1 {
+            
+            let backButton = UIButton(type: .system)
+            backButton.setImage(
+                UIImage(systemName: "chevron.left"),
+                for: .normal
+            )
+            backButton.tintColor = .white
+            backButton.addTarget(
+                self,
+                action: #selector(onBackPress),
+                for: .touchUpInside
+            )
+            
+            let backItem = UIBarButtonItem(customView: backButton)
+            leftItems.append(backItem)
+        }
+        
+        if let customLeftItems = setting.leftButtons {
+            leftItems.append(contentsOf: customLeftItems)
+        }
+        
+        navigationItem.leftBarButtonItems = leftItems
     }
 
     @objc func onBackPress() {

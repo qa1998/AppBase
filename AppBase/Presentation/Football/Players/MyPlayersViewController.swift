@@ -22,7 +22,7 @@ final class MyPlayersViewController: FootballScreenViewController<MyPlayersViewM
     override func viewDidLoad() {
         super.viewDidLoad()
         let isPushed = (navigationController?.viewControllers.count ?? 0) > 1
-        navigationController?.setNavigationBarHidden(!isPushed, animated: false)
+        
         titleLabel.isHidden = isPushed
         if isPushed {
             title = L10n.Football.Players.libraryTitle

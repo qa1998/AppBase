@@ -33,7 +33,7 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.setNavigationBarHidden(false, animated: false)
+        
     }
 
     override func setupUI() {

@@ -18,7 +18,7 @@ final class FootballSplashViewController: FootballScreenViewController<FootballS
 
     override func setupUI() {
         super.setupUI()
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        
 
         logoImageView.image = UIImage(systemName: "sportscourt.fill")
         logoImageView.tintColor = FootballPalette.accentGreen

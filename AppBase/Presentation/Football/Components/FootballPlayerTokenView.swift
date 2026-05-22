@@ -63,7 +63,7 @@ final class FootballPlayerTokenView: UIView {
     private let circleView = UIView()
     private let avatarImageView = UIImageView()
     private let avatarLabel = UILabel()
-    private let namePill = UILabel()
+    private let namePill = PaddingLabel()
     private let innerGlow = CALayer()
     private let dashedLayer = CAShapeLayer()
 

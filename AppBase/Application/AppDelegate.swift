@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AdsKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {

@@ -32,7 +32,7 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.setNavigationBarHidden(false, animated: false)
+        
     }
 
     override func viewWillAppear(_ animated: Bool) {
