@@ -170,7 +170,8 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     
     private func buildArrowsButton() {
         var config = UIButton.Configuration.plain()
-        config.image = UIImage(systemName: "arrow.turn.up.right", withConfiguration: symbolConfig(pointSize: 12, weight: .semibold))
+        config.title = "Draw"
+        config.image = UIImage(named: "ic-arrow-top-right")?.resized(to: .square(size: 16))
         config.imagePlacement = .trailing
         config.imagePadding = Spacing.s8
         config.contentInsets = NSDirectionalEdgeInsets(

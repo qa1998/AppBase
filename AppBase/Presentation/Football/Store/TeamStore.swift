@@ -32,6 +32,7 @@ final class TeamStore {
             } else {
                 currentTeam = FootballTeam.empty()
             }
+            migratePitchYAxisIfNeeded()
         } else {
             currentTeam = FootballTeam.empty()
             persist()
@@ -142,6 +143,14 @@ final class TeamStore {
     func benchPlayer(at index: Int) -> FootballPlayer? {
         guard let id = currentTeam.activeSetup.benchPlayerIds[safe: index], !id.isEmpty else { return nil }
         return FootballPlayer.resolved(id: id)
+    }
+
+    private func migratePitchYAxisIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: FormationCatalog.yAxisTeamsMigrationKey) else { return }
+        teams = teams.map(FormationCatalog.flipTeamSetups)
+        currentTeam = FormationCatalog.flipTeamSetups(currentTeam)
+        UserDefaults.standard.set(true, forKey: FormationCatalog.yAxisTeamsMigrationKey)
+        persist()
     }
 
     private func persist() {

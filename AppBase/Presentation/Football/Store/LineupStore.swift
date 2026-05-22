@@ -35,10 +35,12 @@ final class LineupStore {
     var canRedoStroke: Bool { !strokeRedoStack.isEmpty }
 
     private init() {
+        let didLoadSnapshot: Bool
         if let snapshot = DataStore.shared.value(
             forKey: .footballLineups,
             type: FootballLineupsSnapshot.self
         ), !snapshot.savedLineups.isEmpty {
+            didLoadSnapshot = true
             savedLineups = snapshot.savedLineups
             currentLineup = snapshot.currentLineup
             tacticalStrokes = snapshot.tacticalStrokes
@@ -47,9 +49,15 @@ final class LineupStore {
             tacticalLineOptions = snapshot.tacticalLineOptions
             pitchDisplayOptions = snapshot.pitchDisplayOptions
         } else {
+            didLoadSnapshot = false
             savedLineups = LineupStore.sampleLineups()
             currentLineup = savedLineups[0]
             applyDrawingState(from: currentLineup)
+        }
+
+        if didLoadSnapshot {
+            migratePitchYAxisIfNeeded()
+        } else {
             persist()
         }
     }
@@ -248,6 +256,17 @@ final class LineupStore {
         persist()
         currentLineupDidChange.send(currentLineup)
         lineupsDidChange.send()
+    }
+
+    private func migratePitchYAxisIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: FormationCatalog.yAxisLineupsMigrationKey) else { return }
+        savedLineups = savedLineups.map(FormationCatalog.flipLineup)
+        currentLineup = FormationCatalog.flipLineup(currentLineup)
+        tacticalStrokes = tacticalStrokes.map(FormationCatalog.flipStroke)
+        strokeUndoStack = strokeUndoStack.map { $0.map(FormationCatalog.flipStroke) }
+        strokeRedoStack = strokeRedoStack.map { $0.map(FormationCatalog.flipStroke) }
+        UserDefaults.standard.set(true, forKey: FormationCatalog.yAxisLineupsMigrationKey)
+        persist()
     }
 
     private func persist() {

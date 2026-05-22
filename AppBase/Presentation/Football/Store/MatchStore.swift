@@ -88,6 +88,24 @@ final class MatchStore {
         if let id = snapshot.currentMatchId {
             currentMatch = matches.first { $0.id == id }
         }
+        migratePitchYAxisIfNeeded()
+    }
+
+    private func migratePitchYAxisIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: FormationCatalog.yAxisMatchesMigrationKey) else { return }
+        matches = matches.map(flipMatchRosters)
+        if let current = currentMatch {
+            currentMatch = flipMatchRosters(current)
+        }
+        UserDefaults.standard.set(true, forKey: FormationCatalog.yAxisMatchesMigrationKey)
+        persist()
+    }
+
+    private func flipMatchRosters(_ match: FootballMatch) -> FootballMatch {
+        var copy = match
+        copy.settings.homeRoster = FormationCatalog.flipRoster(copy.settings.homeRoster)
+        copy.settings.awayRoster = FormationCatalog.flipRoster(copy.settings.awayRoster)
+        return copy
     }
 
     private func notify() {

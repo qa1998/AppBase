@@ -11,11 +11,6 @@ import UIKit
 final class PlayerEditorViewController: FootballScreenViewController<PlayerEditorViewModel> {
 
     var onSaved: (() -> Void)?
-
-    private let headerBar = UIView()
-    private let backButton = UIButton(type: .system)
-    private let headerTitleLabel = UILabel()
-
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
     private let avatarButton = UIButton(type: .custom)
@@ -36,14 +31,12 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
 
     override func setupUI() {
         super.setupUI()
-        buildHeader()
         buildForm()
         layoutChrome()
         syncFromPlayer(viewModel.player)
     }
 
     override func refreshLocalization() {
-        headerTitleLabel.text = L10n.Football.Players.editorTitle
         avatarHintLabel.text = L10n.Football.Players.avatarHint
         nameField.placeholder = L10n.Football.Players.namePlaceholder
         jerseyTitleLabel.text = L10n.Football.Players.jerseyTitle
@@ -61,29 +54,6 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
             }
             .store(in: &cancelBag)
     }
-
-    private func buildHeader() {
-        backButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
-        backButton.tintColor = FootballPalette.textPrimary
-        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
-        headerTitleLabel.font = FootballPalette.title(17)
-        headerTitleLabel.textColor = FootballPalette.textPrimary
-        headerTitleLabel.textAlignment = .center
-        headerBar.addSubview(backButton)
-        headerBar.addSubview(headerTitleLabel)
-        view.addSubview(headerBar)
-        backButton.snp.makeConstraints { make in
-            make.leading.centerY.equalToSuperview()
-            make.size.equalTo(44)
-        }
-        headerTitleLabel.snp.makeConstraints { $0.center.equalToSuperview() }
-        headerBar.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(44)
-        }
-    }
-
     private func buildForm() {
         contentStack.axis = .vertical
         contentStack.spacing = Spacing.s16
@@ -168,7 +138,7 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
 
     private func layoutChrome() {
         scrollView.snp.makeConstraints { make in
-            make.top.equalTo(headerBar.snp.bottom).offset(Spacing.s8)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s8)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(saveButton.snp.top).offset(-Spacing.s12)
         }

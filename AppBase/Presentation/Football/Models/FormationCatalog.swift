@@ -87,10 +87,12 @@ enum FormationCatalog {
             sum += 1
         }
 
-        var points: [CGPoint] = [CGPoint(x: 0.5, y: 0.08)]
+        // y: 0 = attack (top), 1 = defense / GK (bottom) — see FootballFormation.slots
+        var points: [CGPoint] = [CGPoint(x: 0.5, y: 0.92)]
         let rowCount = lines.count
         for (row, count) in lines.enumerated() {
-            let y = 0.2 + (CGFloat(row + 1) / CGFloat(rowCount + 1)) * 0.68
+            let depth = CGFloat(row + 1) / CGFloat(rowCount + 1)
+            let y = 0.92 - depth * 0.68
             for col in 0..<count {
                 let x = CGFloat(col + 1) / CGFloat(count + 1)
                 points.append(CGPoint(x: x, y: y))
@@ -100,5 +102,64 @@ enum FormationCatalog {
             points.append(CGPoint(x: 0.5, y: 0.5))
         }
         return Array(points.prefix(totalPlayers))
+    }
+
+    // MARK: - Y-axis migration (old builds had GK at top)
+
+    static let yAxisLineupsMigrationKey = "football.pitch.yAxisFlipped.lineups.v1"
+    static let yAxisTeamsMigrationKey = "football.pitch.yAxisFlipped.teams.v1"
+    static let yAxisMatchesMigrationKey = "football.pitch.yAxisFlipped.matches.v1"
+
+    static func flipPitchY(_ point: CGPoint) -> CGPoint {
+        CGPoint(x: point.x, y: 1 - point.y)
+    }
+
+    static func flipLineup(_ lineup: FootballLineup) -> FootballLineup {
+        var copy = lineup
+        copy.assignments = copy.assignments.map { slot in
+            var s = slot
+            s.normalizedPosition = flipPitchY(s.normalizedPosition)
+            return s
+        }
+        copy.tacticalDrawing = flipDrawingState(copy.tacticalDrawing)
+        return copy
+    }
+
+    static func flipDrawingState(_ state: TacticalDrawingState) -> TacticalDrawingState {
+        var copy = state
+        copy.strokes = copy.strokes.map(flipStroke)
+        copy.undoStack = copy.undoStack.map { $0.map(flipStroke) }
+        copy.redoStack = copy.redoStack.map { $0.map(flipStroke) }
+        return copy
+    }
+
+    static func flipStroke(_ stroke: TacticalStroke) -> TacticalStroke {
+        var copy = stroke
+        copy.points = copy.points.map(flipPitchY)
+        return copy
+    }
+
+    static func flipRoster(_ roster: MatchTeamRoster) -> MatchTeamRoster {
+        var copy = roster
+        copy.assignments = copy.assignments.map { slot in
+            var s = slot
+            s.normalizedPosition = flipPitchY(s.normalizedPosition)
+            return s
+        }
+        return copy
+    }
+
+    static func flipTeamSetups(_ team: FootballTeam) -> FootballTeam {
+        var copy = team
+        for key in copy.setups.keys {
+            guard var setup = copy.setups[key] else { continue }
+            setup.assignments = setup.assignments.map { slot in
+                var s = slot
+                s.normalizedPosition = flipPitchY(s.normalizedPosition)
+                return s
+            }
+            copy.setups[key] = setup
+        }
+        return copy
     }
 }
