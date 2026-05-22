@@ -72,56 +72,38 @@ enum FormationCatalog {
         name.split(separator: "-").compactMap { Int($0) }
     }
 
-    /// GK + outfield lines; trims or pads to `totalPlayers`.
+    /// GK + outfield lines via dynamic pitch grid (normalized 0…1 in field space).
     static func makeSlots(lineCounts: [Int], totalPlayers: Int) -> [CGPoint] {
-        var lines = lineCounts
-        var sum = lines.reduce(0, +)
-        while sum > totalPlayers - 1, !lines.isEmpty {
-            if let idx = lines.indices.max(by: { lines[$0] < lines[$1] }) {
-                lines[idx] -= 1
-                sum -= 1
-            } else { break }
-        }
-        while sum < totalPlayers - 1 {
-            lines.append(1)
-            sum += 1
-        }
-
-        // y: 0 = attack (top), 1 = defense / GK (bottom) — see FootballFormation.slots
-        var points: [CGPoint] = [CGPoint(x: 0.5, y: 0.92)]
-        let rowCount = lines.count
-        for (row, count) in lines.enumerated() {
-            let depth = CGFloat(row + 1) / CGFloat(rowCount + 1)
-            let y = 0.92 - depth * 0.68
-            for col in 0..<count {
-                let x = CGFloat(col + 1) / CGFloat(count + 1)
-                points.append(CGPoint(x: x, y: y))
-            }
-        }
-        while points.count < totalPlayers {
-            points.append(CGPoint(x: 0.5, y: 0.5))
-        }
-        return Array(points.prefix(totalPlayers))
+        PitchFormationGridLayout.normalizedCenters(lineCounts: lineCounts, totalPlayers: totalPlayers)
     }
 
-    // MARK: - Y-axis migration (old builds had GK at top)
-
-    static let yAxisLineupsMigrationKey = "football.pitch.yAxisFlipped.lineups.v1"
-    static let yAxisTeamsMigrationKey = "football.pitch.yAxisFlipped.teams.v1"
-    static let yAxisMatchesMigrationKey = "football.pitch.yAxisFlipped.matches.v1"
+    // MARK: - Pitch Y-axis (0 = attack / top, 1 = defense / GK bottom)
 
     static func flipPitchY(_ point: CGPoint) -> CGPoint {
         CGPoint(x: point.x, y: 1 - point.y)
     }
 
+    /// GK is slot 0; inverted saves have GK `y` near the top.
+    static func isPitchYAxisInverted(_ assignments: [PitchSlotAssignment]) -> Bool {
+        guard let gkSlot = assignments.first else { return false }
+        return gkSlot.normalizedPosition.y < 0.5
+    }
+
+    @discardableResult
+    static func healInvertedPitch(_ lineup: inout FootballLineup) -> Bool {
+        guard isPitchYAxisInverted(lineup.assignments) else { return false }
+        lineup.assignments = lineup.assignments.map { slot in
+            var copy = slot
+            copy.normalizedPosition = flipPitchY(copy.normalizedPosition)
+            return copy
+        }
+        lineup.tacticalDrawing = flipDrawingState(lineup.tacticalDrawing)
+        return true
+    }
+
     static func flipLineup(_ lineup: FootballLineup) -> FootballLineup {
         var copy = lineup
-        copy.assignments = copy.assignments.map { slot in
-            var s = slot
-            s.normalizedPosition = flipPitchY(s.normalizedPosition)
-            return s
-        }
-        copy.tacticalDrawing = flipDrawingState(copy.tacticalDrawing)
+        _ = healInvertedPitch(&copy)
         return copy
     }
 
@@ -149,17 +131,37 @@ enum FormationCatalog {
         return copy
     }
 
-    static func flipTeamSetups(_ team: FootballTeam) -> FootballTeam {
-        var copy = team
-        for key in copy.setups.keys {
-            guard var setup = copy.setups[key] else { continue }
+    @discardableResult
+    static func healInvertedPitch(_ team: inout FootballTeam) -> Bool {
+        var changed = false
+        for key in team.setups.keys {
+            guard var setup = team.setups[key] else { continue }
+            guard isPitchYAxisInverted(setup.assignments) else { continue }
             setup.assignments = setup.assignments.map { slot in
                 var s = slot
                 s.normalizedPosition = flipPitchY(s.normalizedPosition)
                 return s
             }
-            copy.setups[key] = setup
+            team.setups[key] = setup
+            changed = true
         }
+        return changed
+    }
+
+    static func flipTeamSetups(_ team: FootballTeam) -> FootballTeam {
+        var copy = team
+        _ = healInvertedPitch(&copy)
         return copy
+    }
+
+    @discardableResult
+    static func healInvertedPitch(_ roster: inout MatchTeamRoster) -> Bool {
+        guard isPitchYAxisInverted(roster.assignments) else { return false }
+        roster.assignments = roster.assignments.map { slot in
+            var s = slot
+            s.normalizedPosition = flipPitchY(s.normalizedPosition)
+            return s
+        }
+        return true
     }
 }

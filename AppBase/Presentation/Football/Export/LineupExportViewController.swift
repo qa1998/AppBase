@@ -107,15 +107,9 @@ final class LineupExportViewController: FootballScreenViewController<LineupExpor
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        previewPitch.subviews
-            .compactMap { $0 as? FootballPlayerTokenView }
-            .forEach { token in
-                let b = previewPitch.bounds
-                token.center = CGPoint(
-                    x: b.width * token.normalizedPosition.x,
-                    y: b.height * token.normalizedPosition.y
-                )
-            }
+        let tokens = previewPitch.subviews.compactMap { $0 as? FootballPlayerTokenView }
+        let lineup = LineupStore.shared.currentLineup
+        PitchPlayerTokenLayout.layout(tokens, formation: lineup.formation, in: previewPitch)
     }
 
     @objc private func shareTapped() {

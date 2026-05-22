@@ -8,8 +8,17 @@ import UIKit
 /// Football field with grid, white markings (edit lineup card).
 final class FootballPitchView: UIView {
 
+    static let fieldInset: CGFloat = 10
+    /// Vertical pitch: field width / height ≈ 0.65
+    static let fieldWidthToHeightRatio = PitchFormationGridLayout.fieldWidthToHeightRatio
+    static let penaltyDepthRatio: CGFloat = 0.18
+
     var displayOptions: PitchDisplayOptions = LineupStore.shared.pitchDisplayOptions {
         didSet { setNeedsDisplay() }
+    }
+
+    func fieldRect(in bounds: CGRect? = nil) -> CGRect {
+        (bounds ?? self.bounds).insetBy(dx: Self.fieldInset, dy: Self.fieldInset)
     }
 
     override init(frame: CGRect) {
@@ -27,8 +36,7 @@ final class FootballPitchView: UIView {
 
     override func draw(_ rect: CGRect) {
         guard let ctx = UIGraphicsGetCurrentContext() else { return }
-        let inset: CGFloat = 10
-        let field = rect.insetBy(dx: inset, dy: inset)
+        let field = fieldRect(in: rect)
 
         if displayOptions.showsGrid {
             drawGrid(ctx: ctx, in: field)
@@ -95,7 +103,7 @@ final class FootballPitchView: UIView {
 
     private func drawPenaltyArea(ctx: CGContext, field: CGRect, top: Bool) {
         let w = field.width * 0.55
-        let h = field.height * 0.18
+        let h = field.height * Self.penaltyDepthRatio
         let x = field.midX - w / 2
         let y = top ? field.minY : field.maxY - h
         ctx.stroke(CGRect(x: x, y: y, width: w, height: h))

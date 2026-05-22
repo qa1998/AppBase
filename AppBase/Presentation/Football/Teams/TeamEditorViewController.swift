@@ -177,7 +177,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
 
         pitchView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(Spacing.s12)
-            make.height.equalTo(pitchView.snp.width).multipliedBy(1.28)
+            make.height.equalTo(pitchView.snp.width).dividedBy(FootballPitchView.fieldWidthToHeightRatio)
         }
 
         contentStack.addArrangedSubview(pitchCard)
@@ -196,7 +196,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         benchRow.addSubview(benchStack)
         benchStack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-            make.height.equalTo(FootballPlayerTokenSize.bench.viewSize.height + 4)
+            make.height.greaterThanOrEqualTo(FootballPlayerTokenSize.bench.circleDiameter + 20)
         }
 
         contentStack.addArrangedSubview(benchTitleLabel)
@@ -256,9 +256,6 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
             token.delegate = self
             token.allowsDrag = false
             pitchView.addSubview(token)
-            token.snp.makeConstraints { make in
-                make.size.equalTo(FootballPlayerTokenSize.pitch.viewSize)
-            }
             playerTokens.append(token)
         }
 
@@ -283,18 +280,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     }
 
     private func layoutPitchTokens() {
-        let bounds = pitchView.bounds
-        guard bounds.width > 0, bounds.height > 0 else { return }
-        for token in playerTokens {
-            let p = token.normalizedPosition
-            let x = p.x * bounds.width
-            let y = p.y * bounds.height
-            token.snp.remakeConstraints { make in
-                make.size.equalTo(FootballPlayerTokenSize.pitch.viewSize)
-                make.centerX.equalToSuperview().offset(x - bounds.width / 2)
-                make.centerY.equalToSuperview().offset(y - bounds.height / 2)
-            }
-        }
+        PitchPlayerTokenLayout.layout(playerTokens, formation: viewModel.team.formation, in: pitchView)
     }
 
     private func syncPitchSizeSelection() {

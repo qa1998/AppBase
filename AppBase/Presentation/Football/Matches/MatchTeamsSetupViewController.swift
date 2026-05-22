@@ -63,7 +63,7 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
         benchRow.addSubview(benchStack)
         benchStack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-            make.height.equalTo(FootballPlayerTokenSize.bench.viewSize.height + 4)
+            make.height.greaterThanOrEqualTo(FootballPlayerTokenSize.bench.circleDiameter + 20)
         }
 
         progressLabel.font = FootballPalette.caption()
@@ -118,7 +118,7 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
         }
         pitchView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(Spacing.s12)
-            make.height.equalTo(pitchView.snp.width).multipliedBy(1.28)
+            make.height.equalTo(pitchView.snp.width).dividedBy(FootballPitchView.fieldWidthToHeightRatio)
         }
 
         reloadSquad()
@@ -155,9 +155,6 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
             token.delegate = self
             token.allowsDrag = false
             pitchView.addSubview(token)
-            token.snp.makeConstraints { make in
-                make.size.equalTo(FootballPlayerTokenSize.pitch.viewSize)
-            }
             playerTokens.append(token)
         }
         view.setNeedsLayout()
@@ -166,19 +163,10 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
     }
 
     private func layoutPitchTokens() {
-        let bounds = pitchView.bounds
-        guard bounds.width > 0, bounds.height > 0 else { return }
-
-        for token in playerTokens {
-            let p = token.normalizedPosition
-            let x = p.x * bounds.width
-            let y = p.y * bounds.height
-            token.snp.remakeConstraints { make in
-                make.size.equalTo(FootballPlayerTokenSize.pitch.viewSize)
-                make.centerX.equalToSuperview().offset(x - bounds.width / 2)
-                make.centerY.equalToSuperview().offset(y - bounds.height / 2)
-            }
-        }
+        let roster = viewModel.roster(for: editingSide)
+        let formation = FootballFormation.catalog.first { $0.id == roster.formationId }
+            ?? FootballFormation.default
+        PitchPlayerTokenLayout.layout(playerTokens, formation: formation, in: pitchView)
     }
 
     private func reloadBench() {

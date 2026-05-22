@@ -259,14 +259,22 @@ final class LineupStore {
     }
 
     private func migratePitchYAxisIfNeeded() {
-        guard !UserDefaults.standard.bool(forKey: FormationCatalog.yAxisLineupsMigrationKey) else { return }
-        savedLineups = savedLineups.map(FormationCatalog.flipLineup)
-        currentLineup = FormationCatalog.flipLineup(currentLineup)
-        tacticalStrokes = tacticalStrokes.map(FormationCatalog.flipStroke)
-        strokeUndoStack = strokeUndoStack.map { $0.map(FormationCatalog.flipStroke) }
-        strokeRedoStack = strokeRedoStack.map { $0.map(FormationCatalog.flipStroke) }
-        UserDefaults.standard.set(true, forKey: FormationCatalog.yAxisLineupsMigrationKey)
+        guard !UserDefaults.standard.bool(forKey: PitchFormationGridLayout.gridLayoutLineupsMigrationKey) else { return }
+        savedLineups = savedLineups.map { Self.realignLineupToGrid($0) }
+        currentLineup = Self.realignLineupToGrid(currentLineup)
+        if FormationCatalog.isPitchYAxisInverted(currentLineup.assignments) {
+            tacticalStrokes = tacticalStrokes.map(FormationCatalog.flipStroke)
+            strokeUndoStack = strokeUndoStack.map { $0.map(FormationCatalog.flipStroke) }
+            strokeRedoStack = strokeRedoStack.map { $0.map(FormationCatalog.flipStroke) }
+        }
+        UserDefaults.standard.set(true, forKey: PitchFormationGridLayout.gridLayoutLineupsMigrationKey)
         persist()
+    }
+
+    private static func realignLineupToGrid(_ lineup: FootballLineup) -> FootballLineup {
+        var copy = lineup
+        copy.assignments = PitchFormationGridLayout.realignAssignments(copy.assignments, formation: copy.formation)
+        return copy
     }
 
     private func persist() {

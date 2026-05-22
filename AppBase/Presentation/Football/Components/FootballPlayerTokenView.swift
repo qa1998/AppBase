@@ -15,13 +15,6 @@ enum FootballPlayerTokenSize {
     case pitch
     case bench
 
-    var viewSize: CGSize {
-        switch self {
-        case .pitch: return CGSize(width: 48, height: 56)
-        case .bench: return CGSize(width: 36, height: 40)
-        }
-    }
-
     var circleDiameter: CGFloat {
         switch self {
         case .pitch: return 38
@@ -68,6 +61,9 @@ final class FootballPlayerTokenView: UIView {
     private let dashedLayer = CAShapeLayer()
 
     var normalizedPosition: CGPoint = .zero
+    /// Set by `PitchPlayerTokenLayout` from grid slot width.
+    var gridLabelMaxWidth: CGFloat?
+    var gridMaxCircleDiameter: CGFloat?
     /// Kéo thả trên sân — mặc định tắt (vị trí theo formation).
     var allowsDrag = false
 
@@ -84,7 +80,99 @@ final class FootballPlayerTokenView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     override var intrinsicContentSize: CGSize {
-        tokenSize.viewSize
+        preferredTokenSize
+    }
+
+    var preferredTokenSize: CGSize {
+        let spacing: CGFloat = 3
+        let circle = min(
+            gridMaxCircleDiameter ?? tokenSize.circleDiameter,
+            tokenSize.circleDiameter
+        )
+        guard !namePill.isHidden else {
+            return CGSize(width: circle, height: circle)
+        }
+        let labelCap = gridLabelMaxWidth ?? .greatestFiniteMagnitude
+        let nameSize = Self.measureNamePill(namePill, maxLines: 2, maxWidth: labelCap)
+        return CGSize(
+            width: max(circle, min(nameSize.width, labelCap)),
+            height: circle + spacing + nameSize.height
+        )
+    }
+
+    /// Width / height from actual label text (up to `maxLines`), not a fixed token box.
+    static func measureNamePill(_ label: PaddingLabel, maxLines: Int, maxWidth: CGFloat = .greatestFiniteMagnitude) -> CGSize {
+        guard let text = label.text, !text.isEmpty, let font = label.font else { return .zero }
+
+        let insets = label.textInsets
+        let lineHeight = font.lineHeight
+        let maxTextHeight = lineHeight * CGFloat(maxLines)
+        let attrs: [NSAttributedString.Key: Any] = [.font: font]
+        let maxTextWidth = max(1, maxWidth - insets.left - insets.right)
+
+        let natural = (text as NSString).boundingRect(
+            with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: attrs,
+            context: nil
+        )
+
+        var textWidth: CGFloat
+        let textHeight: CGFloat
+
+        if natural.width <= maxTextWidth + 0.5, natural.height <= maxTextHeight + 0.5 {
+            textWidth = ceil(natural.width)
+            textHeight = ceil(natural.height)
+        } else {
+            textWidth = minimumWrapWidth(
+                for: text,
+                font: font,
+                maxTextHeight: maxTextHeight,
+                naturalWidth: natural.width,
+                maxWidth: maxTextWidth
+            )
+            let wrapped = (text as NSString).boundingRect(
+                with: CGSize(width: textWidth, height: .greatestFiniteMagnitude),
+                options: [.usesLineFragmentOrigin, .usesFontLeading],
+                attributes: attrs,
+                context: nil
+            )
+            textHeight = min(ceil(wrapped.height), ceil(maxTextHeight))
+        }
+
+        return CGSize(
+            width: min(textWidth + insets.left + insets.right, maxWidth),
+            height: textHeight + insets.top + insets.bottom
+        )
+    }
+
+    private static func minimumWrapWidth(
+        for text: String,
+        font: UIFont,
+        maxTextHeight: CGFloat,
+        naturalWidth: CGFloat,
+        maxWidth: CGFloat
+    ) -> CGFloat {
+        var low = font.pointSize
+        var high = min(max(naturalWidth, low), maxWidth)
+        var best = high
+
+        while low <= high {
+            let mid = floor((low + high) / 2)
+            let rect = (text as NSString).boundingRect(
+                with: CGSize(width: mid, height: .greatestFiniteMagnitude),
+                options: [.usesLineFragmentOrigin, .usesFontLeading],
+                attributes: [.font: font],
+                context: nil
+            )
+            if rect.height <= maxTextHeight + 0.5 {
+                best = mid
+                high = mid - 1
+            } else {
+                low = mid + 1
+            }
+        }
+        return ceil(best)
     }
     func configure(player: FootballPlayer?) {
         self.player = player
@@ -113,6 +201,7 @@ final class FootballPlayerTokenView: UIView {
             innerGlow.backgroundColor = FootballPalette.accentRed.withAlphaComponent(0.35).cgColor
         }
         updateEmptyAppearance()
+        invalidateIntrinsicContentSize()
         setNeedsLayout()
     }
 
@@ -179,6 +268,8 @@ final class FootballPlayerTokenView: UIView {
         namePill.font = FootballPalette.caption(metrics.nameFontSize)
         namePill.textColor = .white
         namePill.textAlignment = .center
+        namePill.numberOfLines = 2
+        namePill.lineBreakMode = .byTruncatingTail
         namePill.backgroundColor = UIColor.black.withAlphaComponent(0.85)
         namePill.layer.cornerRadius = 6
         namePill.clipsToBounds = true
@@ -187,13 +278,13 @@ final class FootballPlayerTokenView: UIView {
 
         namePill.snp.makeConstraints { make in
             make.top.equalTo(circleView.snp.bottom).offset(3)
-            make.centerX.equalTo(circleView)
-            make.height.equalTo(tokenSize == .bench ? 12 : 14)
-            make.width.greaterThanOrEqualTo(circle)
+            make.centerX.equalToSuperview()
             make.leading.greaterThanOrEqualToSuperview()
             make.trailing.lessThanOrEqualToSuperview()
             make.bottom.equalToSuperview()
         }
+        namePill.setContentHuggingPriority(.required, for: .horizontal)
+        namePill.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         addGestureRecognizer(pan)
@@ -204,6 +295,13 @@ final class FootballPlayerTokenView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        if !namePill.isHidden {
+            let cap = gridLabelMaxWidth ?? .greatestFiniteMagnitude
+            let nameSize = Self.measureNamePill(namePill, maxLines: 2, maxWidth: cap)
+            let textWidth = nameSize.width - namePill.textInsets.left - namePill.textInsets.right
+            namePill.preferredMaxLayoutWidth = textWidth
+        }
+
         innerGlow.frame = circleView.bounds.insetBy(dx: 4, dy: 4)
         innerGlow.cornerRadius = innerGlow.bounds.width / 2
         let d = tokenSize.circleDiameter

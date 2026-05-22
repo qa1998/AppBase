@@ -146,11 +146,26 @@ final class TeamStore {
     }
 
     private func migratePitchYAxisIfNeeded() {
-        guard !UserDefaults.standard.bool(forKey: FormationCatalog.yAxisTeamsMigrationKey) else { return }
-        teams = teams.map(FormationCatalog.flipTeamSetups)
-        currentTeam = FormationCatalog.flipTeamSetups(currentTeam)
-        UserDefaults.standard.set(true, forKey: FormationCatalog.yAxisTeamsMigrationKey)
+        guard !UserDefaults.standard.bool(forKey: PitchFormationGridLayout.gridLayoutTeamsMigrationKey) else { return }
+        teams = teams.map { Self.realignTeamToGrid($0) }
+        currentTeam = Self.realignTeamToGrid(currentTeam)
+        UserDefaults.standard.set(true, forKey: PitchFormationGridLayout.gridLayoutTeamsMigrationKey)
         persist()
+    }
+
+    private static func realignTeamToGrid(_ team: FootballTeam) -> FootballTeam {
+        var copy = team
+        copy.ensureAllSetups()
+        for size in MatchPitchSize.allCases {
+            var setup = copy.setup(for: size)
+            let formation = copy.formation(for: size)
+            setup.assignments = PitchFormationGridLayout.realignAssignments(
+                setup.assignments,
+                formation: formation
+            )
+            copy.setSetup(setup, for: size)
+        }
+        return copy
     }
 
     private func persist() {

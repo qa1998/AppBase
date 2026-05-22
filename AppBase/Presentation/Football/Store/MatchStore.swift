@@ -92,19 +92,29 @@ final class MatchStore {
     }
 
     private func migratePitchYAxisIfNeeded() {
-        guard !UserDefaults.standard.bool(forKey: FormationCatalog.yAxisMatchesMigrationKey) else { return }
-        matches = matches.map(flipMatchRosters)
+        guard !UserDefaults.standard.bool(forKey: PitchFormationGridLayout.gridLayoutMatchesMigrationKey) else { return }
+        matches = matches.map { Self.realignMatchToGrid($0) }
         if let current = currentMatch {
-            currentMatch = flipMatchRosters(current)
+            currentMatch = Self.realignMatchToGrid(current)
         }
-        UserDefaults.standard.set(true, forKey: FormationCatalog.yAxisMatchesMigrationKey)
+        UserDefaults.standard.set(true, forKey: PitchFormationGridLayout.gridLayoutMatchesMigrationKey)
         persist()
     }
 
-    private func flipMatchRosters(_ match: FootballMatch) -> FootballMatch {
+    private static func realignMatchToGrid(_ match: FootballMatch) -> FootballMatch {
         var copy = match
-        copy.settings.homeRoster = FormationCatalog.flipRoster(copy.settings.homeRoster)
-        copy.settings.awayRoster = FormationCatalog.flipRoster(copy.settings.awayRoster)
+        let size = copy.settings.pitchSize
+        copy.settings.homeRoster = realignRoster(copy.settings.homeRoster, pitchSize: size)
+        copy.settings.awayRoster = realignRoster(copy.settings.awayRoster, pitchSize: size)
+        return copy
+    }
+
+    private static func realignRoster(_ roster: MatchTeamRoster, pitchSize: MatchPitchSize) -> MatchTeamRoster {
+        var copy = roster
+        let formation = FootballFormation.catalog.first { $0.id == roster.formationId }
+            ?? FootballFormation.formations(playerCount: pitchSize.playerCount).first
+            ?? .default
+        copy.assignments = PitchFormationGridLayout.realignAssignments(copy.assignments, formation: formation)
         return copy
     }
 

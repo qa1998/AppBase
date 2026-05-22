@@ -342,7 +342,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
             make.top.leading.trailing.equalToSuperview().inset(Spacing.s10)
             make.bottom.equalToSuperview().inset(Spacing.s10)
             make.height.equalTo(pitchView.snp.width)
-                .multipliedBy(1.28)
+                .dividedBy(FootballPitchView.fieldWidthToHeightRatio)
                 .priority(.medium)
         }
         
@@ -446,11 +446,6 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
             token.allowsDrag = false
             token.translatesAutoresizingMaskIntoConstraints = false
             pitchView.addSubview(token)
-            
-            token.snp.makeConstraints { make in
-                make.size.equalTo(FootballPlayerTokenSize.pitch.viewSize)
-            }
-            
             playerTokens.append(token)
         }
         
@@ -460,20 +455,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     }
     
     private func layoutTokens() {
-        let bounds = pitchView.bounds
-        guard bounds.width > 0, bounds.height > 0 else { return }
-        
-        for token in playerTokens {
-            let p = token.normalizedPosition
-            let x = p.x * bounds.width
-            let y = p.y * bounds.height
-            
-            token.snp.remakeConstraints { make in
-                make.size.equalTo(token.tokenSize.viewSize)
-                make.centerX.equalToSuperview().offset(x - bounds.width / 2)
-                make.centerY.equalToSuperview().offset(y - bounds.height / 2)
-            }
-        }
+        PitchPlayerTokenLayout.layout(playerTokens, formation: viewModel.lineup.formation, in: pitchView)
     }
     
     private func reloadBench() {
