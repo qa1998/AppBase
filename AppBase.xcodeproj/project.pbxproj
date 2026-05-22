@@ -12,11 +12,13 @@
 		0F24E0E92FAC7A2800C48B33 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 0F24E0E82FAC7A2800C48B33 /* Kingfisher */; };
 		0F24EF092FADBCC500C48B33 /* TIOPagingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0F24EF082FADBCC500C48B33 /* TIOPagingKit */; };
 		0F8863442FBEB7D800599A9E /* SwiftEntryKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0F8863432FBEB7D800599A9E /* SwiftEntryKit */; };
+		0F8868A62FBFFF7200599A9E /* AdsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0F8868A52FBFFF7200599A9E /* AdsKit */; };
 		0FE2BEFD2FADC08C006641DB /* BaseMVVM in Frameworks */ = {isa = PBXBuildFile; productRef = 0FE2BEFC2FADC08C006641DB /* BaseMVVM */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0F24E0692FAC49C300C48B33 /* AppBase.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppBase.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F8864392FBFFB4800599A9E /* AdsKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = AdsKit; path = AdsKit/AdsKit; sourceTree = "<group>"; };
 		0FE2BEFA2FADC078006641DB /* BaseMVVM */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = BaseMVVM; path = BaseMVVM/BaseMVVM; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -59,6 +61,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F8863442FBEB7D800599A9E /* SwiftEntryKit in Frameworks */,
+				0F8868A62FBFFF7200599A9E /* AdsKit in Frameworks */,
 				0F24E0E42FAC7A1100C48B33 /* Alamofire in Frameworks */,
 				0F24E0DF2FAC79E100C48B33 /* SnapKit in Frameworks */,
 				0F24EF092FADBCC500C48B33 /* TIOPagingKit in Frameworks */,
@@ -73,6 +76,7 @@
 		0F24E0602FAC49C300C48B33 = {
 			isa = PBXGroup;
 			children = (
+				0F8864392FBFFB4800599A9E /* AdsKit */,
 				0FE2BEFA2FADC078006641DB /* BaseMVVM */,
 				0F24E06B2FAC49C300C48B33 /* AppBase */,
 				0FE2BEFB2FADC08C006641DB /* Frameworks */,
@@ -122,6 +126,7 @@
 				0F24EF082FADBCC500C48B33 /* TIOPagingKit */,
 				0FE2BEFC2FADC08C006641DB /* BaseMVVM */,
 				0F8863432FBEB7D800599A9E /* SwiftEntryKit */,
+				0F8868A52FBFFF7200599A9E /* AdsKit */,
 			);
 			productName = AppBase;
 			productReference = 0F24E0692FAC49C300C48B33 /* AppBase.app */;
@@ -508,6 +513,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0F8863422FBEB7D800599A9E /* XCRemoteSwiftPackageReference "SwiftEntryKit" */;
 			productName = SwiftEntryKit;
+		};
+		0F8868A52FBFFF7200599A9E /* AdsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AdsKit;
 		};
 		0FE2BEFC2FADC08C006641DB /* BaseMVVM */ = {
 			isa = XCSwiftPackageProductDependency;
