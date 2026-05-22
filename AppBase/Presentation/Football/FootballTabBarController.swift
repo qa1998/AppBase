@@ -71,17 +71,10 @@ final class FootballTabBarController: ESTabBarController {
         viewControllers = navigationControllers
         selectedIndex = Tab.lineups.rawValue
         refreshLocalization()
-        if selectedIndex < navigationControllers.count {
-//            FootballDemoBannerAdPresenter.shared.updateForNavigationStack(
-//                navigationControllers[selectedIndex]
-//            )
-        }
     }
 
-    /// Banner demo chỉ trên tab đang chọn và màn root (không push).
     func updateDemoBanner(for navigationController: UINavigationController) {
-        guard selectedViewController === navigationController else { return }
-//        FootballDemoBannerAdPresenter.shared.updateForNavigationStack(navigationController)
+        _ = navigationController
     }
 
     private func makeTabBarItem(for tab: Tab) -> UITabBarItem {

@@ -23,7 +23,9 @@ final class MyPlayersViewModel: TIOViewModel<TIOLoadingTarget> {
     }
 
     func reload() {
-        players = PlayerStore.shared.players
+        players = PlayerStore.shared.players.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
     }
 
     func openPlayer(_ player: FootballPlayer) {

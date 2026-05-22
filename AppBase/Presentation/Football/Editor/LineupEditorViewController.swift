@@ -29,7 +29,6 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     private let formationButton = UIButton(type: .system)
     private let importTeamButton = UIButton(type: .system)
     private let arrowsButton = UIButton(type: .system)
-//    private let toolTabBar = EditorToolTabBar()
     private let pitchCard = UIView()
     private let pitchView = FootballPitchView()
     private let drawingOverlay = TacticalDrawingOverlay()
@@ -73,7 +72,6 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         buildSaveButton()
         layoutContent()
         wireDrawingOverlay()
-//        toolTabBar.selectedMode = .fields
         setToolMode(.fields)
         syncDrawingOverlayStrokes()
         updateTacticalActions()
@@ -84,7 +82,6 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         benchTitleLabel.text = L10n.Football.Editor.benchPlayers
         saveButton.setTitle(L10n.Football.Editor.save.uppercased(), for: .normal)
         importTeamButton.configuration?.title = L10n.Football.Editor.importTeam
-//        toolTabBar.refreshTitles()
     }
     
     override func refreshFootballTheme() {

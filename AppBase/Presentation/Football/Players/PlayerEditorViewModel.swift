@@ -61,9 +61,16 @@ final class PlayerEditorViewModel: TIOViewModel<TIOLoadingTarget> {
             presentError(message: L10n.Football.Players.validationJersey)
             return false
         }
-        PlayerStore.shared.saveCurrentPlayer()
+        guard PlayerStore.shared.saveCurrentPlayer() else {
+            presentError(message: L10n.Football.Players.validationName)
+            return false
+        }
         presentSuccess(L10n.Football.Players.saved)
         return true
+    }
+
+    var isEditingSavedPlayer: Bool {
+        PlayerStore.shared.isSavedPlayer(id: player.id)
     }
 
     private func apply(_ transform: (FootballPlayer) -> FootballPlayer) {

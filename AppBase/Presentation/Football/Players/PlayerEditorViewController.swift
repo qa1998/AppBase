@@ -16,33 +16,72 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
     private let avatarButton = UIButton(type: .custom)
     private let avatarImageView = UIImageView()
     private let avatarHintLabel = UILabel()
+    private let nameFieldContainer = UIView()
     private let nameField = UITextField()
     private let jerseyTitleLabel = UILabel()
+    private let jerseyFieldContainer = UIView()
     private let jerseyField = UITextField()
     private let positionTitleLabel = UILabel()
     private let positionStack = UIStackView()
     private var positionButtons: [UIButton] = []
     private let saveButton = UIButton(type: .system)
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        updateNavigationTitle()
     }
 
     override func setupUI() {
         super.setupUI()
         buildForm()
         layoutChrome()
+        applyFieldStyle()
         syncFromPlayer(viewModel.player)
+        updateNavigationTitle()
     }
 
     override func refreshLocalization() {
+        updateNavigationTitle()
         avatarHintLabel.text = L10n.Football.Players.avatarHint
-        nameField.placeholder = L10n.Football.Players.namePlaceholder
         jerseyTitleLabel.text = L10n.Football.Players.jerseyTitle
-        jerseyField.placeholder = L10n.Football.Players.jerseyPlaceholder
         positionTitleLabel.text = L10n.Football.Players.positionTitle
         saveButton.setTitle(L10n.Football.Players.save.uppercased(), for: .normal)
+        applyFieldStyle()
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        applyFieldStyle()
+        syncFromPlayer(viewModel.player)
+    }
+
+    private func updateNavigationTitle() {
+        navigationItem.title = viewModel.isEditingSavedPlayer
+            ? viewModel.player.name.isEmpty ? L10n.Football.Players.editorTitle : viewModel.player.name
+            : L10n.Football.Players.editorTitle
+    }
+
+    private func applyFieldStyle() {
+        [nameFieldContainer, jerseyFieldContainer].forEach { container in
+            container.backgroundColor = FootballPalette.surfaceElevated
+            container.layer.cornerRadius = Radius.s12
+            container.layer.borderWidth = 1
+            container.layer.borderColor = FootballPalette.glassBorder.cgColor
+        }
+        nameField.textColor = FootballPalette.textPrimary
+        nameField.tintColor = FootballPalette.accentGreen
+        jerseyField.textColor = FootballPalette.textPrimary
+        jerseyField.tintColor = FootballPalette.accentGreen
+        let placeholderColor = FootballPalette.textSecondary
+        nameField.attributedPlaceholder = NSAttributedString(
+            string: L10n.Football.Players.namePlaceholder,
+            attributes: [.foregroundColor: placeholderColor]
+        )
+        jerseyField.attributedPlaceholder = NSAttributedString(
+            string: L10n.Football.Players.jerseyPlaceholder,
+            attributes: [.foregroundColor: placeholderColor]
+        )
     }
 
     override func onBind() {
@@ -51,6 +90,7 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
             .receive(on: DispatchQueue.main)
             .sink { [weak self] player in
                 self?.syncFromPlayer(player)
+                self?.updateNavigationTitle()
             }
             .store(in: &cancelBag)
     }
@@ -71,24 +111,30 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
         avatarHintLabel.textColor = FootballPalette.textSecondary
         avatarHintLabel.textAlignment = .center
 
+        nameField.borderStyle = .none
+        nameField.backgroundColor = .clear
         nameField.font = FootballPalette.title(16)
-        nameField.textColor = FootballPalette.textPrimary
-        nameField.backgroundColor = FootballPalette.surface
-        nameField.layer.cornerRadius = Radius.s12
-        nameField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 12))
-        nameField.leftViewMode = .always
+        nameField.autocapitalizationType = .words
+        nameField.returnKeyType = .next
         nameField.addTarget(self, action: #selector(nameChanged), for: .editingChanged)
+        nameFieldContainer.addSubview(nameField)
+        nameField.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(Spacing.s12)
+            make.top.bottom.equalToSuperview()
+        }
 
         jerseyTitleLabel.font = FootballPalette.caption()
         jerseyTitleLabel.textColor = FootballPalette.textSecondary
+        jerseyField.borderStyle = .none
+        jerseyField.backgroundColor = .clear
         jerseyField.font = FootballPalette.title(16)
-        jerseyField.textColor = FootballPalette.textPrimary
-        jerseyField.backgroundColor = FootballPalette.surface
-        jerseyField.layer.cornerRadius = Radius.s12
         jerseyField.keyboardType = .numberPad
-        jerseyField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 12))
-        jerseyField.leftViewMode = .always
         jerseyField.addTarget(self, action: #selector(jerseyChanged), for: .editingChanged)
+        jerseyFieldContainer.addSubview(jerseyField)
+        jerseyField.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(Spacing.s12)
+            make.top.bottom.equalToSuperview()
+        }
 
         positionTitleLabel.font = FootballPalette.caption()
         positionTitleLabel.textColor = FootballPalette.textSecondary
@@ -122,13 +168,13 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
 
         contentStack.addArrangedSubview(avatarRow)
         contentStack.addArrangedSubview(avatarHintLabel)
-        contentStack.addArrangedSubview(nameField)
+        contentStack.addArrangedSubview(nameFieldContainer)
         contentStack.addArrangedSubview(jerseyTitleLabel)
-        contentStack.addArrangedSubview(jerseyField)
+        contentStack.addArrangedSubview(jerseyFieldContainer)
         contentStack.addArrangedSubview(positionTitleLabel)
         contentStack.addArrangedSubview(positionStack)
-        nameField.snp.makeConstraints { $0.height.equalTo(48) }
-        jerseyField.snp.makeConstraints { $0.height.equalTo(48) }
+        nameFieldContainer.snp.makeConstraints { $0.height.equalTo(48) }
+        jerseyFieldContainer.snp.makeConstraints { $0.height.equalTo(48) }
         positionStack.snp.makeConstraints { $0.height.equalTo(44) }
 
         scrollView.addSubview(contentStack)

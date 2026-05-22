@@ -43,7 +43,11 @@ final class FootballSettingsCoordinator: FootballTabNavigationCoordinator<VoidMe
         vc.hidesBottomBarWhenPushed = true
         vc.invoke(viewModel: PlayerEditorViewModel())
         vc.onSaved = { [weak vc] in
-            vc?.navigationController?.popViewController(animated: true)
+            guard let nav = vc?.navigationController else { return }
+            if let library = nav.viewControllers.first(where: { $0 is MyPlayersViewController }) as? MyPlayersViewController {
+                library.viewModel.reload()
+            }
+            nav.popViewController(animated: true)
         }
         navigate(to: .push(vc))
     }

@@ -19,18 +19,28 @@ final class MyPlayersViewController: FootballScreenViewController<MyPlayersViewM
     private let fabContainer = FootballGradientView()
     private let fabButton = UIButton(type: .system)
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        viewModel.reload()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        configurePushedLayoutIfNeeded()
+    }
+
+    private func configurePushedLayoutIfNeeded() {
         let isPushed = (navigationController?.viewControllers.count ?? 0) > 1
-        
         titleLabel.isHidden = isPushed
-        if isPushed {
-            title = L10n.Football.Players.libraryTitle
-            tableView.snp.remakeConstraints { make in
-                make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s8)
-                make.leading.trailing.bottom.equalToSuperview()
-            }
+        guard isPushed else { return }
+        navigationItem.title = L10n.Football.Players.libraryTitle
+        tableView.snp.remakeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s8)
+            make.leading.trailing.bottom.equalToSuperview()
         }
+        view.bringSubviewToFront(emptyLabel)
+        view.bringSubviewToFront(fabContainer)
     }
 
     override func setupUI() {
@@ -51,6 +61,8 @@ final class MyPlayersViewController: FootballScreenViewController<MyPlayersViewM
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(PlayerCardCell.self, forCellReuseIdentifier: PlayerCardCell.reuseId)
+        tableView.rowHeight = 76
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 88, right: 0)
 
         fabButton.setImage(
             UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 22, weight: .bold)),
@@ -88,6 +100,13 @@ final class MyPlayersViewController: FootballScreenViewController<MyPlayersViewM
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Spacing.s24)
             make.size.equalTo(60)
         }
+        view.bringSubviewToFront(emptyLabel)
+        view.bringSubviewToFront(fabContainer)
+    }
+
+    override func refreshLocalization() {
+        titleLabel.text = L10n.Football.Players.libraryTitle
+        emptyLabel.text = L10n.Football.Players.libraryEmpty
     }
 
     override func onBind() {

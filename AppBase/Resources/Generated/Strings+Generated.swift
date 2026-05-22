@@ -105,51 +105,11 @@ internal enum L10n {
         internal static var formation: String { return L10n.tr("Localizable", "football.editor.tool.formation", fallback: "FORMATION") }
       }
     }
-    internal enum Export {
-      /// Download
-      internal static var download: String { return L10n.tr("Localizable", "football.export.download", fallback: "Download") }
-      /// Match poster
-      internal static var matchPoster: String { return L10n.tr("Localizable", "football.export.matchPoster", fallback: "Match poster") }
-      /// Lineup preview
-      internal static var preview: String { return L10n.tr("Localizable", "football.export.preview", fallback: "Lineup preview") }
-      /// Graphic ready to share
-      internal static var saved: String { return L10n.tr("Localizable", "football.export.saved", fallback: "Graphic ready to share") }
-      /// Share
-      internal static var share: String { return L10n.tr("Localizable", "football.export.share", fallback: "Share") }
-      /// Social story
-      internal static var social: String { return L10n.tr("Localizable", "football.export.social", fallback: "Social story") }
-      /// Export lineup
-      internal static var title: String { return L10n.tr("Localizable", "football.export.title", fallback: "Export lineup") }
-    }
     internal enum Formation {
       /// Apply formation
       internal static var apply: String { return L10n.tr("Localizable", "football.formation.apply", fallback: "Apply formation") }
       /// Choose formation
       internal static var title: String { return L10n.tr("Localizable", "football.formation.title", fallback: "Choose formation") }
-    }
-    internal enum Home {
-      /// Create New Lineup
-      internal static var create: String { return L10n.tr("Localizable", "football.home.create", fallback: "Create New Lineup") }
-      /// Coach, ready to build?
-      internal static var greeting: String { return L10n.tr("Localizable", "football.home.greeting", fallback: "Coach, ready to build?") }
-      /// Recent lineups
-      internal static var recent: String { return L10n.tr("Localizable", "football.home.recent", fallback: "Recent lineups") }
-      /// 4-3-3 Match Day
-      internal static var sampleLineup: String { return L10n.tr("Localizable", "football.home.sampleLineup", fallback: "4-3-3 Match Day") }
-      /// Tactical shortcuts
-      internal static var shortcuts: String { return L10n.tr("Localizable", "football.home.shortcuts", fallback: "Tactical shortcuts") }
-      /// Design formations and export match graphics.
-      internal static var subtitle: String { return L10n.tr("Localizable", "football.home.subtitle", fallback: "Design formations and export match graphics.") }
-      /// Formation templates
-      internal static var templates: String { return L10n.tr("Localizable", "football.home.templates", fallback: "Formation templates") }
-      internal enum Shortcut {
-        /// Open editor
-        internal static var editor: String { return L10n.tr("Localizable", "football.home.shortcut.editor", fallback: "Open editor") }
-        /// Export graphics
-        internal static var export: String { return L10n.tr("Localizable", "football.home.shortcut.export", fallback: "Export graphics") }
-        /// Tactical board
-        internal static var tactics: String { return L10n.tr("Localizable", "football.home.shortcut.tactics", fallback: "Tactical board") }
-      }
     }
     internal enum LineOptions {
       /// Select color

@@ -66,8 +66,18 @@ final class PlayerStore {
         currentPlayerDidChange.send(player)
     }
 
-    func saveCurrentPlayer() {
-        var copy = currentPlayer
+    @discardableResult
+    func saveCurrentPlayer() -> Bool {
+        let trimmed = currentPlayer.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        var copy = currentPlayer.updating(
+            name: trimmed,
+            initials: FootballPlayer.makeInitials(from: trimmed)
+        )
+        if let jersey = copy.jerseyNumber, !(1...99).contains(jersey) {
+            return false
+        }
+        currentPlayer = copy
         if let index = players.firstIndex(where: { $0.id == copy.id }) {
             players[index] = copy
         } else {
@@ -75,6 +85,11 @@ final class PlayerStore {
         }
         persist()
         notifyAll()
+        return true
+    }
+
+    func isSavedPlayer(id: String) -> Bool {
+        players.contains { $0.id == id }
     }
 
     func deletePlayer(id: String) {

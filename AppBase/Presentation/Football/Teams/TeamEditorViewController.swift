@@ -14,11 +14,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     var onPickPlayer: ((Int, @escaping (FootballPlayer) -> Void) -> Void)?
     var onPickFormation: (() -> Void)?
     var onSaved: (() -> Void)?
-
-    private let headerBar = UIView()
-    private let backButton = UIButton(type: .system)
-    private let headerTitleLabel = UILabel()
-
+    
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
     private let nameField = UITextField()
@@ -43,7 +39,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
 
     override func setupUI() {
         super.setupUI()
-        buildHeader()
+
         buildForm()
         buildPitch()
         buildBench()
@@ -55,7 +51,6 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     }
 
     override func refreshLocalization() {
-        headerTitleLabel.text = L10n.Football.Teams.editorTitle
         hintLabel.text = L10n.Football.Teams.tapSlotHint
         benchTitleLabel.text = L10n.Football.Editor.benchPlayers
         formationButton.setTitle(L10n.Football.Teams.pickFormation, for: .normal)
@@ -99,36 +94,6 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     }
 
     // MARK: - Build
-
-    private func buildHeader() {
-        backButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
-        backButton.tintColor = FootballPalette.textPrimary
-        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
-
-        headerTitleLabel.font = FootballPalette.title(17)
-        headerTitleLabel.textColor = FootballPalette.textPrimary
-        headerTitleLabel.textAlignment = .center
-
-        headerBar.addSubview(backButton)
-        headerBar.addSubview(headerTitleLabel)
-        view.addSubview(headerBar)
-
-        backButton.snp.makeConstraints { make in
-            make.leading.centerY.equalToSuperview()
-            make.size.equalTo(44)
-        }
-        headerTitleLabel.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.leading.greaterThanOrEqualTo(backButton.snp.trailing)
-            make.trailing.lessThanOrEqualToSuperview().inset(44)
-        }
-        headerBar.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.leading.trailing.equalToSuperview().inset(Spacing.s12)
-            make.height.equalTo(48)
-        }
-    }
-
     private func buildForm() {
         contentStack.axis = .vertical
         contentStack.spacing = Spacing.s12
@@ -214,7 +179,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
 
     private func layoutChrome() {
         scrollView.snp.makeConstraints { make in
-            make.top.equalTo(headerBar.snp.bottom).offset(Spacing.s8)
+            make.top.equalTo(self.view.safeAreaLayoutGuide).offset(Spacing.s8)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(saveButton.snp.top).offset(-Spacing.s12)
         }

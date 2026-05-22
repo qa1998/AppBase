@@ -26,14 +26,9 @@ class AppCoordinator: Coordinator<VoidMeta> {
     }
 
     private let window: UIWindow
-    private let dependencies: AppDependencies
 
-    init(
-        window: UIWindow,
-        dependencies: AppDependencies = AppDependencies.make()
-    ) {
+    init(window: UIWindow) {
         self.window = window
-        self.dependencies = dependencies
     }
 
     private func bind() {
