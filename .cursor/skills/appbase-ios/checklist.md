@@ -87,10 +87,18 @@ Use with [SKILL.md](SKILL.md) when doing a thorough review or pre-PR pass.
 - [ ] `TIOButton` / labels mới: không `UIFont.systemFont` trực tiếp
 - [ ] Size lẻ: `FontSize.custom(_)` thay vì magic number trong `systemFont(ofSize:)`
 
-## TIOView / cells
+## TIOView / custom UIView (kế thừa common view)
 
+- [ ] Custom view: subclass `TIOView` / `TIOContentView` / `TIOLabel` / `TIOButton` — không `UIView` thuần (trừ wrap third-party)
+- [ ] `override commonInit()` → `super.commonInit()` trước; SnapKit + `addSubview` sau
+- [ ] Không gọi `startTheming()` lại trong subclass (base đã gọi)
+- [ ] `override applyTheme(_:)` — màu từ `ThemeColors`; gọi `super` nếu giữ nền base (`TIOContentView`)
+- [ ] Subview trong custom view: `TIOLabel`, `TIOButton`, `TIOView` — không UIKit thuần
+- [ ] `Font` / `FontSize`, `Spacing` / `Radius` — không magic number / system font
+- [ ] Full-screen container trong VC: `TIOContentView` (+ `IFSContentView` auto pin nếu cần)
+- [ ] Khối shimmer non-list: `TIOView` subclass hoặc `TIOLabel`; map trong `shimmerViews(for:)`
 - [ ] `TIOContentView`: `shimmeringAnimatedItems` rỗng — container không shimmer
-- [ ] `TIOLabel` / `TIOButton` / `TIOView` cho UI cần shimmer từng vùng
+- [ ] Composite shimmer: override `shimmeringAnimatedItems` / `excludedItems` trên `TIOView` subclass
 - [ ] Không `setTemplateWithSubviews` trực tiếp lên `UITableViewCell` root
 
 ## TIOListViewController

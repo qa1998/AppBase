@@ -5,7 +5,7 @@ description: >-
   TIOListViewController, TIOTableViewController, TIOListViewModel, TIOListView).
   Enforces SnapKit for all programmatic Auto Layout. Use when the user asks to
   review, refactor, optimize, add UI/layout, constraints, or list/screen features
-  in AppBase, or mentions TIO, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
+  in AppBase, or mentions TIO, TIOView, TIOContentView, custom UIView, SnapKit, snp, BaseMVVM, MJRefresh, EmptyDataSet,
   TIOPagingKit, TrackLoading, shimmer, skeleton loading, UIView-Shimmer, Font,
   FontSize, Lato typography, Spacing, Radius, ThemeManager, TIOThemable, palette, or dark/light mode,
   Coordinator, NavigationCoordinator, cancelBag, lazy tab, push/pop navigation.
@@ -17,6 +17,8 @@ description: >-
   `ARCHITECTURE.md`. For UI text and copy, use skill
   `appbase-localization` (L10n + SwiftGen) — never
   hardcode user-facing strings. **Every new view/screen must apply theme** (see below).
+  When creating a custom `UIView` subclass, inherit **TIO*** common views (`TIOView`,
+  `TIOContentView`, `TIOLabel`, …) — see section **Custom view (kế thừa TIO*)**.
 ---
 
 # AppBase iOS Presentation
@@ -54,6 +56,112 @@ TIOView                    // base + ShimmeringViewProtocol
 ```
 
 **Không** gọi `setTemplateWithSubviews` trực tiếp trên `UITableViewCell` / toàn cell — sẽ shimmer `textLabel` và bị lệch trái. Luôn dùng `applyListShimmer(_:)`.
+
+## Custom view (kế thừa TIO* common views)
+
+Mỗi `UIView` custom trong AppBase **ưu tiên subclass** một common view đã có — **không** `UIView` / `UILabel` / `UIButton` thuần rồi tự `bindTheme` trừ khi wrap third-party không sửa được.
+
+### Chọn base class
+
+| Cần | Kế thừa | Ghi chú |
+|-----|----------|---------|
+| Khối UI có theme + shimmer (header, card, banner, form block) | `TIOView` | `shimmeringAnimatedItems` mặc định `[self]` |
+| Container full màn / bọc list (`containerView`) | `TIOContentView` | `IFSContentView` → VC tự pin edges; **không** shimmer shell |
+| Chỉ text | `TIOLabel` | Font + `textPrimary` sẵn; override `applyTheme` nếu cần màu khác |
+| Nút / CTA | `TIOButton` | CTA: `usesFilledPrimaryStyle = true` trong `commonInit` |
+| Row list | `TIOTableViewCell` / `TIOCollectionViewCell` | Shimmer qua `applyListShimmer`, không subclass `UITableViewCell` thuần |
+| Third-party view không subclass được | `UIView` + `bindTheme { }` | Chỉ ngoại lệ |
+
+### Khởi tạo — luôn qua `commonInit`
+
+`TIOView` / `TIOLabel` / `TIOButton` gọi `commonInit()` từ cả `init(frame:)` và `init(coder:)`. Subclass:
+
+1. **Không** gọi lại `startTheming()` — base đã gọi trong `commonInit`.
+2. Override `commonInit()` → **`super.commonInit()` trước**, rồi `addSubview`, SnapKit, style.
+3. Override `applyTheme(_:)` → **`super.applyTheme(colors)`** nếu cần giữ hành vi base (vd. `TIOContentView` nền), rồi set màu riêng.
+
+```swift
+final class ProfileHeaderView: TIOView {
+
+    private let avatarView = TIOView()
+    private let nameLabel = TIOLabel()
+
+    override func commonInit() {
+        super.commonInit()
+        addSubview(avatarView)
+        addSubview(nameLabel)
+        avatarView.layer.cornerRadius = Radius.s20
+        avatarView.snp.makeConstraints { make in
+            make.top.leading.equalToSuperview().inset(Spacing.s16)
+            make.width.height.equalTo(80)
+        }
+        nameLabel.snp.makeConstraints { make in
+            make.leading.equalTo(avatarView.snp.trailing).offset(Spacing.s12)
+            make.trailing.equalToSuperview().inset(Spacing.s16)
+            make.centerY.equalTo(avatarView)
+        }
+    }
+
+    override func applyTheme(_ colors: ThemeColors) {
+        super.applyTheme(colors)
+        avatarView.backgroundColor = colors.backgroundPrimary
+        layer.borderColor = colors.separator.cgColor
+    }
+
+    func configure(name: String) {
+        nameLabel.text = name  // copy từ ngoài hoặc L10n — không hardcode trong view
+    }
+}
+```
+
+### Subview bên trong custom view
+
+- Layout con: **SnapKit** trong `commonInit` (hoặc `setupViews()` gọi từ `commonInit`).
+- Con UIKit: **`TIOLabel` / `TIOButton` / `TIOView`** — không `UILabel`/`UIButton` thuần.
+- Màu: **`ThemeColors`** trong `applyTheme` — không `.label`, `.white`, `.systemBackground`.
+- Typography: **`Font` + `FontSize`** — không `UIFont.systemFont`.
+- Spacing / radius: **`Spacing.*`**, **`Radius.*`**.
+
+### Shimmer trên custom `TIOView`
+
+- Vùng shimmer non-list: VC map trong `shimmerViews(for:)` → trả về instance `TIOView` / `TIOLabel` (hoặc custom `TIOView` subclass).
+- Composite view nhiều vùng: override `shimmeringAnimatedItems` (vd. `[titleLabel, imageView]`) hoặc `excludedItems` để bỏ nút/icon.
+- **Không** shimmer `TIOContentView` — override `shimmeringAnimatedItems` → `[]` (đã có trên `TIOContentView`).
+- **Không** `setTemplateWithSubviews` tay trên cell — dùng `applyListShimmer`.
+
+### `TIOContentView` vs `TIOView` trong VC
+
+```swift
+// Màn list / full content — container không shimmer
+private let containerView = TIOContentView()
+
+// Khối cần shimmer riêng (header, card)
+private let headerView = ProfileHeaderView()
+```
+
+Trong `TIOViewController`: subview conform `IFSContentView` được `layoutIFSContentViewsIfNeeded()` pin full bounds — dùng cho nib hoặc `TIOContentView` add sớm.
+
+### Anti-patterns
+
+```swift
+// ❌ UIView thuần + bindTheme trùng logic TIOView
+final class CardView: UIView {
+    init() { super.init(...); bindTheme { ... } }  // dùng TIOView subclass
+}
+
+// ❌ startTheming() lần hai trong subclass TIOView
+override func commonInit() {
+    startTheming()  // base đã gọi
+}
+
+// ❌ Hardcode màu trong commonInit
+override func commonInit() {
+    super.commonInit()
+    backgroundColor = .white  // → applyTheme + palette
+}
+```
+
+Files: `AppBase/Core/UI/Foundation/Views/TIOView.swift`, `TIOContentView.swift`, `TIOLabel.swift`, `TIOButton.swift`, `TIOThemable.swift`.
 
 ## Remote images — **Kingfisher only**
 
@@ -301,7 +409,8 @@ Dùng **mỗi lần** tạo ViewController / SwiftUI view / custom `UIView` mớ
 - [ ] Subview UIKit: TIOLabel, TIOButton, TIOContentView, TIOView (không UILabel/UIButton thuần)
 - [ ] Không .systemBackground / .white / .label cho nền & chữ chính
 - [ ] CTA: TIOButton + usesFilledPrimaryStyle = true
-- [ ] Custom UIView: bindTheme { } hoặc subclass TIOView + applyTheme
+- [ ] Custom UIView: subclass `TIOView` / `TIOContentView` / `TIOLabel` / `TIOButton` (xem **Custom view (kế thừa TIO*)**); `bindTheme` chỉ khi không subclass TIO* được
+- [ ] Subclass TIO*: `super.commonInit()` + `super.applyTheme`; không gọi `startTheming()` lại
 - [ ] SwiftUI: @ObservedObject themeManager + palette colors
 - [ ] title / strings: L10n + override refreshLocalization() (skill appbase-localization)
 - [ ] Font: Font.default / Font.bold + FontSize (không systemFont)
@@ -697,6 +806,7 @@ Copy and track:
 - [ ] Layout uses SnapKit (`import SnapKit`, `snp.makeConstraints` / `remakeConstraints`)
 - [ ] No raw `NSLayoutConstraint` / anchor APIs on new or touched code
 - [ ] Typography: `Font` / `FontSize` — no `UIFont.systemFont` / `.font(.system(...))` in AppBase code
+- [ ] Custom UIView: subclass TIO* (`TIOView`, `TIOContentView`, …) — `super.commonInit` / `applyTheme`; không `startTheming()` duplicate
 - [ ] Theme: TIO* views or `bindTheme`; no `.systemBackground` / `.white` / `.label` for main UI
 - [ ] Spacing / Radius: no raw `12`, `16`, `20` for padding or corner radius
 - [ ] New screen: `refreshLocalization()` if có `title` / copy
