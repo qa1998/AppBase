@@ -15,6 +15,7 @@ final class LineupEditorViewModel: TIOViewModel<TIOLoadingTarget> {
     @Published var selectedTool: EditorToolMode = .fields
 
     let slotTap = PassthroughSubject<Int, Never>()
+    let benchTap = PassthroughSubject<Int, Never>()
 
     static let benchSlotCount = 5
 
@@ -43,10 +44,25 @@ final class LineupEditorViewModel: TIOViewModel<TIOLoadingTarget> {
 
     var benchPlayers: [FootballPlayer] {
         lineup.benchPlayerIds.compactMap { id in
-            FootballPlayer.resolved(id: id)
+            guard !id.isEmpty else { return nil }
+            return FootballPlayer.resolved(id: id)
         }
     }
 
+    func benchPlayer(at index: Int) -> FootballPlayer? {
+        guard lineup.benchPlayerIds.indices.contains(index) else {
+            return nil
+        }
+
+        let id = lineup.benchPlayerIds[index]
+
+        guard !id.isEmpty else {
+            return nil
+        }
+
+        return FootballPlayer.resolved(id: id)
+    }
+    
     func prepareStrokeCommit() {
         LineupStore.shared.prepareStrokeCommit()
     }

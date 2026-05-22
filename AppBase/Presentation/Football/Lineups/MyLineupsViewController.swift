@@ -15,9 +15,6 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
     var onShareLineup: ((FootballLineup) -> Void)?
     var onPremiumTap: (() -> Void)?
 
-//    private let filterScroll = UIScrollView()
-//    private let filterStack = UIStackView()
-//    private var filterButtons: [LineupFilterChipButton] = []
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let fabContainer = FootballGradientView()
     private let fabButton = UIButton(type: .system)

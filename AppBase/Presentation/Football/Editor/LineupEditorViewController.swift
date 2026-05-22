@@ -11,6 +11,7 @@ import UIKit
 final class LineupEditorViewController: FootballScreenViewController<LineupEditorViewModel> {
     
     var onPickPlayer: ((Int) -> Void)?
+    var onPickBenchPlayer: ((Int) -> Void)?
     var onPickFormation: (() -> Void)?
     var onPickPitchOptions: (() -> Void)?
     var onPickLineOptions: (() -> Void)?
@@ -33,6 +34,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     private let pitchView = FootballPitchView()
     private let drawingOverlay = TacticalDrawingOverlay()
     private var playerTokens: [FootballPlayerTokenView] = []
+    private var benchTokens: [FootballPlayerTokenView] = []
     
     private let benchHeader = UIView()
     private let benchTitleLabel = UILabel()
@@ -130,6 +132,13 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
             .receive(on: DispatchQueue.main)
             .sink { [weak self] index in
                 self?.onPickPlayer?(index)
+            }
+            .store(in: &cancelBag)
+
+        viewModel.benchTap
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] index in
+                self?.onPickBenchPlayer?(index)
             }
             .store(in: &cancelBag)
         
@@ -516,21 +525,35 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
             benchStack.removeArrangedSubview($0)
             $0.removeFromSuperview()
         }
-        
-        let players = viewModel.benchPlayers
-        
+        benchTokens.removeAll()
+
         for index in 0..<LineupEditorViewModel.benchSlotCount {
             let token = FootballPlayerTokenView(
-                slotIndex: -1,
-                player: index < players.count ? players[index] : nil,
+                slotIndex: index,
+                player: viewModel.benchPlayer(at: index),
                 size: .bench
             )
-            
+            token.delegate = self
             token.allowsDrag = false
-            
+            benchTokens.append(token)
+
             let cell = makeBenchCell(token)
+            cell.tag = index
+            let longPress = UILongPressGestureRecognizer(
+                target: self,
+                action: #selector(benchLongPressed(_:))
+            )
+            longPress.minimumPressDuration = 0.5
+            cell.addGestureRecognizer(longPress)
             benchStack.addArrangedSubview(cell)
         }
+    }
+
+    @objc private func benchLongPressed(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began,
+              let cell = gesture.view,
+              viewModel.benchPlayer(at: cell.tag) != nil else { return }
+        LineupStore.shared.setBenchPlayer(nil, at: cell.tag)
     }
     
     private func makeBenchCell(_ content: UIView) -> UIView {
@@ -586,6 +609,10 @@ extension LineupEditorViewController: FootballPlayerTokenViewDelegate {
     }
     
     func playerTokenDidTap(_ token: FootballPlayerTokenView) {
+        if benchTokens.contains(where: { $0 === token }) {
+            viewModel.benchTap.send(token.slotIndex)
+            return
+        }
         guard token.slotIndex >= 0 else { return }
         viewModel.slotTap.send(token.slotIndex)
     }

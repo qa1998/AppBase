@@ -77,7 +77,7 @@ final class LineupStore {
         ]
         let offsets: [TimeInterval] = [-7200, -86_400, -259_200]
         return zip(titles.indices, titles).map { index, title in
-            var lineup = makeLineup(title: title, formation: formations[index])
+            var lineup = makeSampleLineup(title: title, formation: formations[index])
             lineup.tacticalStyle = styles[index]
             lineup.isFavorite = index == 0
             lineup.isDraft = index == 2
@@ -147,7 +147,21 @@ final class LineupStore {
     }
 
     func setBench(_ playerIds: [String]) {
-        mutate { $0.benchPlayerIds = playerIds }
+        mutate { $0.benchPlayerIds = Self.normalizedBenchIds(playerIds) }
+    }
+
+    func benchPlayer(at index: Int) -> FootballPlayer? {
+        guard let id = currentLineup.benchPlayerIds[safe: index], !id.isEmpty else { return nil }
+        return FootballPlayer.resolved(id: id)
+    }
+
+    func setBenchPlayer(_ player: FootballPlayer?, at index: Int) {
+        guard index >= 0, index < MatchTeamRoster.benchSlotCount else { return }
+        mutate { lineup in
+            var ids = Self.normalizedBenchIds(lineup.benchPlayerIds)
+            ids[index] = player?.id ?? ""
+            lineup.benchPlayerIds = ids
+        }
     }
 
     func updateCurrentLineupTitle(_ title: String) {
@@ -345,13 +359,13 @@ final class LineupStore {
         return bench
     }
 
+    /// Empty slots — user picks players in the editor.
     static func makeLineup(title: String, formation: FootballFormation) -> FootballLineup {
-        let players = FootballPlayer.catalog
         let assignments = formation.slots.enumerated().map { index, point in
             PitchSlotAssignment(
                 slotIndex: index,
                 normalizedPosition: point,
-                player: index < players.count ? players[index] : nil
+                player: nil
             )
         }
         return FootballLineup(
@@ -362,9 +376,26 @@ final class LineupStore {
             isFavorite: false,
             isDraft: false,
             assignments: assignments,
-            benchPlayerIds: Array(players.dropFirst(formation.slots.count).prefix(5).map(\.id)),
+            benchPlayerIds: normalizedBenchIds([]),
             updatedAt: Date()
         )
+    }
+
+    /// Demo lineups in My Lineups seed data only.
+    private static func makeSampleLineup(title: String, formation: FootballFormation) -> FootballLineup {
+        let players = FootballPlayer.catalog
+        var lineup = makeLineup(title: title, formation: formation)
+        lineup.assignments = formation.slots.enumerated().map { index, point in
+            PitchSlotAssignment(
+                slotIndex: index,
+                normalizedPosition: point,
+                player: index < players.count ? players[index] : nil
+            )
+        }
+        lineup.benchPlayerIds = normalizedBenchIds(
+            Array(players.dropFirst(formation.slots.count).prefix(MatchTeamRoster.benchSlotCount).map(\.id))
+        )
+        return lineup
     }
 }
 

@@ -189,8 +189,6 @@ final class FootballPlayerTokenView: UIView {
         translatesAutoresizingMaskIntoConstraints = false
 
         layer.addSublayer(dashedLayer)
-        addSubview(plusLabel)
-
         circleView.backgroundColor = FootballPalette.pitchGreen
         circleView.layer.borderWidth = 2
         circleView.layer.borderColor = UIColor.white.cgColor
@@ -203,6 +201,15 @@ final class FootballPlayerTokenView: UIView {
             make.centerX.equalToSuperview()
             make.width.height.equalTo(circle)
         }
+        
+        addSubview(plusLabel)
+
+        plusLabel.snp.makeConstraints { make in
+            make.center.equalTo(circleView)
+            make.width.height.equalTo(30)
+        }
+
+        bringSubviewToFront(plusLabel)
 
         circleView.layer.insertSublayer(innerGlow, at: 0)
 
@@ -276,7 +283,6 @@ final class FootballPlayerTokenView: UIView {
         dashedLayer.lineWidth = 1.5
         dashedLayer.lineDashPattern = tokenSize == .bench ? [4, 4] : [5, 5]
         updateEmptyAppearance()
-        plusLabel.center = CGPoint(x: bounds.midX, y: d / 2)
     }
 
     static func displayName(_ player: FootballPlayer) -> String {

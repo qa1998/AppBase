@@ -52,6 +52,9 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
         vc.onPickPlayer = { [weak self, weak vc] slot in
             self?.pushPlayerPicker(slot: slot, from: vc)
         }
+        vc.onPickBenchPlayer = { [weak self, weak vc] index in
+            self?.pushBenchPlayerPicker(benchIndex: index, from: vc)
+        }
         vc.onPickFormation = { [weak self, weak vc] in
             self?.presentFormationPicker(from: vc)
         }
@@ -140,8 +143,17 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
 
     private func pushPlayerPicker(slot: Int, from presenter: UIViewController?) {
         let vc = PlayerPickerViewController()
-
+        vc.hidesBottomBarWhenPushed = true
         vc.invoke(viewModel: PlayerPickerViewModel(slotIndex: slot))
-        self.navigate(to: .push(vc))
+        navigate(to: .push(vc))
+    }
+
+    private func pushBenchPlayerPicker(benchIndex: Int, from presenter: UIViewController?) {
+        let vc = PlayerPickerViewController()
+        vc.hidesBottomBarWhenPushed = true
+        vc.invoke(viewModel: PlayerPickerViewModel(slotIndex: benchIndex) { player in
+            LineupStore.shared.setBenchPlayer(player, at: benchIndex)
+        })
+        navigate(to: .push(vc))
     }
 }

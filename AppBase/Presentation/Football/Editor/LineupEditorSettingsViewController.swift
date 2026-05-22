@@ -31,6 +31,7 @@ final class LineupEditorSettingsViewController: FootballScreenViewController<Lin
         layoutViews()
         applyNameFieldStyle()
         refreshLocalization()
+        saveButton.backgroundColor = FootballPalette.accentRed
     }
 
     override func onBind() {
