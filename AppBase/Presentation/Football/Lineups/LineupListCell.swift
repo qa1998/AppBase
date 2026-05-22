@@ -97,7 +97,7 @@ final class LineupListCell: UITableViewCell {
 
     func configure(with lineup: FootballLineup) {
         miniPitch.lineup = lineup
-        titleLabel.text = lineup.title
+        titleLabel.text = lineup.displayTitle
         formationTag.text = lineup.formation.name
         styleTag.text = lineup.tacticalStyle.label
         editedLabel.text = lineup.relativeEditedText

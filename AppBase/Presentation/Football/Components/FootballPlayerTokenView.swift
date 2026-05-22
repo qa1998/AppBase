@@ -42,6 +42,27 @@ enum FootballPlayerTokenSize {
         case .bench: return 16
         }
     }
+
+    /// Gap between circle bottom and name pill (overlap applied in layout).
+    var nameTopOverlap: CGFloat {
+        switch self {
+        case .pitch: return 4
+        case .bench: return 3
+        }
+    }
+
+    /// Fixed name area height (up to 2 lines); avatar stays a separate circle above.
+    var namePillMaxHeight: CGFloat {
+        switch self {
+        case .pitch: return 22
+        case .bench: return 16
+        }
+    }
+
+    /// Total token height = round avatar + name block.
+    var fixedTokenHeight: CGFloat {
+        circleDiameter + nameTopOverlap + namePillMaxHeight
+    }
 }
 
 /// Player token on pitch or bench — filled circle + name, or empty dashed slot with +.
@@ -63,7 +84,6 @@ final class FootballPlayerTokenView: UIView {
     var normalizedPosition: CGPoint = .zero
     /// Set by `PitchPlayerTokenLayout` from grid slot width.
     var gridLabelMaxWidth: CGFloat?
-    var gridMaxCircleDiameter: CGFloat?
     /// Kéo thả trên sân — mặc định tắt (vị trí theo formation).
     var allowsDrag = false
 
@@ -83,96 +103,36 @@ final class FootballPlayerTokenView: UIView {
         preferredTokenSize
     }
 
+    /// Avatar is always a fixed circle; only label width varies.
+    private var avatarDiameter: CGFloat { tokenSize.circleDiameter }
+
     var preferredTokenSize: CGSize {
-        let spacing: CGFloat = 3
-        let circle = min(
-            gridMaxCircleDiameter ?? tokenSize.circleDiameter,
-            tokenSize.circleDiameter
-        )
+        let circle = avatarDiameter
         guard !namePill.isHidden else {
             return CGSize(width: circle, height: circle)
         }
         let labelCap = gridLabelMaxWidth ?? .greatestFiniteMagnitude
-        let nameSize = Self.measureNamePill(namePill, maxLines: 2, maxWidth: labelCap)
+        let nameWidth = Self.measureNamePillWidth(namePill, maxWidth: labelCap)
         return CGSize(
-            width: max(circle, min(nameSize.width, labelCap)),
-            height: circle + spacing + nameSize.height
+            width: max(circle, nameWidth),
+            height: tokenSize.fixedTokenHeight
         )
     }
 
-    /// Width / height from actual label text (up to `maxLines`), not a fixed token box.
-    static func measureNamePill(_ label: PaddingLabel, maxLines: Int, maxWidth: CGFloat = .greatestFiniteMagnitude) -> CGSize {
-        guard let text = label.text, !text.isEmpty, let font = label.font else { return .zero }
-
+    /// Label width only (height is fixed via `FootballPlayerTokenSize.namePillHeight`).
+    static func measureNamePillWidth(_ label: PaddingLabel, maxWidth: CGFloat) -> CGFloat {
+        guard let text = label.text, !text.isEmpty, let font = label.font else { return 0 }
         let insets = label.textInsets
-        let lineHeight = font.lineHeight
-        let maxTextHeight = lineHeight * CGFloat(maxLines)
         let attrs: [NSAttributedString.Key: Any] = [.font: font]
         let maxTextWidth = max(1, maxWidth - insets.left - insets.right)
-
         let natural = (text as NSString).boundingRect(
-            with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude),
+            with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: font.lineHeight),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: attrs,
             context: nil
         )
-
-        var textWidth: CGFloat
-        let textHeight: CGFloat
-
-        if natural.width <= maxTextWidth + 0.5, natural.height <= maxTextHeight + 0.5 {
-            textWidth = ceil(natural.width)
-            textHeight = ceil(natural.height)
-        } else {
-            textWidth = minimumWrapWidth(
-                for: text,
-                font: font,
-                maxTextHeight: maxTextHeight,
-                naturalWidth: natural.width,
-                maxWidth: maxTextWidth
-            )
-            let wrapped = (text as NSString).boundingRect(
-                with: CGSize(width: textWidth, height: .greatestFiniteMagnitude),
-                options: [.usesLineFragmentOrigin, .usesFontLeading],
-                attributes: attrs,
-                context: nil
-            )
-            textHeight = min(ceil(wrapped.height), ceil(maxTextHeight))
-        }
-
-        return CGSize(
-            width: min(textWidth + insets.left + insets.right, maxWidth),
-            height: textHeight + insets.top + insets.bottom
-        )
-    }
-
-    private static func minimumWrapWidth(
-        for text: String,
-        font: UIFont,
-        maxTextHeight: CGFloat,
-        naturalWidth: CGFloat,
-        maxWidth: CGFloat
-    ) -> CGFloat {
-        var low = font.pointSize
-        var high = min(max(naturalWidth, low), maxWidth)
-        var best = high
-
-        while low <= high {
-            let mid = floor((low + high) / 2)
-            let rect = (text as NSString).boundingRect(
-                with: CGSize(width: mid, height: .greatestFiniteMagnitude),
-                options: [.usesLineFragmentOrigin, .usesFontLeading],
-                attributes: [.font: font],
-                context: nil
-            )
-            if rect.height <= maxTextHeight + 0.5 {
-                best = mid
-                high = mid - 1
-            } else {
-                low = mid + 1
-            }
-        }
-        return ceil(best)
+        let textWidth = min(ceil(natural.width), maxTextWidth)
+        return min(textWidth + insets.left + insets.right, maxWidth)
     }
     func configure(player: FootballPlayer?) {
         self.player = player
@@ -232,24 +192,22 @@ final class FootballPlayerTokenView: UIView {
         addSubview(plusLabel)
 
         circleView.backgroundColor = FootballPalette.pitchGreen
-        circleView.layer.cornerRadius = circle / 2
         circleView.layer.borderWidth = 2
         circleView.layer.borderColor = UIColor.white.cgColor
+        circleView.clipsToBounds = true
 
         addSubview(circleView)
 
         circleView.snp.makeConstraints { make in
             make.top.equalToSuperview()
             make.centerX.equalToSuperview()
-            make.size.equalTo(circle)
+            make.width.height.equalTo(circle)
         }
 
-        innerGlow.cornerRadius = (circle - 8) / 2
         circleView.layer.insertSublayer(innerGlow, at: 0)
 
         avatarImageView.contentMode = .scaleAspectFill
         avatarImageView.clipsToBounds = true
-        avatarImageView.layer.cornerRadius = (circle - 8) / 2
 
         avatarLabel.font = FootballPalette.caption(metrics.initialsFontSize)
         avatarLabel.textColor = .white
@@ -270,15 +228,18 @@ final class FootballPlayerTokenView: UIView {
         namePill.textAlignment = .center
         namePill.numberOfLines = 2
         namePill.lineBreakMode = .byTruncatingTail
-        namePill.backgroundColor = UIColor.black.withAlphaComponent(0.85)
+        namePill.adjustsFontSizeToFitWidth = false
+        namePill.backgroundColor = UIColor.black.withAlphaComponent(0.4)
         namePill.layer.cornerRadius = 6
         namePill.clipsToBounds = true
 
         addSubview(namePill)
 
         namePill.snp.makeConstraints { make in
-            make.top.equalTo(circleView.snp.bottom).offset(3)
+            make.top.equalTo(circleView.snp.bottom).offset(metrics.nameTopOverlap)
             make.centerX.equalToSuperview()
+            make.height.equalTo(metrics.namePillMaxHeight)
+            make.width.lessThanOrEqualToSuperview()
             make.leading.greaterThanOrEqualToSuperview()
             make.trailing.lessThanOrEqualToSuperview()
             make.bottom.equalToSuperview()
@@ -295,16 +256,20 @@ final class FootballPlayerTokenView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        if !namePill.isHidden {
-            let cap = gridLabelMaxWidth ?? .greatestFiniteMagnitude
-            let nameSize = Self.measureNamePill(namePill, maxLines: 2, maxWidth: cap)
-            let textWidth = nameSize.width - namePill.textInsets.left - namePill.textInsets.right
-            namePill.preferredMaxLayoutWidth = textWidth
+        if !namePill.isHidden, let cap = gridLabelMaxWidth {
+            namePill.preferredMaxLayoutWidth = max(
+                1,
+                cap - namePill.textInsets.left - namePill.textInsets.right
+            )
         }
 
-        innerGlow.frame = circleView.bounds.insetBy(dx: 4, dy: 4)
-        innerGlow.cornerRadius = innerGlow.bounds.width / 2
-        let d = tokenSize.circleDiameter
+        let d = avatarDiameter
+        circleView.layer.cornerRadius = d / 2
+        let avatarInset: CGFloat = 4
+        let innerSize = d - avatarInset * 2
+        avatarImageView.layer.cornerRadius = innerSize / 2
+        innerGlow.frame = circleView.bounds.insetBy(dx: avatarInset, dy: avatarInset)
+        innerGlow.cornerRadius = innerSize / 2
         let dashRect = CGRect(x: bounds.midX - d / 2, y: 0, width: d, height: d)
         dashedLayer.path = UIBezierPath(ovalIn: dashRect).cgPath
         dashedLayer.fillColor = UIColor.clear.cgColor

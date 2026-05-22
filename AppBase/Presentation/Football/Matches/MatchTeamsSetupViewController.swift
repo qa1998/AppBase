@@ -63,7 +63,7 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
         benchRow.addSubview(benchStack)
         benchStack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-            make.height.greaterThanOrEqualTo(FootballPlayerTokenSize.bench.circleDiameter + 20)
+            make.height.greaterThanOrEqualTo(FootballPlayerTokenSize.bench.fixedTokenHeight)
         }
 
         progressLabel.font = FootballPalette.caption()

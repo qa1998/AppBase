@@ -21,7 +21,9 @@ struct TIOUserFacingError: Error {
     static var generic: TIOUserFacingError {
         TIOUserFacingError(message: L10n.Common.Error.message)
     }
-
+    static var empty: TIOUserFacingError {
+        TIOUserFacingError(message: L10n.Football.Editor.importTeamEmpty)
+    }
     static func listLoadFailed(message: String? = nil) -> TIOUserFacingError {
         TIOUserFacingError(
             title: L10n.List.Error.title,

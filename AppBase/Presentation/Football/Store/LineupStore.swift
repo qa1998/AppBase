@@ -86,7 +86,7 @@ final class LineupStore {
         }
     }
 
-    func createNewLineup(title: String = L10n.Football.Editor.untitled) {
+    func createNewLineup(title: String = "") {
         currentLineup = LineupStore.makeLineup(title: title, formation: .default)
         undoStack.removeAll()
         redoStack.removeAll()
@@ -105,15 +105,31 @@ final class LineupStore {
     func applyFormation(_ formation: FootballFormation) {
         mutate { lineup in
             lineup.formationId = formation.id
-            lineup.assignments = formation.slots.enumerated().map { index, point in
-                let existing = lineup.assignments[safe: index]?.player
-                return PitchSlotAssignment(
-                    slotIndex: index,
-                    normalizedPosition: point,
-                    player: existing
-                )
-            }
+            lineup.assignments = Self.assignments(
+                from: formation,
+                preservingPlayersFrom: lineup.assignments
+            )
         }
+    }
+
+    /// Loads a saved team roster + formation into the current lineup for tactical editing.
+    func importTeam(_ team: FootballTeam, pitchSize: MatchPitchSize? = nil) {
+        let size = pitchSize ?? team.activePitchSize
+        let setup = team.setup(for: size)
+        let formation = team.formation(for: size)
+
+        mutate { lineup in
+            if !team.name.isEmpty {
+                lineup.title = team.name
+            }
+            lineup.formationId = formation.id
+            lineup.assignments = Self.assignments(
+                from: formation,
+                preservingPlayersFrom: setup.assignments
+            )
+            lineup.benchPlayerIds = Self.normalizedBenchIds(setup.benchPlayerIds)
+        }
+        clearTacticalDrawings()
     }
 
     func assignPlayer(_ player: FootballPlayer?, toSlot slotIndex: Int) {
@@ -132,6 +148,10 @@ final class LineupStore {
 
     func setBench(_ playerIds: [String]) {
         mutate { $0.benchPlayerIds = playerIds }
+    }
+
+    func updateCurrentLineupTitle(_ title: String) {
+        mutate { $0.title = title.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
 
     func updateLineupMetadata(id: String, isFavorite: Bool? = nil, isDraft: Bool? = nil) {
@@ -288,6 +308,27 @@ final class LineupStore {
             pitchDisplayOptions: pitchDisplayOptions
         )
         DataStore.shared.set(snapshot, forKey: .footballLineups)
+    }
+
+    private static func assignments(
+        from formation: FootballFormation,
+        preservingPlayersFrom source: [PitchSlotAssignment]
+    ) -> [PitchSlotAssignment] {
+        formation.slots.enumerated().map { index, point in
+            PitchSlotAssignment(
+                slotIndex: index,
+                normalizedPosition: point,
+                player: source[safe: index]?.player
+            )
+        }
+    }
+
+    private static func normalizedBenchIds(_ ids: [String]) -> [String] {
+        var bench = Array(ids.prefix(MatchTeamRoster.benchSlotCount))
+        while bench.count < MatchTeamRoster.benchSlotCount {
+            bench.append("")
+        }
+        return bench
     }
 
     static func makeLineup(title: String, formation: FootballFormation) -> FootballLineup {

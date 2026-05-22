@@ -15,6 +15,8 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     var onPickPitchOptions: (() -> Void)?
     var onPickLineOptions: (() -> Void)?
     var onSaveLineup: (() -> Void)?
+    var onImportTeam: (() -> Void)?
+    var onPickSettings: (() -> Void)?
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -25,6 +27,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     }
     
     private let formationButton = UIButton(type: .system)
+    private let importTeamButton = UIButton(type: .system)
     private let arrowsButton = UIButton(type: .system)
 //    private let toolTabBar = EditorToolTabBar()
     private let pitchCard = UIView()
@@ -46,11 +49,19 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     override func viewDidLoad() {
         super.viewDidLoad()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+        updateNavigationTitle()
+    }
     
     override func setupUI() {
         super.setupUI()
+        setupNavigationItems()
         buildFormationButton()
         buildArrowsButton()
+        buildImportTeamButton()
         buildPitchCard()
         buildBenchSection()
         buildSaveButton()
@@ -61,16 +72,20 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         syncDrawingOverlayStrokes()
         updateTacticalActions()
         refreshLocalization()
+        updateNavigationTitle()
     }
     
     override func refreshLocalization() {
+        updateNavigationTitle()
         benchTitleLabel.text = L10n.Football.Editor.benchPlayers
         saveButton.setTitle(L10n.Football.Editor.save.uppercased(), for: .normal)
+        importTeamButton.configuration?.title = L10n.Football.Editor.importTeam
 //        toolTabBar.refreshTitles()
     }
     
     override func refreshFootballTheme() {
         super.refreshFootballTheme()
+        styleHeaderChip(importTeamButton)
         benchTitleLabel.textColor = FootballPalette.textSecondary
         updateTacticalActions()
         trashButton.tintColor = FootballPalette.accentRed
@@ -87,6 +102,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         viewModel.$lineup
             .receive(on: DispatchQueue.main)
             .sink { [weak self] lineup in
+                self?.updateNavigationTitle()
                 self?.reloadFormation(lineup)
                 self?.reloadPitch(lineup)
                 self?.reloadBench()
@@ -125,7 +141,11 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.onPickLineOptions?()}
             .store(in: &cancelBag)
-        
+
+        importTeamButton.publisher(for: .touchUpInside)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.onImportTeam?() }
+            .store(in: &cancelBag)
     }
     
     override func viewDidLayoutSubviews() {
@@ -133,7 +153,34 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         layoutTokens()
     }
     
+    // MARK: - Navigation
+
+    private func setupNavigationItems() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "gearshape"),
+            style: .plain,
+            target: self,
+            action: #selector(settingsTapped)
+        )
+        updateNavigationTitle()
+    }
+
+    func updateNavigationTitle() {
+        navigationItem.title = viewModel.displayTitle
+    }
+
+    @objc private func settingsTapped() {
+        onPickSettings?()
+    }
+
     // MARK: - Build
+    private func styleHeaderChip(_ button: UIButton) {
+        button.tintColor = .white
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = UIColor(red: 18/255, green: 25/255, blue: 32/255, alpha: 1)
+        button.layer.borderColor = UIColor.white.withAlphaComponent(0.08).cgColor
+    }
+
     private func buildFormationButton() {
         var config = UIButton.Configuration.plain()
         config.title = "4-3-3"
@@ -148,14 +195,10 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         )
         
         formationButton.configuration = config
-        formationButton.tintColor = .white
-        formationButton.setTitleColor(.white, for: .normal)
         formationButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        
-        formationButton.backgroundColor = UIColor(red: 18/255, green: 25/255, blue: 32/255, alpha: 1)
         formationButton.layer.cornerRadius = 14
         formationButton.layer.borderWidth = 1
-        formationButton.layer.borderColor = UIColor.white.withAlphaComponent(0.08).cgColor
+        styleHeaderChip(formationButton)
         formationButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         formationButton.setContentHuggingPriority(.required, for: .horizontal)
         
@@ -168,6 +211,30 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         }
     }
     
+    private func buildImportTeamButton() {
+        var config = UIButton.Configuration.plain()
+        config.title = L10n.Football.Editor.importTeam
+        config.image = UIImage(systemName: "person.3.fill", withConfiguration: symbolConfig(pointSize: 12, weight: .semibold))
+        config.imagePlacement = .leading
+        config.imagePadding = Spacing.s6
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
+
+        importTeamButton.configuration = config
+        importTeamButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
+        importTeamButton.layer.cornerRadius = 14
+        importTeamButton.layer.borderWidth = 1
+        styleHeaderChip(importTeamButton)
+        importTeamButton.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        view.addSubview(importTeamButton)
+
+        importTeamButton.snp.makeConstraints { make in
+            make.centerY.height.equalTo(formationButton)
+            make.leading.equalTo(formationButton.snp.trailing).offset(Spacing.s8)
+            make.trailing.lessThanOrEqualTo(arrowsButton.snp.leading).offset(-Spacing.s8)
+        }
+    }
+
     private func buildArrowsButton() {
         var config = UIButton.Configuration.plain()
         config.title = "Draw"
@@ -182,14 +249,10 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         )
         
         arrowsButton.configuration = config
-        arrowsButton.tintColor = .white
-        arrowsButton.setTitleColor(.white, for: .normal)
         arrowsButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
-        
-        arrowsButton.backgroundColor = UIColor(red: 18/255, green: 25/255, blue: 32/255, alpha: 1)
         arrowsButton.layer.cornerRadius = 14
         arrowsButton.layer.borderWidth = 1
-        arrowsButton.layer.borderColor = UIColor.white.withAlphaComponent(0.08).cgColor
+        styleHeaderChip(arrowsButton)
         arrowsButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         arrowsButton.setContentHuggingPriority(.required, for: .horizontal)
         

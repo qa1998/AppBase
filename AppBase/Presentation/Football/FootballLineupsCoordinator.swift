@@ -61,6 +61,41 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
         vc.onSaveLineup = { [weak vc] in
             vc?.navigationController?.popViewController(animated: true)
         }
+        vc.onImportTeam = { [weak self, weak vc] in
+            self?.presentTeamPickerForLineup(from: vc)
+        }
+        vc.onPickSettings = { [weak self, weak vc] in
+            self?.presentLineupSettings(from: vc)
+        }
+    }
+
+    private func presentLineupSettings(from presenter: UIViewController?) {
+        guard let presenter else { return }
+        let lineup = LineupStore.shared.currentLineup
+        let sheet = LineupEditorSettingsViewController(title: lineup.title)
+        sheet.onSave = { [weak presenter] title in
+            guard let editor = presenter as? LineupEditorViewController else { return }
+            editor.viewModel.updateTitle(title)
+            editor.updateNavigationTitle()
+            editor.viewModel.presentSuccess(L10n.Football.Editor.Settings.nameSaved)
+        }
+        presenter.present(sheet, animated: true)
+    }
+
+    private func presentTeamPickerForLineup(from presenter: UIViewController?) {
+        let teams = TeamStore.shared.teams
+        guard !teams.isEmpty else {
+            (presenter as? LineupEditorViewController)?.viewModel.presentError(.empty)
+            return
+        }
+        let vc = TeamPickerViewController()
+        vc.invoke(viewModel: TeamPickerViewModel())
+        vc.onSelect = { [weak presenter] team in
+            (presenter as? LineupEditorViewController)?.viewModel.importTeam(team)
+        }
+        let nav = UINavigationController(rootViewController: vc)
+        nav.applyFootballNavigationChrome()
+        navigate(to: .present(nav), animated: true)
     }
 
     private func presentFormationPicker(from presenter: UIViewController?) {

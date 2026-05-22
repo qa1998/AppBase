@@ -196,7 +196,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         benchRow.addSubview(benchStack)
         benchStack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-            make.height.greaterThanOrEqualTo(FootballPlayerTokenSize.bench.circleDiameter + 20)
+            make.height.greaterThanOrEqualTo(FootballPlayerTokenSize.bench.fixedTokenHeight)
         }
 
         contentStack.addArrangedSubview(benchTitleLabel)

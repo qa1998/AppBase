@@ -37,6 +37,14 @@ final class LineupEditorViewModel: TIOViewModel<TIOLoadingTarget> {
         }
     }
 
+    var displayTitle: String {
+        lineup.displayTitle
+    }
+
+    func updateTitle(_ title: String) {
+        LineupStore.shared.updateCurrentLineupTitle(title)
+    }
+
     var benchPlayers: [FootballPlayer] {
         lineup.benchPlayerIds.compactMap { id in
             FootballPlayer.resolved(id: id)
@@ -66,6 +74,12 @@ final class LineupEditorViewModel: TIOViewModel<TIOLoadingTarget> {
     func save() {
         LineupStore.shared.saveCurrentLineup()
         presentSuccess(L10n.Football.Editor.saved)
+    }
+
+    func importTeam(_ team: FootballTeam) {
+        LineupStore.shared.importTeam(team)
+        let name = team.name.isEmpty ? L10n.Football.Teams.unnamed : team.name
+        presentSuccess(L10n.Football.Editor.importedTeam(name))
     }
 
     private func syncStrokeState() {

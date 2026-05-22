@@ -27,10 +27,12 @@ enum PitchPlayerTokenLayout {
         for token in tokens {
             guard let placement = placementBySlot[token.slotIndex] else { continue }
             token.gridLabelMaxWidth = placement.labelMaxWidth
-            token.gridMaxCircleDiameter = placement.maxPlayerWidth
+            // Avatar stays round at `circleDiameter`; slot width only caps the name label.
             token.normalizedPosition = placement.normalizedCenter
             rowGroups[placement.rowIndex, default: []].append((token, placement))
         }
+
+        let rowHeight = FootballPlayerTokenSize.pitch.fixedTokenHeight
 
         for rowItems in rowGroups.values {
             let sizes = rowItems.map { item -> CGSize in
@@ -38,7 +40,6 @@ enum PitchPlayerTokenLayout {
                 item.token.layoutIfNeeded()
                 return item.token.preferredTokenSize
             }
-            let rowHeight = sizes.map(\.height).max() ?? 0
 
             for (item, size) in zip(rowItems, sizes) {
                 let center = item.placement.center

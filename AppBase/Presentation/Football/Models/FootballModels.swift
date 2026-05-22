@@ -196,6 +196,16 @@ struct FootballLineup: Identifiable, Equatable, Codable {
         FootballFormation.catalog.first { $0.id == formationId } ?? .default
     }
 
+    /// User-facing title; empty stored name shows localized “untitled”.
+    var displayTitle: String {
+        Self.displayTitle(for: title)
+    }
+
+    static func displayTitle(for rawTitle: String) -> String {
+        let trimmed = rawTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? L10n.Football.Editor.untitled : trimmed
+    }
+
     /// Số cầu thủ trên sân (GK + outfield).
     var playerCount: Int {
         max(assignments.count, formation.playerCount)

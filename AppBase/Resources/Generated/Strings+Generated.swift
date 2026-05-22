@@ -56,6 +56,14 @@ internal enum L10n {
       internal static var editTitle: String { return L10n.tr("Localizable", "football.editor.editTitle", fallback: "Edit Lineup") }
       /// Empty
       internal static var emptySlot: String { return L10n.tr("Localizable", "football.editor.emptySlot", fallback: "Empty") }
+      /// Loaded team "%@"
+      internal static func importedTeam(_ p1: Any) -> String {
+        return L10n.tr("Localizable", "football.editor.importedTeam", String(describing: p1), fallback: "Loaded team \"%@\"")
+      }
+      /// Import team
+      internal static var importTeam: String { return L10n.tr("Localizable", "football.editor.importTeam", fallback: "Import team") }
+      /// No saved teams yet. Create one in My Teams first.
+      internal static var importTeamEmpty: String { return L10n.tr("Localizable", "football.editor.importTeamEmpty", fallback: "No saved teams yet. Create one in My Teams first.") }
       /// Redo
       internal static var redo: String { return L10n.tr("Localizable", "football.editor.redo", fallback: "Redo") }
       /// Save Lineup
@@ -68,6 +76,18 @@ internal enum L10n {
       internal static var undo: String { return L10n.tr("Localizable", "football.editor.undo", fallback: "Undo") }
       /// Untitled lineup
       internal static var untitled: String { return L10n.tr("Localizable", "football.editor.untitled", fallback: "Untitled lineup") }
+      internal enum Settings {
+        /// Tactical name
+        internal static var nameLabel: String { return L10n.tr("Localizable", "football.editor.settings.nameLabel", fallback: "Tactical name") }
+        /// Enter a name
+        internal static var namePlaceholder: String { return L10n.tr("Localizable", "football.editor.settings.namePlaceholder", fallback: "Enter a name") }
+        /// Name saved
+        internal static var nameSaved: String { return L10n.tr("Localizable", "football.editor.settings.nameSaved", fallback: "Name saved") }
+        /// Save
+        internal static var save: String { return L10n.tr("Localizable", "football.editor.settings.save", fallback: "Save") }
+        /// Tactical settings
+        internal static var title: String { return L10n.tr("Localizable", "football.editor.settings.title", fallback: "Tactical settings") }
+      }
       internal enum Tab {
         /// Formation
         internal static var formation: String { return L10n.tr("Localizable", "football.editor.tab.formation", fallback: "Formation") }
