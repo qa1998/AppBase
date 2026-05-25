@@ -45,7 +45,7 @@ final class FootballMatchesViewController: FootballScreenViewController<Football
         tableView.register(MatchListCell.self, forCellReuseIdentifier: MatchListCell.reuseId)
 
         fabButton.backgroundColor = FootballPalette.accentRed
-        fabButton.tintColor = .white
+        fabButton.tintColor = FootballPalette.onAccent
         fabButton.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 22, weight: .bold)), for: .normal)
         fabButton.layer.cornerRadius = 28
         fabButton.layer.shadowColor = FootballPalette.accentRed.cgColor
@@ -73,6 +73,20 @@ final class FootballMatchesViewController: FootballScreenViewController<Football
         }
     }
 
+    override func refreshLocalization() {
+        super.refreshLocalization()
+        emptyLabel.text = L10n.Football.Matches.empty
+        tableView.reloadData()
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        emptyLabel.textColor = FootballPalette.textSecondary
+        fabButton.backgroundColor = FootballPalette.accentRed
+        fabButton.tintColor = FootballPalette.onAccent
+        tableView.reloadData()
+    }
+
     override func onBind() {
         super.onBind()
         viewModel.$matches
@@ -97,7 +111,9 @@ extension FootballMatchesViewController: UITableViewDataSource, UITableViewDeleg
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: MatchListCell.reuseId, for: indexPath) as! MatchListCell
-        cell.configure(match: viewModel.matches[indexPath.row])
+        let match = viewModel.matches[indexPath.row]
+        cell.configure(match: match)
+        cell.applyTheme()
         return cell
     }
 

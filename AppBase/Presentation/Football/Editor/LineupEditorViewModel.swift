@@ -101,3 +101,9 @@ final class LineupEditorViewModel: TIOViewModel<TIOLoadingTarget> {
         canRedoStroke = store.canRedoStroke
     }
 }
+
+enum EditorToolMode: Int, CaseIterable {
+    case formation
+    case fields
+    case arrows
+}

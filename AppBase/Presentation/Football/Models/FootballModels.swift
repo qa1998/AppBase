@@ -12,10 +12,10 @@ enum FootballPosition: String, CaseIterable, Codable {
 
     var label: String {
         switch self {
-        case .gk: return "GK"
-        case .def: return "DEF"
-        case .mid: return "MID"
-        case .fwd: return "FWD"
+        case .gk: return L10n.Football.Players.Position.gk
+        case .def: return L10n.Football.Players.Position.def
+        case .mid: return L10n.Football.Players.Position.mid
+        case .fwd: return L10n.Football.Players.Position.fwd
         }
     }
 }

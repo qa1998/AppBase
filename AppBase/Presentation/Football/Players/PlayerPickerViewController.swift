@@ -65,6 +65,13 @@ final class PlayerPickerViewController: FootballScreenViewController<PlayerPicke
     override func refreshLocalization() {
         title = L10n.Football.Players.title
         searchBar.placeholder = L10n.Football.Players.search
+        rebuildFilters()
+        tableView.reloadData()
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        tableView.reloadData()
     }
 
     override func onBind() {
@@ -76,6 +83,14 @@ final class PlayerPickerViewController: FootballScreenViewController<PlayerPicke
     }
 
     private func buildFilters() {
+        rebuildFilters()
+    }
+
+    private func rebuildFilters() {
+        filterStack.arrangedSubviews.forEach {
+            filterStack.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
         let filters: [(String, FootballPosition?)] = [
             (L10n.Football.Players.Filter.position, nil),
             (FootballPosition.gk.label, .gk),
@@ -104,7 +119,9 @@ extension PlayerPickerViewController: UITableViewDataSource, UITableViewDelegate
             withIdentifier: PlayerCardCell.reuseId,
             for: indexPath
         ) as! PlayerCardCell
-        cell.configure(player: viewModel.players[indexPath.row], showsRating: true)
+        let player = viewModel.players[indexPath.row]
+        cell.configure(player: player, showsRating: true)
+        cell.applyTheme()
         return cell
     }
 

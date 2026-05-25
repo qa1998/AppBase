@@ -111,6 +111,19 @@ final class TeamListCell: UITableViewCell {
         miniPitch.setNeedsDisplay()
     }
 
+    func applyTheme() {
+        card.backgroundColor = FootballPalette.surface
+        titleLabel.textColor = FootballPalette.textPrimary
+        playersLabel.textColor = FootballPalette.textSecondary
+        deleteButton.tintColor = FootballPalette.textSecondary
+        [sizeTag, formationTag].forEach {
+            $0.textColor = FootballPalette.textSecondary
+            $0.backgroundColor = FootballPalette.surfaceElevated
+        }
+        miniPitch.backgroundColor = FootballPalette.surfaceElevated
+        miniPitch.setNeedsDisplay()
+    }
+
     @objc private func deleteTapped() {
         onDeleteTap?()
     }

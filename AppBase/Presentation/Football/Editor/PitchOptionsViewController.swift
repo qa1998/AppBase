@@ -3,11 +3,14 @@
 //  AppBase
 //
 
+import Combine
 import SnapKit
 import UIKit
 
 /// Bottom sheet — pitch surface style and grid for the editor field.
-final class PitchOptionsViewController: UIViewController {
+final class PitchOptionsViewController: UIViewController, FootballChromeRefreshable {
+
+    private var chromeCancel = Set<AnyCancellable>()
 
     var onSave: ((PitchDisplayOptions) -> Void)?
 
@@ -33,11 +36,31 @@ final class PitchOptionsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = FootballPalette.background
+        installFootballChromeObservers(storage: &chromeCancel)
         setupSheet()
         buildUI()
         layoutViews()
+        refreshFootballAppearance()
         syncUI()
+    }
+
+    func refreshFootballLocalization() {
+        titleLabel.text = L10n.Football.PitchOptions.title
+        gridLabel.text = L10n.Football.PitchOptions.showGrid
+        saveButton.setTitle(L10n.Football.PitchOptions.save, for: .normal)
+        styleButtons.forEach { $0.refreshTitle() }
+    }
+
+    func refreshFootballAppearance() {
+        view.backgroundColor = FootballPalette.background
+        titleLabel.textColor = FootballPalette.textPrimary
+        closeButton.tintColor = FootballPalette.textPrimary
+        gridLabel.textColor = FootballPalette.textPrimary
+        gridSwitch.onTintColor = FootballPalette.accentGreen
+        saveButton.backgroundColor = FootballPalette.accentRed
+        saveButton.setTitleColor(FootballPalette.onAccent, for: .normal)
+        styleButtons.forEach { $0.applyTheme() }
+        refreshFootballLocalization()
     }
 
     private func setupSheet() {
@@ -49,7 +72,6 @@ final class PitchOptionsViewController: UIViewController {
     }
 
     private func buildUI() {
-        titleLabel.text = L10n.Football.PitchOptions.title
         titleLabel.font = FootballPalette.title(18)
         titleLabel.textColor = FootballPalette.textPrimary
 
@@ -69,16 +91,10 @@ final class PitchOptionsViewController: UIViewController {
             styleStack.addArrangedSubview(button)
         }
 
-        gridLabel.text = L10n.Football.PitchOptions.showGrid
         gridLabel.font = FootballPalette.title(15)
-        gridLabel.textColor = FootballPalette.textPrimary
-        gridSwitch.onTintColor = FootballPalette.accentGreen
         gridSwitch.addTarget(self, action: #selector(gridChanged), for: .valueChanged)
 
-        saveButton.setTitle(L10n.Football.PitchOptions.save, for: .normal)
-        saveButton.setTitleColor(.white, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
-        saveButton.backgroundColor = FootballPalette.accentRed
         saveButton.layer.cornerRadius = Radius.s12
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
 
@@ -169,7 +185,7 @@ private final class PitchStyleOptionButton: UIControl {
 
         titleLabel.font = FootballPalette.title(15)
         titleLabel.textColor = FootballPalette.textPrimary
-        titleLabel.text = style.label
+        refreshTitle()
 
         preview.isUserInteractionEnabled = false
         preview.displayOptions = PitchDisplayOptions(surfaceStyle: style, showsGrid: true)
@@ -191,6 +207,17 @@ private final class PitchStyleOptionButton: UIControl {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    func refreshTitle() {
+        titleLabel.text = style.label
+    }
+
+    func applyTheme() {
+        backgroundColor = FootballPalette.surface
+        titleLabel.textColor = FootballPalette.textPrimary
+        layer.borderColor = isSelected ? FootballPalette.accentGreen.cgColor : UIColor.clear.cgColor
+        preview.setNeedsDisplay()
     }
 }
 

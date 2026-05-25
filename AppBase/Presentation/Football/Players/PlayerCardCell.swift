@@ -85,4 +85,14 @@ final class PlayerCardCell: UITableViewCell {
         ratingLabel.isHidden = !showsRating || player.rating == 0
         ratingLabel.text = player.rating > 0 ? "\(player.rating)" : ""
     }
+
+    func applyTheme() {
+        card.applyFootballTheme()
+        nameLabel.textColor = FootballPalette.textPrimary
+        metaLabel.textColor = FootballPalette.textSecondary
+        ratingLabel.textColor = FootballPalette.accentGreen
+        avatarView.backgroundColor = FootballPalette.surfaceElevated
+        avatarLabel.backgroundColor = FootballPalette.surfaceElevated
+        avatarLabel.textColor = FootballPalette.textPrimary
+    }
 }

@@ -96,7 +96,7 @@ final class LineupEditorSettingsViewController: FootballScreenViewController<Lin
             make.top.bottom.equalToSuperview()
         }
 
-        saveButton.setTitleColor(.white, for: .normal)
+        saveButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
         saveButton.layer.cornerRadius = Radius.s12
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)

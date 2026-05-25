@@ -81,9 +81,13 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     }
     
     override func refreshLocalization() {
+        super.refreshLocalization()
         benchTitleLabel.text = L10n.Football.Editor.benchPlayers
         saveButton.setTitle(L10n.Football.Editor.save.uppercased(), for: .normal)
         importTeamButton.configuration?.title = L10n.Football.Editor.importTeam
+        arrowsButton.configuration?.title = L10n.Football.Editor.draw
+        reloadFormation(viewModel.lineup)
+        reloadBench()
     }
     
     override func refreshFootballTheme() {
@@ -174,10 +178,11 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
 
     // MARK: - Build
     private func styleHeaderChip(_ button: UIButton) {
-        button.tintColor = .white
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(red: 18/255, green: 25/255, blue: 32/255, alpha: 1)
-        button.layer.borderColor = UIColor.white.withAlphaComponent(0.08).cgColor
+        button.tintColor = FootballPalette.onAccent
+        button.setTitleColor(FootballPalette.textPrimary, for: .normal)
+        button.backgroundColor = FootballPalette.surfaceElevated
+        button.layer.borderColor = FootballPalette.glassBorder.cgColor
+        button.layer.borderWidth = 1
     }
 
     private func buildFormationButton() {
@@ -236,7 +241,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
 
     private func buildArrowsButton() {
         var config = UIButton.Configuration.plain()
-        config.title = "Draw"
+        config.title = L10n.Football.Editor.draw
         config.image = UIImage(named: "ic-arrow-top-right")?.resized(to: .square(size: 16))
         config.imagePlacement = .trailing
         config.imagePadding = Spacing.s8
@@ -354,7 +359,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     
     private func buildSaveButton() {
         saveButton.backgroundColor = FootballPalette.accentRed
-        saveButton.setTitleColor(.white, for: .normal)
+        saveButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
         saveButton.layer.cornerRadius = Radius.s12
         saveButton.addTarget(self, action: #selector(didTapSave), for: .touchUpInside)

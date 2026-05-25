@@ -86,6 +86,15 @@ final class MatchListCell: UITableViewCell {
         phaseLabel.text = phaseShort(match.phase)
     }
 
+    func applyTheme() {
+        card.backgroundColor = FootballPalette.surface
+        homeLabel.textColor = FootballPalette.textPrimary
+        awayLabel.textColor = FootballPalette.textPrimary
+        scoreLabel.textColor = FootballPalette.accentGreen
+        dateLabel.textColor = FootballPalette.textSecondary
+        phaseLabel.textColor = FootballPalette.accentRed
+    }
+
     private func phaseShort(_ phase: MatchPhase) -> String {
         switch phase {
         case .scheduled: return L10n.Football.Match.Phase.scheduled

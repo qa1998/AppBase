@@ -58,6 +58,13 @@ final class MatchStore {
         notify()
     }
 
+    func resetAfterDataClear() {
+        matches = []
+        currentMatch = nil
+        persist()
+        matchesDidChange.send()
+    }
+
     // MARK: - Persistence
 
     private func upsert(_ match: FootballMatch) {

@@ -30,4 +30,9 @@ final class FormationFavoritesStore {
         }
         UserDefaults.standard.set(Array(ids), forKey: key)
     }
+
+    func resetAfterDataClear() {
+        ids.removeAll()
+        UserDefaults.standard.removeObject(forKey: key)
+    }
 }

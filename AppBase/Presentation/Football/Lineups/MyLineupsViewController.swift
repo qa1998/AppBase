@@ -49,9 +49,15 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
             .store(in: &cancelBag)
     }
 
+    override func refreshLocalization() {
+        super.refreshLocalization()
+        tableView.reloadData()
+    }
+
     override func refreshFootballTheme() {
         super.refreshFootballTheme()
         view.backgroundColor = FootballPalette.background
+        fabButton.tintColor = FootballPalette.onAccent
         tableView.reloadData()
         fabContainer.layer.shadowColor = FootballPalette.accentRed.cgColor
     }
@@ -74,7 +80,7 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
         fabContainer.layer.shadowRadius = 12
         fabContainer.layer.shadowOffset = CGSize(width: 0, height: 4)
         fabButton.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 24, weight: .bold)), for: .normal)
-        fabButton.tintColor = .white
+        fabButton.tintColor = FootballPalette.onAccent
         fabButton.addTarget(self, action: #selector(fabTapped), for: .touchUpInside)
         fabContainer.addSubview(fabButton)
         fabButton.snp.makeConstraints { $0.edges.equalToSuperview() }

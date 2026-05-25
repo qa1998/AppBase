@@ -26,11 +26,9 @@ final class TeamPickerViewController: FootballScreenViewController<TeamPickerVie
 
     override func setupUI() {
         super.setupUI()
-        title = L10n.Football.Teams.pickTitle
 
         emptyLabel.font = FootballPalette.caption()
-        emptyLabel.textColor = FootballPalette.textSecondary
-        emptyLabel.text = L10n.Football.Teams.empty
+        emptyLabel.textAlignment = .center
         emptyLabel.textAlignment = .center
         emptyLabel.numberOfLines = 0
 
@@ -47,6 +45,17 @@ final class TeamPickerViewController: FootballScreenViewController<TeamPickerVie
             make.center.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(Spacing.s32)
         }
+    }
+
+    override func refreshLocalization() {
+        title = L10n.Football.Teams.pickTitle
+        emptyLabel.text = L10n.Football.Teams.empty
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        emptyLabel.textColor = FootballPalette.textSecondary
+        tableView.reloadData()
     }
 
     override func onBind() {
@@ -73,7 +82,9 @@ extension TeamPickerViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: TeamListCell.reuseId, for: indexPath) as! TeamListCell
-        cell.configure(viewModel.teams[indexPath.row], showsDelete: false)
+        let team = viewModel.teams[indexPath.row]
+        cell.configure(team, showsDelete: false)
+        cell.applyTheme()
         return cell
     }
 

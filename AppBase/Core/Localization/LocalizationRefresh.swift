@@ -22,6 +22,9 @@ enum LocalizationRefresh {
         if let refreshable = viewController as? LocalizationRefreshable {
             refreshable.refreshLocalization()
         }
+        if let navigationRefresh = viewController as? NavigationLocalizationRefresh {
+            navigationRefresh.refreshNavigationLocalization()
+        }
 
         if let nav = viewController as? UINavigationController {
             nav.viewControllers.forEach { refresh(in: $0) }

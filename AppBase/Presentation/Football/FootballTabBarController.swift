@@ -17,6 +17,7 @@ final class FootballTabBarController: ESTabBarController {
     }
 
     private var themeCancel: AnyCancellable?
+    private var localizationCancel: AnyCancellable?
     private var coordinators: [Coordinator<VoidMeta>] = []
     private var navigationControllers: [UINavigationController] = []
 
@@ -29,6 +30,21 @@ final class FootballTabBarController: ESTabBarController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.configureAppearance()
+            }
+        localizationCancel = NotificationCenter.default.publisher(for: .localizationDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.refreshLocalization()
+                ESTabBarAppearance.updateTitles(
+                    on: self.tabBar,
+                    titles: [
+                        L10n.Football.Tab.lineups,
+                        L10n.Football.Tab.teams,
+                        L10n.Football.Tab.matches,
+                        L10n.Football.Tab.settings,
+                    ]
+                )
             }
     }
 

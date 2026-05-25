@@ -92,6 +92,14 @@ final class PlayerStore {
         players.contains { $0.id == id }
     }
 
+    func resetAfterDataClear() {
+        players = []
+        currentPlayer = FootballPlayer.custom(name: "", position: .mid)
+        persist()
+        currentPlayerDidChange.send(currentPlayer)
+        playersDidChange.send()
+    }
+
     func deletePlayer(id: String) {
         if let player = players.first(where: { $0.id == id }) {
             FootballPlayerAvatarStorage.delete(fileName: player.avatarFileName)

@@ -3,11 +3,14 @@
 //  AppBase
 //
 
+import Combine
 import SnapKit
 import UIKit
 
 /// Bottom sheet — filter by player count, tap formation to apply immediately.
-final class FormationPickerViewController: UIViewController {
+final class FormationPickerViewController: UIViewController, FootballChromeRefreshable {
+
+    private var chromeCancel = Set<AnyCancellable>()
 
     var onSelect: ((FootballFormation) -> Void)?
 
@@ -47,13 +50,27 @@ final class FormationPickerViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = FootballPalette.background
+        installFootballChromeObservers(storage: &chromeCancel)
         setupSheet()
         buildHeader()
         buildPlayerCountFilter()
         buildCollection()
         layoutViews()
+        refreshFootballAppearance()
         reloadFilteredFormations()
+    }
+
+    func refreshFootballLocalization() {
+        titleLabel.text = L10n.Football.Formation.title
+        countButtons.forEach { $0.refreshTitle() }
+        collectionView.reloadData()
+    }
+
+    func refreshFootballAppearance() {
+        view.backgroundColor = FootballPalette.background
+        titleLabel.textColor = FootballPalette.textPrimary
+        closeButton.tintColor = FootballPalette.textPrimary
+        refreshFootballLocalization()
     }
 
     private func setupSheet() {
@@ -66,7 +83,6 @@ final class FormationPickerViewController: UIViewController {
     }
 
     private func buildHeader() {
-        titleLabel.text = L10n.Football.Formation.title
         titleLabel.font = FootballPalette.title(18)
         titleLabel.textColor = FootballPalette.textPrimary
 
@@ -217,7 +233,7 @@ private final class PlayerCountChip: UIControl {
     init(count: Int) {
         self.count = count
         super.init(frame: .zero)
-        label.text = "\(count)"
+        refreshTitle()
         label.font = FootballPalette.title(16)
         label.textAlignment = .center
         addSubview(label)
@@ -232,10 +248,14 @@ private final class PlayerCountChip: UIControl {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func refreshTitle() {
+        label.text = L10n.Football.Match.Create.pitchPlayers(count)
+    }
+
     private func updateStyle() {
         if isSelected {
             backgroundColor = FootballPalette.accentRed
-            label.textColor = .white
+            label.textColor = FootballPalette.onAccent
             layer.cornerRadius = 20
         } else {
             backgroundColor = .clear
@@ -300,9 +320,12 @@ private final class FormationGridCell: UICollectionViewCell {
 
     func configure(formation: FootballFormation, isSelected: Bool, isFavorite: Bool) {
         nameLabel.text = formation.name
+        nameLabel.textColor = FootballPalette.textPrimary
+        card.backgroundColor = FootballPalette.surface
         preview.formation = formation
         let star = isFavorite ? "star.fill" : "star"
         favoriteButton.setImage(UIImage(systemName: star), for: .normal)
+        favoriteButton.tintColor = FootballPalette.accentRed
         borderView.layer.borderColor = isSelected
             ? FootballPalette.accentGreen.cgColor
             : UIColor.clear.cgColor

@@ -52,6 +52,8 @@ internal enum L10n {
       internal static var bench: String { return L10n.tr("Localizable", "football.editor.bench", fallback: "Bench") }
       /// Bench players
       internal static var benchPlayers: String { return L10n.tr("Localizable", "football.editor.benchPlayers", fallback: "Bench players") }
+      /// Draw
+      internal static var draw: String { return L10n.tr("Localizable", "football.editor.draw", fallback: "Draw") }
       /// Edit Lineup
       internal static var editTitle: String { return L10n.tr("Localizable", "football.editor.editTitle", fallback: "Edit Lineup") }
       /// Empty
@@ -112,16 +114,16 @@ internal enum L10n {
       internal static var title: String { return L10n.tr("Localizable", "football.formation.title", fallback: "Choose formation") }
     }
     internal enum LineOptions {
-      /// Select color
-      internal static var color: String { return L10n.tr("Localizable", "football.lineOptions.color", fallback: "Select color") }
+      /// Color
+      internal static var color: String { return L10n.tr("Localizable", "football.lineOptions.color", fallback: "Color") }
       /// Curved
       internal static var curved: String { return L10n.tr("Localizable", "football.lineOptions.curved", fallback: "Curved") }
       /// Dashed
       internal static var dashed: String { return L10n.tr("Localizable", "football.lineOptions.dashed", fallback: "Dashed") }
-      /// Select the type of line
-      internal static var lineType: String { return L10n.tr("Localizable", "football.lineOptions.lineType", fallback: "Select the type of line") }
-      /// Select pointer
-      internal static var pointer: String { return L10n.tr("Localizable", "football.lineOptions.pointer", fallback: "Select pointer") }
+      /// Line type
+      internal static var lineType: String { return L10n.tr("Localizable", "football.lineOptions.lineType", fallback: "Line type") }
+      /// Pointer style
+      internal static var pointer: String { return L10n.tr("Localizable", "football.lineOptions.pointer", fallback: "Pointer style") }
       /// Save
       internal static var save: String { return L10n.tr("Localizable", "football.lineOptions.save", fallback: "Save") }
       /// Solid
@@ -386,14 +388,48 @@ internal enum L10n {
         /// Rating
         internal static var rating: String { return L10n.tr("Localizable", "football.players.filter.rating", fallback: "Rating") }
       }
+      internal enum Position {
+        /// DEF
+        internal static var def: String { return L10n.tr("Localizable", "football.players.position.def", fallback: "DEF") }
+        /// FWD
+        internal static var fwd: String { return L10n.tr("Localizable", "football.players.position.fwd", fallback: "FWD") }
+        /// GK
+        internal static var gk: String { return L10n.tr("Localizable", "football.players.position.gk", fallback: "GK") }
+        /// MID
+        internal static var mid: String { return L10n.tr("Localizable", "football.players.position.mid", fallback: "MID") }
+      }
     }
     internal enum Settings {
       /// Appearance
       internal static var appearance: String { return L10n.tr("Localizable", "football.settings.appearance", fallback: "Appearance") }
+      /// App version
+      internal static var appVersion: String { return L10n.tr("Localizable", "football.settings.appVersion", fallback: "App version") }
+      /// Clear data
+      internal static var clearData: String { return L10n.tr("Localizable", "football.settings.clearData", fallback: "Clear data") }
+      /// Clear
+      internal static var clearDataConfirm: String { return L10n.tr("Localizable", "football.settings.clearDataConfirm", fallback: "Clear") }
+      /// This removes all lineups, teams, players, and matches saved on this device. This cannot be undone.
+      internal static var clearDataMessage: String { return L10n.tr("Localizable", "football.settings.clearDataMessage", fallback: "This removes all lineups, teams, players, and matches saved on this device. This cannot be undone.") }
+      /// Data cleared.
+      internal static var clearDataSuccess: String { return L10n.tr("Localizable", "football.settings.clearDataSuccess", fallback: "Data cleared.") }
+      /// Clear all data?
+      internal static var clearDataTitle: String { return L10n.tr("Localizable", "football.settings.clearDataTitle", fallback: "Clear all data?") }
+      /// General
+      internal static var generalSection: String { return L10n.tr("Localizable", "football.settings.generalSection", fallback: "General") }
+      /// Language
+      internal static var language: String { return L10n.tr("Localizable", "football.settings.language", fallback: "Language") }
+      /// Link is not available yet.
+      internal static var linkUnavailable: String { return L10n.tr("Localizable", "football.settings.linkUnavailable", fallback: "Link is not available yet.") }
       /// Manage players
       internal static var managePlayers: String { return L10n.tr("Localizable", "football.settings.managePlayers", fallback: "Manage players") }
       /// Create players with name, photo and shirt number.
       internal static var managePlayersHint: String { return L10n.tr("Localizable", "football.settings.managePlayersHint", fallback: "Create players with name, photo and shirt number.") }
+      /// Policy
+      internal static var policy: String { return L10n.tr("Localizable", "football.settings.policy", fallback: "Policy") }
+      /// Privacy
+      internal static var privacy: String { return L10n.tr("Localizable", "football.settings.privacy", fallback: "Privacy") }
+      /// Rate us
+      internal static var rateUs: String { return L10n.tr("Localizable", "football.settings.rateUs", fallback: "Rate us") }
       /// Squad
       internal static var squadSection: String { return L10n.tr("Localizable", "football.settings.squadSection", fallback: "Squad") }
       /// Settings

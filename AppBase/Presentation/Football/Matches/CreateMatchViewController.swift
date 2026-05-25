@@ -71,8 +71,7 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
             return button
         }
 
-        continueButton.setTitle(L10n.Football.Match.Create.continueSetup, for: .normal)
-        continueButton.setTitleColor(.white, for: .normal)
+        continueButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         continueButton.titleLabel?.font = FootballPalette.title(16)
         continueButton.backgroundColor = FootballPalette.accentRed
         continueButton.layer.cornerRadius = Radius.s12
@@ -112,6 +111,30 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
         }
 
         syncFromViewModel()
+    }
+
+    override func refreshLocalization() {
+        title = L10n.Football.Match.Create.title
+        homeField.placeholder = L10n.Football.Match.Create.homeTeam
+        awayField.placeholder = L10n.Football.Match.Create.awayTeam
+        stylePickTeamButton(pickHomeTeamButton, title: L10n.Football.Teams.pickForMatch)
+        stylePickTeamButton(pickAwayTeamButton, title: L10n.Football.Teams.pickForMatch)
+        configureToggleRow(label: extraLabel, switchControl: extraSwitch, text: L10n.Football.Match.Create.extraTime)
+        configureToggleRow(label: penaltyLabel, switchControl: penaltySwitch, text: L10n.Football.Match.Create.penalty)
+        continueButton.setTitle(L10n.Football.Match.Create.continueSetup, for: .normal)
+        firstHalfStepper.updateTitle(L10n.Football.Match.Create.firstHalf)
+        secondHalfStepper.updateTitle(L10n.Football.Match.Create.secondHalf)
+        pitchSizeButtons.forEach { $0.refreshTitle() }
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        continueButton.backgroundColor = FootballPalette.accentRed
+        homeField.backgroundColor = FootballPalette.surface
+        homeField.textColor = FootballPalette.textPrimary
+        awayField.backgroundColor = FootballPalette.surface
+        awayField.textColor = FootballPalette.textPrimary
+        pitchSizeButtons.forEach { $0.refresh() }
     }
 
     private func syncFromViewModel() {
@@ -227,6 +250,7 @@ private final class MatchMinuteStepper: UIView {
         set { valueLabel.text = "\(newValue)" }
     }
 
+    private let titleLabel = UILabel()
     private let valueLabel = UILabel()
     private let minusButton = UIButton(type: .system)
     private let plusButton = UIButton(type: .system)
@@ -236,7 +260,6 @@ private final class MatchMinuteStepper: UIView {
         backgroundColor = FootballPalette.surface
         layer.cornerRadius = Radius.s12
 
-        let titleLabel = UILabel()
         titleLabel.text = title
         titleLabel.font = FootballPalette.caption()
         titleLabel.textColor = FootballPalette.textSecondary
@@ -292,5 +315,9 @@ private final class MatchMinuteStepper: UIView {
 
     @objc private func plusTapped() {
         minutes = min(90, minutes + 1)
+    }
+
+    func updateTitle(_ text: String) {
+        titleLabel.text = text
     }
 }

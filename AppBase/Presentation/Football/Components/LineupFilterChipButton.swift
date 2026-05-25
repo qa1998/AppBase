@@ -27,7 +27,7 @@ final class LineupFilterChipButton: UIButton {
     func applyStyle() {
         if isSelected {
             backgroundColor = FootballPalette.accentGreen
-            setTitleColor(FootballPalette.background, for: .normal)
+            setTitleColor(FootballPalette.onAccent, for: .normal)
         } else {
             backgroundColor = FootballPalette.surfaceElevated
             setTitleColor(FootballPalette.textPrimary, for: .normal)

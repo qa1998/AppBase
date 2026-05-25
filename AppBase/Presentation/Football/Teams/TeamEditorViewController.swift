@@ -56,6 +56,14 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         formationButton.setTitle(L10n.Football.Teams.pickFormation, for: .normal)
         saveButton.setTitle(L10n.Football.Teams.save.uppercased(), for: .normal)
         nameField.placeholder = L10n.Football.Teams.namePlaceholder
+        pitchSizeButtons.forEach { $0.refreshTitle() }
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        pitchSizeButtons.forEach { $0.refresh() }
+        pitchView.setNeedsDisplay()
+        reloadSquad()
     }
 
     override func onBind() {
@@ -170,7 +178,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
 
     private func buildSave() {
         saveButton.backgroundColor = FootballPalette.accentRed
-        saveButton.setTitleColor(.white, for: .normal)
+        saveButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
         saveButton.layer.cornerRadius = Radius.s12
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)

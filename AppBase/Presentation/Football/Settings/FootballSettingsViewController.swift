@@ -6,6 +6,7 @@
 import BaseMVVM
 import Combine
 import SnapKit
+import StoreKit
 import UIKit
 
 final class FootballSettingsViewController: FootballScreenViewController<FootballSettingsViewModel> {
@@ -20,6 +21,7 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
     private let managePlayersSubtitleLabel = UILabel()
     private let managePlayersChevron = UIImageView()
     private let appearanceTitleLabel = UILabel()
+    private let languageRow = FootballSettingsRowView()
     private let themeRowStack = UIStackView()
     private let darkCard = FootballGlassView()
     private let lightCard = FootballGlassView()
@@ -29,7 +31,13 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
     private let lightTitleLabel = UILabel()
     private let darkSubtitleLabel = UILabel()
     private let lightSubtitleLabel = UILabel()
-    
+    private let generalTitleLabel = UILabel()
+    private let privacyRow = FootballSettingsRowView()
+    private let policyRow = FootballSettingsRowView()
+    private let versionRow = FootballSettingsRowView()
+    private let rateRow = FootballSettingsRowView()
+    private let clearRow = FootballSettingsRowView()
+
     override var navSetting: NavigationSetting {
         var setting = super.navSetting
         setting.useLargeTitleView = true
@@ -40,6 +48,7 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
     override func setupUI() {
         super.setupUI()
         refreshLocalization()
+        configureGeneralRows()
 
         contentStack.axis = .vertical
         contentStack.spacing = Spacing.s16
@@ -76,6 +85,8 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
 
         appearanceTitleLabel.font = FootballPalette.title(16)
         appearanceTitleLabel.textColor = FootballPalette.textPrimary
+        generalTitleLabel.font = FootballPalette.title(16)
+        generalTitleLabel.textColor = FootballPalette.textPrimary
 
         themeRowStack.axis = .horizontal
         themeRowStack.spacing = Spacing.s12
@@ -121,7 +132,14 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
         contentStack.addArrangedSubview(squadTitleLabel)
         contentStack.addArrangedSubview(managePlayersCard)
         contentStack.addArrangedSubview(appearanceTitleLabel)
+        contentStack.addArrangedSubview(languageRow)
         contentStack.addArrangedSubview(themeRowStack)
+        contentStack.addArrangedSubview(generalTitleLabel)
+        contentStack.addArrangedSubview(privacyRow)
+        contentStack.addArrangedSubview(policyRow)
+        contentStack.addArrangedSubview(versionRow)
+        contentStack.addArrangedSubview(rateRow)
+        contentStack.addArrangedSubview(clearRow)
         managePlayersCard.snp.makeConstraints { $0.height.greaterThanOrEqualTo(64) }
 
         scrollView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
@@ -132,15 +150,40 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
         themeRowStack.snp.makeConstraints { $0.height.equalTo(120) }
     }
 
+    private func configureGeneralRows() {
+        languageRow.onTap = { [weak self] in self?.presentLanguagePicker() }
+
+        privacyRow.onTap = { [weak self] in self?.openURL(FootballLegalLinks.privacyPolicy) }
+        policyRow.onTap = { [weak self] in self?.openURL(FootballLegalLinks.policy) }
+        rateRow.onTap = { [weak self] in self?.rateApp() }
+        clearRow.onTap = { [weak self] in self?.confirmClearData() }
+
+        versionRow.showsChevron = false
+        versionRow.isUserInteractionEnabled = false
+        clearRow.usesDestructiveStyle = true
+    }
+
     override func refreshLocalization() {
+        super.refreshLocalization()
         squadTitleLabel.text = L10n.Football.Settings.squadSection
         managePlayersTitleLabel.text = L10n.Football.Settings.managePlayers
         managePlayersSubtitleLabel.text = L10n.Football.Settings.managePlayersHint
         appearanceTitleLabel.text = L10n.Football.Settings.appearance
+        generalTitleLabel.text = L10n.Football.Settings.generalSection
         darkTitleLabel.text = L10n.Football.Settings.Theme.dark
         lightTitleLabel.text = L10n.Football.Settings.Theme.light
         darkSubtitleLabel.text = L10n.Football.Settings.Theme.darkHint
         lightSubtitleLabel.text = L10n.Football.Settings.Theme.lightHint
+        updateLanguageRow()
+
+        privacyRow.configure(title: L10n.Football.Settings.privacy)
+        policyRow.configure(title: L10n.Football.Settings.policy)
+        versionRow.configure(
+            title: L10n.Football.Settings.appVersion,
+            value: viewModel.appVersionText
+        )
+        rateRow.configure(title: L10n.Football.Settings.rateUs)
+        clearRow.configure(title: L10n.Football.Settings.clearData)
     }
 
     override func onBind() {
@@ -151,6 +194,20 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
                 self?.refreshFootballTheme()
             }
             .store(in: &cancelBag)
+        viewModel.$currentLanguage
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshLocalization()
+                self?.refreshNavigationLocalization()
+            }
+            .store(in: &cancelBag)
+    }
+
+    private func updateLanguageRow() {
+        languageRow.configure(
+            title: L10n.Football.Settings.language,
+            value: LocalizationService.shared.currentLanguage.localizedTitle
+        )
     }
 
     override func refreshFootballTheme() {
@@ -160,10 +217,13 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
         managePlayersSubtitleLabel.textColor = FootballPalette.textSecondary
         managePlayersChevron.tintColor = FootballPalette.textSecondary
         appearanceTitleLabel.textColor = FootballPalette.textPrimary
+        generalTitleLabel.textColor = FootballPalette.textPrimary
         [darkTitleLabel, lightTitleLabel].forEach { $0.textColor = FootballPalette.textPrimary }
         [darkSubtitleLabel, lightSubtitleLabel].forEach { $0.textColor = FootballPalette.textSecondary }
         darkIconView.tintColor = FootballPalette.accentGreen
         lightIconView.tintColor = FootballPalette.accentGreen
+        languageRow.applyTheme()
+        [privacyRow, policyRow, versionRow, rateRow, clearRow].forEach { $0.applyTheme() }
         updateThemeSelection()
     }
 
@@ -191,6 +251,63 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
         darkCard.neonColor = FootballPalette.accentGreen
         lightCard.showsNeonBorder = viewModel.isLightSelected
         lightCard.neonColor = FootballPalette.accentGreen
+    }
+
+    private func openURL(_ url: URL) {
+        guard UIApplication.shared.canOpenURL(url) else {
+            viewModel.presentError(message: L10n.Football.Settings.linkUnavailable)
+            return
+        }
+        UIApplication.shared.open(url)
+    }
+
+    private func rateApp() {
+        if let scene = view.window?.windowScene {
+            SKStoreReviewController.requestReview(in: scene)
+            return
+        }
+        if let url = FootballLegalLinks.appStoreReview {
+            UIApplication.shared.open(url)
+            return
+        }
+        viewModel.presentError(message: L10n.Football.Settings.linkUnavailable)
+    }
+
+    private func presentLanguagePicker() {
+        let sheet = UIAlertController(
+            title: L10n.Football.Settings.language,
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        let selected = viewModel.currentLanguage
+        Language.allCases.forEach { language in
+            let mark = language == selected ? "✓ " : ""
+            sheet.addAction(UIAlertAction(
+                title: mark + language.localizedTitle,
+                style: .default
+            ) { [weak self] _ in
+                self?.viewModel.selectLanguage(language)
+            })
+        }
+        sheet.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
+        if let popover = sheet.popoverPresentationController {
+            popover.sourceView = languageRow
+            popover.sourceRect = languageRow.bounds
+        }
+        present(sheet, animated: true)
+    }
+
+    private func confirmClearData() {
+        let sheet = UIAlertController(
+            title: L10n.Football.Settings.clearDataTitle,
+            message: L10n.Football.Settings.clearDataMessage,
+            preferredStyle: .alert
+        )
+        sheet.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
+        sheet.addAction(UIAlertAction(title: L10n.Football.Settings.clearDataConfirm, style: .destructive) { [weak self] _ in
+            self?.viewModel.clearFootballData()
+        })
+        present(sheet, animated: true)
     }
 
     @objc private func didTapManagePlayers() {

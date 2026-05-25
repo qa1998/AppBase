@@ -153,7 +153,7 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
         }
 
         saveButton.backgroundColor = FootballPalette.accentRed
-        saveButton.setTitleColor(.white, for: .normal)
+        saveButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
         saveButton.layer.cornerRadius = Radius.s12
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
@@ -225,7 +225,7 @@ final class PlayerEditorViewController: FootballScreenViewController<PlayerEdito
         positionButtons.enumerated().forEach { index, button in
             let selected = FootballPosition.allCases[index] == player.position
             button.backgroundColor = selected ? FootballPalette.accentGreen : FootballPalette.surface
-            button.setTitleColor(selected ? .white : FootballPalette.textPrimary, for: .normal)
+            button.setTitleColor(selected ? FootballPalette.onAccent : FootballPalette.textPrimary, for: .normal)
         }
     }
 

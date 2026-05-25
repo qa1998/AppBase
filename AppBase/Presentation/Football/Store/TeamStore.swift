@@ -90,6 +90,14 @@ final class TeamStore {
         teamsDidChange.send()
     }
 
+    func resetAfterDataClear() {
+        teams = []
+        currentTeam = FootballTeam.empty()
+        persist()
+        currentTeamDidChange.send(currentTeam)
+        teamsDidChange.send()
+    }
+
     /// Chuyển tab cỡ sân — giữ nguyên đội hình từng sân đã lưu trong `setups`.
     func setPitchSize(_ size: MatchPitchSize) {
         var team = currentTeam

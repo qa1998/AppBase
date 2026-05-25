@@ -15,10 +15,7 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
-    private let segment = UISegmentedControl(items: [
-        L10n.Football.Match.Create.homeTeam,
-        L10n.Football.Match.Create.awayTeam,
-    ])
+    private let segment = UISegmentedControl()
     private let pitchCard = UIView()
     private let pitchView = FootballPitchView()
     private let hintLabel = UILabel()
@@ -40,7 +37,19 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
         super.setupUI()
         title = L10n.Football.Match.Create.setupTeams
 
+        segment.insertSegment(withTitle: "", at: 0, animated: false)
+        segment.insertSegment(withTitle: "", at: 1, animated: false)
         segment.selectedSegmentIndex = 0
+        segment.backgroundColor = FootballPalette.surface
+        segment.selectedSegmentTintColor = FootballPalette.surfaceElevated
+        segment.setTitleTextAttributes(
+            [.foregroundColor: FootballPalette.textPrimary, .font: FootballPalette.title(14)],
+            for: .selected
+        )
+        segment.setTitleTextAttributes(
+            [.foregroundColor: FootballPalette.textSecondary, .font: FootballPalette.title(14)],
+            for: .normal
+        )
         segment.addTarget(self, action: #selector(segmentChanged), for: .valueChanged)
 
         pitchCard.backgroundColor = FootballPalette.surface
@@ -70,8 +79,7 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
         progressLabel.textColor = FootballPalette.textSecondary
         progressLabel.numberOfLines = 0
 
-        confirmButton.setTitle(L10n.Football.Match.Create.confirm, for: .normal)
-        confirmButton.setTitleColor(.white, for: .normal)
+        confirmButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         confirmButton.titleLabel?.font = FootballPalette.title(16)
         confirmButton.backgroundColor = FootballPalette.accentRed
         confirmButton.layer.cornerRadius = Radius.s12
@@ -121,6 +129,27 @@ final class MatchTeamsSetupViewController: FootballScreenViewController<CreateMa
             make.height.equalTo(pitchView.snp.width).dividedBy(FootballPitchView.fieldWidthToHeightRatio)
         }
 
+        reloadSquad()
+    }
+
+    override func refreshLocalization() {
+        title = L10n.Football.Match.Create.setupTeams
+        segment.setTitle(L10n.Football.Match.Create.homeTeam, forSegmentAt: 0)
+        segment.setTitle(L10n.Football.Match.Create.awayTeam, forSegmentAt: 1)
+        hintLabel.text = L10n.Football.Match.Create.tapSlotHint
+        benchTitleLabel.text = L10n.Football.Editor.benchPlayers
+        confirmButton.setTitle(L10n.Football.Match.Create.confirm, for: .normal)
+        updateProgress()
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        pitchCard.backgroundColor = FootballPalette.surface
+        hintLabel.textColor = FootballPalette.textSecondary
+        benchTitleLabel.textColor = FootballPalette.textSecondary
+        progressLabel.textColor = FootballPalette.textSecondary
+        confirmButton.backgroundColor = FootballPalette.accentRed
+        pitchView.setNeedsDisplay()
         reloadSquad()
     }
 

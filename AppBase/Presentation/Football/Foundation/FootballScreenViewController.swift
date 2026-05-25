@@ -33,24 +33,57 @@ class FootballScreenViewController<VM: TIOViewModel<TIOLoadingTarget>>: TIOViewC
     open func refreshFootballTheme() {
         applyFootballChrome()
         applyScreenTheme(ThemeManager.shared.palette)
+        refreshLocalization()
+        refreshNavigationLocalization()
+    }
+
+    override func refreshNavigationLocalization() {
+        let setting = navSetting
+        if setting.useLargeTitleView {
+            setupNavigation(setting)
+        } else if let title = setting.title {
+            self.title = title
+            navigationItem.title = title
+        }
+        applyNavigationItemTheme(
+            titleColor: FootballPalette.textPrimary,
+            barTintColor: FootballPalette.accentGreen
+        )
     }
 
     override func applyScreenTheme(_ colors: ThemeColors) {
         view.backgroundColor = FootballPalette.background
+        applyNavigationItemTheme(
+            titleColor: FootballPalette.textPrimary,
+            barTintColor: FootballPalette.accentGreen
+        )
     }
 
     func applyFootballChrome() {
         view.backgroundColor = FootballPalette.background
+        let isLight = ThemeManager.shared.mode == .light
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
-        appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        appearance.backgroundEffect = UIBlurEffect(
+            style: isLight ? .systemUltraThinMaterialLight : .systemUltraThinMaterialDark
+        )
         appearance.backgroundColor = FootballPalette.background
-        appearance.titleTextAttributes = [
+        let titleAttributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: FootballPalette.textPrimary,
             .font: FootballPalette.title(17)
         ]
+        appearance.titleTextAttributes = titleAttributes
+        appearance.largeTitleTextAttributes = [
+            .foregroundColor: FootballPalette.textPrimary,
+            .font: FootballPalette.title(24)
+        ]
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
         navigationController?.navigationBar.tintColor = FootballPalette.accentGreen
+        applyNavigationItemTheme(
+            titleColor: FootballPalette.textPrimary,
+            barTintColor: FootballPalette.accentGreen
+        )
     }
 }

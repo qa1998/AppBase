@@ -46,6 +46,42 @@ final class MatchLiveViewController: FootballScreenViewController<MatchLiveViewM
         setQuickActionsVisible(viewModel.showQuickActions)
     }
 
+    override func refreshLocalization() {
+        refreshMatchHeader()
+        rebuildActionButtons()
+        tableView.reloadData()
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        headerCard.backgroundColor = FootballPalette.surface
+        [homeLabel, awayLabel, clockLabel].forEach { $0.textColor = FootballPalette.textPrimary }
+        scoreLabel.textColor = FootballPalette.accentGreen
+        phaseLabel.textColor = FootballPalette.textSecondary
+        primaryButton.backgroundColor = FootballPalette.accentRed
+        rebuildActionButtons()
+        tableView.reloadData()
+    }
+
+    private func rebuildActionButtons() {
+        actionsStack.arrangedSubviews.forEach {
+            actionsStack.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+        MatchEventType.allCases.forEach { type in
+            let button = UIButton(type: .system)
+            button.setTitle(actionTitle(type), for: .normal)
+            button.titleLabel?.font = FootballPalette.caption(12)
+            button.setTitleColor(FootballPalette.textPrimary, for: .normal)
+            button.backgroundColor = FootballPalette.surfaceElevated
+            button.layer.cornerRadius = Radius.s12
+            button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
+            button.tag = typeTag(type)
+            button.addTarget(self, action: #selector(actionTapped(_:)), for: .touchUpInside)
+            actionsStack.addArrangedSubview(button)
+        }
+    }
+
     override func onBind() {
         super.onBind()
         viewModel.$clockText
@@ -107,7 +143,7 @@ final class MatchLiveViewController: FootballScreenViewController<MatchLiveViewM
         phaseLabel.numberOfLines = 0
 
         primaryButton.backgroundColor = FootballPalette.accentRed
-        primaryButton.setTitleColor(.white, for: .normal)
+        primaryButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         primaryButton.titleLabel?.font = FootballPalette.title(16)
         primaryButton.layer.cornerRadius = Radius.s12
         primaryButton.addTarget(self, action: #selector(primaryTapped), for: .touchUpInside)

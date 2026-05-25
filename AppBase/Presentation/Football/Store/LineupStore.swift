@@ -94,6 +94,22 @@ final class LineupStore {
         notify()
     }
 
+    func resetAfterDataClear() {
+        savedLineups = []
+        currentLineup = LineupStore.makeLineup(title: "", formation: .default)
+        undoStack.removeAll()
+        redoStack.removeAll()
+        tacticalStrokes = []
+        strokeUndoStack = []
+        strokeRedoStack = []
+        tacticalLineOptions = .default
+        pitchDisplayOptions = .default
+        applyDrawingState(from: TacticalDrawingState.empty)
+        persist()
+        currentLineupDidChange.send(currentLineup)
+        lineupsDidChange.send()
+    }
+
     func loadLineup(_ lineup: FootballLineup) {
         pushUndoSnapshot()
         currentLineup = lineup

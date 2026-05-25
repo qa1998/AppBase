@@ -68,7 +68,7 @@ final class MyPlayersViewController: FootballScreenViewController<MyPlayersViewM
             UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 22, weight: .bold)),
             for: .normal
         )
-        fabButton.tintColor = .white
+        fabButton.tintColor = FootballPalette.onAccent
         fabButton.addTarget(self, action: #selector(fabTapped), for: .touchUpInside)
         fabContainer.layer.cornerRadius = 30
         fabContainer.layer.shadowColor = FootballPalette.accentRed.cgColor
@@ -105,8 +105,19 @@ final class MyPlayersViewController: FootballScreenViewController<MyPlayersViewM
     }
 
     override func refreshLocalization() {
+        super.refreshLocalization()
         titleLabel.text = L10n.Football.Players.libraryTitle
         emptyLabel.text = L10n.Football.Players.libraryEmpty
+        navigationItem.title = L10n.Football.Players.libraryTitle
+        tableView.reloadData()
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        titleLabel.textColor = FootballPalette.textPrimary
+        emptyLabel.textColor = FootballPalette.textSecondary
+        fabContainer.layer.shadowColor = FootballPalette.accentRed.cgColor
+        tableView.reloadData()
     }
 
     override func onBind() {
@@ -134,7 +145,9 @@ extension MyPlayersViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: PlayerCardCell.reuseId, for: indexPath) as! PlayerCardCell
-        cell.configure(player: viewModel.players[indexPath.row], showsRating: false)
+        let player = viewModel.players[indexPath.row]
+        cell.configure(player: player, showsRating: false)
+        cell.applyTheme()
         return cell
     }
 

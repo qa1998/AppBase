@@ -20,7 +20,7 @@ final class MatchPitchSizeButton: UIControl {
         super.init(frame: .zero)
         backgroundColor = FootballPalette.surface
         layer.cornerRadius = Radius.s12
-        titleLabel.text = L10n.Football.Match.Create.pitchPlayers(size.playerCount)
+        refreshTitle()
         titleLabel.font = FootballPalette.title(15)
         titleLabel.textAlignment = .center
         titleLabel.isUserInteractionEnabled = false
@@ -34,7 +34,12 @@ final class MatchPitchSizeButton: UIControl {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func refresh() {
+    func refreshTitle() {
+        titleLabel.text = L10n.Football.Match.Create.pitchPlayers(pitchSize.playerCount)
+    }
+
+    func refresh() {
+        backgroundColor = FootballPalette.surface
         layer.borderWidth = isSelected ? 2 : 0
         layer.borderColor = FootballPalette.accentGreen.cgColor
         titleLabel.textColor = isSelected ? FootballPalette.textPrimary : FootballPalette.textSecondary

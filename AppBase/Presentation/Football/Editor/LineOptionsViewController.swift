@@ -67,30 +67,24 @@ final class LineOptionsViewController: FootballScreenViewController<LineOptionsV
     }
 
     private func buildUI() {
+        view.backgroundColor = FootballPalette.background
+
         titleLabel.font = FootballPalette.title(18)
         titleLabel.textColor = FootballPalette.textPrimary
 
-        closeButton.setImage(UIImage(systemName: "xmark"), for: .normal)
+        closeButton.setImage(
+            UIImage(systemName: "xmark", withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)),
+            for: .normal
+        )
         closeButton.tintColor = FootballPalette.textPrimary
+        closeButton.backgroundColor = FootballPalette.surface
+        closeButton.layer.cornerRadius = 18
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
 
         headerBar.addSubview(titleLabel)
         headerBar.addSubview(closeButton)
 
-        styleSegment.insertSegment(withTitle: "", at: 0, animated: false)
-        styleSegment.insertSegment(withTitle: "", at: 1, animated: false)
-        styleSegment.selectedSegmentIndex = 0
-        styleSegment.backgroundColor = FootballPalette.surface
-        styleSegment.selectedSegmentTintColor = FootballPalette.surfaceElevated
-        styleSegment.setTitleTextAttributes(
-            [.foregroundColor: FootballPalette.textPrimary, .font: FootballPalette.title(14)],
-            for: .selected
-        )
-        styleSegment.setTitleTextAttributes(
-            [.foregroundColor: FootballPalette.textSecondary, .font: FootballPalette.caption(14)],
-            for: .normal
-        )
-        styleSegment.addTarget(self, action: #selector(styleChanged), for: .valueChanged)
+        configureStyleSegment()
 
         straightRow.addTarget(self, action: #selector(straightTapped), for: .touchUpInside)
         curvedRow.addTarget(self, action: #selector(curvedTapped), for: .touchUpInside)
@@ -120,8 +114,9 @@ final class LineOptionsViewController: FootballScreenViewController<LineOptionsV
         }
 
         colorStack.axis = .horizontal
-        colorStack.spacing = Spacing.s14
+        colorStack.spacing = Spacing.s16
         colorStack.alignment = .center
+        colorStack.distribution = .equalSpacing
         TacticalLineColor.allCases.forEach { color in
             let button = LineColorOptionButton(color: color)
             button.addTarget(self, action: #selector(colorTapped(_:)), for: .touchUpInside)
@@ -129,14 +124,14 @@ final class LineOptionsViewController: FootballScreenViewController<LineOptionsV
             colorStack.addArrangedSubview(button)
         }
 
-        saveButton.setTitleColor(.white, for: .normal)
+        saveButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
         saveButton.backgroundColor = FootballPalette.accentRed
         saveButton.layer.cornerRadius = Radius.s12
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
 
         contentStack.axis = .vertical
-        contentStack.spacing = Spacing.s20
+        contentStack.spacing = Spacing.s16
         contentStack.addArrangedSubview(styleSegment)
         contentStack.addArrangedSubview(sectionLabel(L10n.Football.LineOptions.lineType))
         contentStack.addArrangedSubview(straightRow)
@@ -146,6 +141,7 @@ final class LineOptionsViewController: FootballScreenViewController<LineOptionsV
         contentStack.addArrangedSubview(sectionLabel(L10n.Football.LineOptions.color))
         contentStack.addArrangedSubview(colorStack)
 
+        scrollView.showsVerticalScrollIndicator = false
         scrollView.addSubview(contentStack)
         view.addSubview(headerBar)
         view.addSubview(scrollView)
@@ -189,48 +185,70 @@ final class LineOptionsViewController: FootballScreenViewController<LineOptionsV
         }
 
         styleSegment.snp.makeConstraints { $0.height.equalTo(44) }
-        [straightRow, curvedRow].forEach { $0.snp.makeConstraints { $0.height.equalTo(52) } }
-        pointerButtons.forEach { $0.snp.makeConstraints { $0.height.equalTo(56) } }
+        [straightRow, curvedRow].forEach { $0.snp.makeConstraints { $0.height.equalTo(56) } }
+        pointerButtons.forEach { $0.snp.makeConstraints { $0.height.equalTo(60) } }
     }
 
     private func sectionLabel(_ text: String) -> UILabel {
         let label = UILabel()
         label.text = text
-        label.font = FootballPalette.caption()
+        label.font = FootballPalette.caption(13)
         label.textColor = FootballPalette.textSecondary
         return label
     }
 
+    private func configureStyleSegment() {
+        styleSegment.removeAllSegments()
+        styleSegment.insertSegment(withTitle: L10n.Football.LineOptions.solid, at: 0, animated: false)
+        styleSegment.insertSegment(withTitle: L10n.Football.LineOptions.dashed, at: 1, animated: false)
+        styleSegment.selectedSegmentIndex = 0
+        styleSegment.backgroundColor = FootballPalette.surface
+        styleSegment.selectedSegmentTintColor = FootballPalette.surfaceElevated
+        styleSegment.setTitleTextAttributes(
+            [
+                .foregroundColor: FootballPalette.textPrimary,
+                .font: FootballPalette.title(15),
+            ],
+            for: .selected
+        )
+        styleSegment.setTitleTextAttributes(
+            [
+                .foregroundColor: FootballPalette.textSecondary,
+                .font: FootballPalette.title(15),
+            ],
+            for: .normal
+        )
+        styleSegment.addTarget(self, action: #selector(styleSegmentChanged), for: .valueChanged)
+    }
+
     private func syncUI() {
         let draft = viewModel.draft
-        styleSegment.selectedSegmentIndex = draft.lineStyle == .solid ? 0 : 1
-        let dashed = draft.lineStyle == .dashed
-        straightRow.configure(
-            title: L10n.Football.LineOptions.straight,
-            preview: .straight(dashed: dashed)
-        )
-        curvedRow.configure(
-            title: L10n.Football.LineOptions.curved,
-            preview: .curved(dashed: dashed)
-        )
+        let segmentIndex = draft.lineStyle == .solid ? 0 : 1
+        if styleSegment.selectedSegmentIndex != segmentIndex {
+            styleSegment.selectedSegmentIndex = segmentIndex
+        }
+        applyLineStyleToDependentViews(dashed: draft.lineStyle == .dashed)
         straightRow.isSelected = draft.pathType == .straight
         curvedRow.isSelected = draft.pathType == .curved
         pointerButtons.forEach { $0.isSelected = $0.pointer == draft.pointer }
         colorButtons.forEach { $0.isSelected = $0.lineColor == draft.color }
-        pointerButtons.forEach { $0.previewColor = draft.color.uiColor }
-        pointerButtons.forEach { $0.isDashed = dashed }
-        straightRow.previewColor = draft.color.uiColor
-        curvedRow.previewColor = draft.color.uiColor
+    }
+
+    /// Cập nhật preview line type + pointer khi đổi Solid / Dashed.
+    private func applyLineStyleToDependentViews(dashed: Bool) {
+        straightRow.configure(preview: .straight(dashed: dashed))
+        curvedRow.configure(preview: .curved(dashed: dashed))
+        pointerButtons.forEach { $0.applyLineStyle(dashed: dashed) }
+    }
+
+    @objc private func styleSegmentChanged() {
+        let style: TacticalLineStyle = styleSegment.selectedSegmentIndex == 0 ? .solid : .dashed
+        viewModel.mutateDraft { $0.lineStyle = style }
+        applyLineStyleToDependentViews(dashed: style == .dashed)
     }
 
     @objc private func closeTapped() {
         dismiss(animated: true)
-    }
-
-    @objc private func styleChanged() {
-        viewModel.mutateDraft { draft in
-            draft.lineStyle = styleSegment.selectedSegmentIndex == 0 ? .solid : .dashed
-        }
     }
 
     @objc private func straightTapped() {
@@ -255,7 +273,7 @@ final class LineOptionsViewController: FootballScreenViewController<LineOptionsV
     }
 }
 
-// MARK: - Row & option controls
+// MARK: - Line type row
 
 private enum LinePreviewStyle {
     case straight(dashed: Bool)
@@ -267,18 +285,13 @@ private final class LineOptionChoiceRow: UIControl {
     private let radioView = UIView()
     private let radioInner = UIView()
     private let previewView = LinePreviewView()
-    private let titleLabel = UILabel()
+    private let chevronView = UIImageView()
 
     override var isSelected: Bool {
         didSet { updateSelection() }
     }
 
-    var previewColor: UIColor = FootballPalette.accentGreen {
-        didSet { previewView.strokeColor = previewColor }
-    }
-
-    func configure(title: String, preview: LinePreviewStyle) {
-        titleLabel.text = title
+    func configure(preview: LinePreviewStyle) {
         switch preview {
         case .straight(let dashed):
             previewView.style = .straight
@@ -287,6 +300,7 @@ private final class LineOptionChoiceRow: UIControl {
             previewView.style = .curved
             previewView.isDashed = dashed
         }
+        previewView.setNeedsDisplay()
     }
 
     override init(frame: CGRect) {
@@ -305,28 +319,31 @@ private final class LineOptionChoiceRow: UIControl {
             make.size.equalTo(10)
         }
 
-        titleLabel.font = FootballPalette.title(15)
-        titleLabel.textColor = FootballPalette.textPrimary
+        previewView.strokeColor = .white
+
+        let chevronConfig = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+        chevronView.image = UIImage(systemName: "chevron.right", withConfiguration: chevronConfig)
+        chevronView.tintColor = FootballPalette.textSecondary
+        chevronView.contentMode = .scaleAspectFit
 
         addSubview(radioView)
         addSubview(previewView)
-        addSubview(titleLabel)
+        addSubview(chevronView)
 
         radioView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(Spacing.s16)
             make.centerY.equalToSuperview()
             make.size.equalTo(22)
         }
-        previewView.snp.makeConstraints { make in
-            make.leading.equalTo(radioView.snp.trailing).offset(Spacing.s16)
+        chevronView.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(Spacing.s16)
             make.centerY.equalToSuperview()
-            make.width.equalTo(72)
-            make.height.equalTo(28)
+            make.size.equalTo(18)
         }
-        titleLabel.snp.makeConstraints { make in
-            make.leading.equalTo(previewView.snp.trailing).offset(Spacing.s12)
-            make.centerY.equalToSuperview()
-            make.trailing.lessThanOrEqualToSuperview().inset(Spacing.s12)
+        previewView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalTo(120)
+            make.height.equalTo(32)
         }
         updateSelection()
     }
@@ -337,8 +354,10 @@ private final class LineOptionChoiceRow: UIControl {
 
     private func updateSelection() {
         let active = isSelected
+        layer.borderWidth = active ? 2 : 0
+        layer.borderColor = FootballPalette.accentGreen.cgColor
         radioView.layer.borderColor = (active ? FootballPalette.accentGreen : FootballPalette.textSecondary)
-            .withAlphaComponent(active ? 1 : 0.4).cgColor
+            .withAlphaComponent(active ? 1 : 0.35).cgColor
         radioInner.isHidden = !active
     }
 }
@@ -349,17 +368,17 @@ private final class LinePreviewView: UIView {
 
     var style: Style = .straight
     var isDashed = false
-    var strokeColor: UIColor = FootballPalette.accentGreen
+    var strokeColor: UIColor = .white
 
     override func draw(_ rect: CGRect) {
         guard let ctx = UIGraphicsGetCurrentContext() else { return }
         ctx.setStrokeColor(strokeColor.cgColor)
-        ctx.setLineWidth(2)
+        ctx.setLineWidth(2.5)
         ctx.setLineCap(.round)
         if isDashed {
-            ctx.setLineDash(phase: 0, lengths: [5, 4])
+            ctx.setLineDash(phase: 0, lengths: [6, 5])
         }
-        let inset = rect.insetBy(dx: 4, dy: rect.height * 0.35)
+        let inset = rect.insetBy(dx: 8, dy: rect.height * 0.32)
         ctx.beginPath()
         ctx.move(to: CGPoint(x: inset.minX, y: inset.midY))
         switch style {
@@ -368,16 +387,27 @@ private final class LinePreviewView: UIView {
         case .curved:
             ctx.addQuadCurve(
                 to: CGPoint(x: inset.maxX, y: inset.midY),
-                control: CGPoint(x: inset.midX, y: inset.minY - 6)
+                control: CGPoint(x: inset.midX, y: inset.minY - 8)
             )
         }
         ctx.strokePath()
     }
 }
 
+// MARK: - Pointer grid
+
+private extension TacticalLinePointer {
+
+    /// Asset name when preview images are added to the catalog (e.g. `ic-line-pointer-arrow`).
+    var previewImageName: String? {
+        "ic-line-pointer-\(rawValue)"
+    }
+}
+
 private final class LinePointerOptionButton: UIControl {
 
     let pointer: TacticalLinePointer
+    private let iconView = UIImageView()
     private let preview = LinePointerPreviewView()
 
     override var isSelected: Bool {
@@ -387,43 +417,69 @@ private final class LinePointerOptionButton: UIControl {
         }
     }
 
-    var previewColor: UIColor = FootballPalette.accentGreen {
-        didSet { preview.strokeColor = previewColor }
+    func applyLineStyle(dashed: Bool) {
+        isDashed = dashed
+        reloadPreviewContent()
     }
 
-    var isDashed = false {
-        didSet { preview.isDashed = isDashed }
-    }
+    private var isDashed = false
 
     init(pointer: TacticalLinePointer) {
         self.pointer = pointer
         super.init(frame: .zero)
         backgroundColor = FootballPalette.surface
         layer.cornerRadius = Radius.s12
+
+        iconView.contentMode = .scaleAspectFit
+        iconView.tintColor = .white
+
         preview.pointer = pointer
+        preview.strokeColor = .white
+
+        addSubview(iconView)
         addSubview(preview)
+        reloadPreviewContent()
+
+        iconView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalToSuperview().multipliedBy(0.65)
+            make.height.equalTo(24)
+        }
         preview.snp.makeConstraints { make in
             make.center.equalToSuperview()
             make.width.equalToSuperview().multipliedBy(0.7)
-            make.height.equalTo(20)
+            make.height.equalTo(24)
         }
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    private func reloadPreviewContent() {
+        preview.isDashed = isDashed
+        if let name = pointer.previewImageName, let image = UIImage(named: name) {
+            iconView.image = image.withRenderingMode(.alwaysTemplate)
+            iconView.isHidden = false
+            preview.isHidden = true
+        } else {
+            iconView.isHidden = true
+            preview.isHidden = false
+            preview.setNeedsDisplay()
+        }
+    }
 }
 
 private final class LinePointerPreviewView: UIView {
 
     var pointer: TacticalLinePointer = .arrow
-    var strokeColor: UIColor = FootballPalette.accentGreen
+    var strokeColor: UIColor = .white
     var isDashed = false
 
     override func draw(_ rect: CGRect) {
         guard let ctx = UIGraphicsGetCurrentContext() else { return }
         ctx.setStrokeColor(strokeColor.cgColor)
-        ctx.setLineWidth(2)
+        ctx.setLineWidth(2.5)
         ctx.setLineCap(.round)
         if isDashed {
             ctx.setLineDash(phase: 0, lengths: [4, 3])
@@ -491,6 +547,8 @@ private final class LinePointerPreviewView: UIView {
     }
 }
 
+// MARK: - Color swatches
+
 private final class LineColorOptionButton: UIControl {
 
     let lineColor: TacticalLineColor
@@ -500,7 +558,7 @@ private final class LineColorOptionButton: UIControl {
     override var isSelected: Bool {
         didSet {
             ringView.layer.borderWidth = isSelected ? 3 : 0
-            ringView.layer.borderColor = UIColor.white.cgColor
+            ringView.layer.borderColor = FootballPalette.accentGreen.cgColor
         }
     }
 

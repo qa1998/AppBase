@@ -74,6 +74,9 @@ enum FootballPalette {
     static var neonGlowGreen: UIColor { colors.neonGlowGreen }
     static var neonGlowRed: UIColor { colors.neonGlowRed }
 
+    /// Text on accent (red/green) buttons.
+    static var onAccent: UIColor { .white }
+
     static func headline(_ size: CGFloat = 28) -> UIFont {
         .systemFont(ofSize: size, weight: .bold)
     }

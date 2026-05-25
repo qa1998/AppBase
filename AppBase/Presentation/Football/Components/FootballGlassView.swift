@@ -7,12 +7,9 @@ import UIKit
 import SnapKit
 
 /// Glassmorphism panel — blur + soft border + optional neon border.
-final class FootballGlassView: UIView {
+class FootballGlassView: UIView {
 
-    private let blurView: UIVisualEffectView = {
-        let effect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        return UIVisualEffectView(effect: effect)
-    }()
+    private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
 
     private let borderLayer = CALayer()
 
@@ -35,7 +32,7 @@ final class FootballGlassView: UIView {
     }
 
     private func setup() {
-        backgroundColor = FootballPalette.surface.withAlphaComponent(0.55)
+        applyFootballTheme()
         layer.cornerRadius = Radius.s16
         layer.masksToBounds = true
         addSubview(blurView)
@@ -43,6 +40,29 @@ final class FootballGlassView: UIView {
         borderLayer.borderWidth = 1
         borderLayer.cornerRadius = Radius.s16
         layer.addSublayer(borderLayer)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(footballThemeDidChange),
+            name: .footballThemeDidChange,
+            object: nil
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func footballThemeDidChange() {
+        applyFootballTheme()
+    }
+
+    func applyFootballTheme() {
+        backgroundColor = FootballPalette.surface.withAlphaComponent(0.55)
+        let isLight = ThemeManager.shared.mode == .light
+        blurView.effect = UIBlurEffect(
+            style: isLight ? .systemUltraThinMaterialLight : .systemUltraThinMaterialDark
+        )
+        updateBorder()
     }
 
     override func layoutSubviews() {

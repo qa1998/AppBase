@@ -47,7 +47,7 @@ final class MyTeamsViewController: FootballScreenViewController<MyTeamsViewModel
         tableView.register(TeamListCell.self, forCellReuseIdentifier: TeamListCell.reuseId)
 
         fabButton.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 22, weight: .bold)), for: .normal)
-        fabButton.tintColor = .white
+        fabButton.tintColor = FootballPalette.onAccent
         fabButton.addTarget(self, action: #selector(fabTapped), for: .touchUpInside)
         fabContainer.layer.cornerRadius = 30
         fabContainer.layer.shadowColor = FootballPalette.accentRed.cgColor
@@ -77,6 +77,19 @@ final class MyTeamsViewController: FootballScreenViewController<MyTeamsViewModel
         }
     }
 
+    override func refreshLocalization() {
+        super.refreshLocalization()
+        emptyLabel.text = L10n.Football.Teams.empty
+        tableView.reloadData()
+    }
+
+    override func refreshFootballTheme() {
+        super.refreshFootballTheme()
+        emptyLabel.textColor = FootballPalette.textSecondary
+        fabContainer.layer.shadowColor = FootballPalette.accentRed.cgColor
+        tableView.reloadData()
+    }
+
     override func onBind() {
         super.onBind()
         viewModel.$teams
@@ -104,6 +117,7 @@ extension MyTeamsViewController: UITableViewDataSource, UITableViewDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: TeamListCell.reuseId, for: indexPath) as! TeamListCell
         let team = viewModel.teams[indexPath.row]
         cell.configure(team)
+        cell.applyTheme()
         cell.onDeleteTap = { [weak self] in
             self?.confirmDelete(team)
         }

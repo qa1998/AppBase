@@ -140,7 +140,7 @@ final class LineupShareViewController: FootballScreenViewController<LineupShareV
     }
 
     private func buildShareButton() {
-        shareButton.setTitleColor(.white, for: .normal)
+        shareButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         shareButton.titleLabel?.font = FootballPalette.title(17)
         shareButton.backgroundColor = FootballPalette.accentRed
         shareButton.layer.cornerRadius = Radius.s12
