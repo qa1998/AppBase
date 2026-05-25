@@ -31,6 +31,12 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
         layoutViews()
         refreshLocalization()
     }
+    override var navSetting: NavigationSetting {
+        var setting = super.navSetting
+        setting.useLargeTitleView = true
+        setting.title = L10n.Football.Lineups.title
+        return setting
+    }
 
 
     override func onBind() {
@@ -77,8 +83,6 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
     private func layoutViews() {
         view.addSubview(tableView)
         view.addSubview(fabContainer)
-
-        
         tableView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s16)
             make.leading.trailing.bottom.equalToSuperview()
@@ -88,6 +92,7 @@ final class MyLineupsViewController: FootballScreenViewController<MyLineupsViewM
             make.bottom.equalTo(view.safeAreaLayoutGuide).inset(88)
             make.size.equalTo(56)
         }
+
     }
     @objc private func filterTapped(_ sender: LineupFilterChipButton) {
         guard let filter = LineupListFilter(rawValue: sender.tag) else { return }

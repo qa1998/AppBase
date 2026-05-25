@@ -29,6 +29,13 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
     private let lightTitleLabel = UILabel()
     private let darkSubtitleLabel = UILabel()
     private let lightSubtitleLabel = UILabel()
+    
+    override var navSetting: NavigationSetting {
+        var setting = super.navSetting
+        setting.useLargeTitleView = true
+        setting.title = L10n.Football.Settings.title
+        return setting
+    }
 
     override func setupUI() {
         super.setupUI()
@@ -126,7 +133,6 @@ final class FootballSettingsViewController: FootballScreenViewController<Footbal
     }
 
     override func refreshLocalization() {
-        title = L10n.Football.Settings.title
         squadTitleLabel.text = L10n.Football.Settings.squadSection
         managePlayersTitleLabel.text = L10n.Football.Settings.managePlayers
         managePlayersSubtitleLabel.text = L10n.Football.Settings.managePlayersHint

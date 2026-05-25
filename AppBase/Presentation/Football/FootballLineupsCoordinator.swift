@@ -24,9 +24,9 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
         vc.onShareLineup = { [weak self] lineup in
             self?.pushLineupShare(lineup)
         }
-        vc.onPremiumTap = { [weak vc] in
-            (vc as? MyLineupsViewController)?.showPremiumHint()
-        }
+//        vc.onPremiumTap = { [weak vc] in
+//            (vc as? MyLineupsViewController)?.showPremiumHint()
+//        }
         return vc
     }()
 

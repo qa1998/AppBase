@@ -13,12 +13,18 @@ final class MyTeamsViewController: FootballScreenViewController<MyTeamsViewModel
     var onCreateTeam: (() -> Void)?
     var onOpenTeam: ((FootballTeam) -> Void)?
 
-    private let titleLabel = UILabel()
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let emptyLabel = UILabel()
     private let fabContainer = FootballGradientView()
     private let fabButton = UIButton(type: .system)
-
+    
+    override var navSetting: NavigationSetting {
+        var setting = super.navSetting
+        setting.useLargeTitleView = true
+        setting.title = L10n.Football.Teams.title
+        return setting
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -26,9 +32,6 @@ final class MyTeamsViewController: FootballScreenViewController<MyTeamsViewModel
 
     override func setupUI() {
         super.setupUI()
-        titleLabel.font = FootballPalette.headline(28)
-        titleLabel.textColor = FootballPalette.textPrimary
-        titleLabel.text = L10n.Football.Teams.title
 
         emptyLabel.font = FootballPalette.caption()
         emptyLabel.textColor = FootballPalette.textSecondary
@@ -54,17 +57,13 @@ final class MyTeamsViewController: FootballScreenViewController<MyTeamsViewModel
         fabContainer.addSubview(fabButton)
         fabButton.snp.makeConstraints { $0.edges.equalToSuperview().inset(14) }
 
-        view.addSubview(titleLabel)
         view.addSubview(tableView)
         view.addSubview(emptyLabel)
         view.addSubview(fabContainer)
 
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s16)
-            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
-        }
+
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(Spacing.s16)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s16)
             make.leading.trailing.bottom.equalToSuperview()
         }
         emptyLabel.snp.makeConstraints { make in

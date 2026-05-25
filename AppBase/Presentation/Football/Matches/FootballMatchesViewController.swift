@@ -13,7 +13,7 @@ final class FootballMatchesViewController: FootballScreenViewController<Football
     var onCreateMatch: (() -> Void)?
     var onOpenMatch: ((FootballMatch) -> Void)?
 
-    private let titleLabel = UILabel()
+
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let emptyLabel = UILabel()
     private let fabButton = UIButton(type: .system)
@@ -22,12 +22,15 @@ final class FootballMatchesViewController: FootballScreenViewController<Football
         super.viewDidLoad()
         
     }
+    override var navSetting: NavigationSetting {
+        var setting = super.navSetting
+        setting.useLargeTitleView = true
+        setting.title = L10n.Football.Matches.title
+        return setting
+    }
 
     override func setupUI() {
         super.setupUI()
-        titleLabel.font = FootballPalette.headline(28)
-        titleLabel.textColor = FootballPalette.textPrimary
-        titleLabel.text = L10n.Football.Matches.title
 
         emptyLabel.font = FootballPalette.body()
         emptyLabel.textColor = FootballPalette.textSecondary
@@ -50,17 +53,13 @@ final class FootballMatchesViewController: FootballScreenViewController<Football
         fabButton.layer.shadowRadius = 8
         fabButton.addTarget(self, action: #selector(fabTapped), for: .touchUpInside)
 
-        view.addSubview(titleLabel)
+
         view.addSubview(tableView)
         view.addSubview(emptyLabel)
         view.addSubview(fabButton)
 
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s16)
-            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
-        }
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(Spacing.s16)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s16)
             make.leading.trailing.bottom.equalToSuperview()
         }
         emptyLabel.snp.makeConstraints { make in

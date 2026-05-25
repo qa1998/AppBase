@@ -16,6 +16,7 @@ struct NavigationSetting {
     var navigationShadow: UIImage? = nil
     var rightButtons: [UIBarButtonItem]? = nil
     var leftButtons: [UIBarButtonItem]? = nil
+    var useLargeTitleView: Bool = false
 }
 
 extension NavigationSetting {
@@ -27,10 +28,23 @@ extension NavigationSetting {
             leftButtons: leftItems
         )
     }
+    static func largeTitle(
+        _ title: String,
+        subtitle: String? = nil,
+        rightItems: [UIBarButtonItem] = [],
+        leftItems: [UIBarButtonItem] = []
+    ) -> Self {
+        NavigationSetting(
+            title: title,
+            rightButtons: rightItems,
+            leftButtons: leftItems,
+            useLargeTitleView: true
+        )
+    }
     
 }
 
-class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, LocalizationRefreshable
+class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>,UIGestureRecognizerDelegate, LocalizationRefreshable
     where VM: TIOViewModel<Event> {
 
     var cancelBag = Set<AnyCancellable>()
@@ -45,6 +59,18 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
     var navSetting: NavigationSetting {
         return NavigationSetting()
     }
+    private lazy var dismissKeyboardGesture: UITapGestureRecognizer = {
+           let gesture = UITapGestureRecognizer(
+               target: self,
+               action: #selector(handleDismissKeyboard)
+           )
+           
+           gesture.cancelsTouchesInView = false
+           gesture.delegate = self
+           
+           return gesture
+       }()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,8 +78,16 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
         bindScreenTheme()
         bindLocalization()
         layoutIFSContentViewsIfNeeded()
+        setupKeyboardDismissGesture()
+        
     }
-
+    
+    private func setupKeyboardDismissGesture() {
+        view.addGestureRecognizer(dismissKeyboardGesture)
+    }
+    @objc private func handleDismissKeyboard() {
+        view.endEditing(true)
+    }
     private func bindLocalization() {
         LocalizationService.shared.$currentLanguage
             .receive(on: DispatchQueue.main)
@@ -151,20 +185,23 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
     }
     
     func setupNavigation(_ setting: NavigationSetting) {
-        title = setting.title
+        
         navigationItem.rightBarButtonItems = setting.rightButtons
         
         var leftItems: [UIBarButtonItem] = []
         
-        // Chỉ hiện back khi không phải root VC
+        // MARK: - Back Button
         if (navigationController?.viewControllers.count ?? 0) > 1 {
             
             let backButton = UIButton(type: .system)
+            
             backButton.setImage(
                 UIImage(systemName: "chevron.left"),
                 for: .normal
             )
+            
             backButton.tintColor = .white
+            
             backButton.addTarget(
                 self,
                 action: #selector(onBackPress),
@@ -175,15 +212,68 @@ class TIOViewController<VM, Event: Hashable>: BaseViewController<VM>, Localizati
             leftItems.append(backItem)
         }
         
+        // MARK: - Custom Left Items
         if let customLeftItems = setting.leftButtons {
             leftItems.append(contentsOf: customLeftItems)
         }
         
         navigationItem.leftBarButtonItems = leftItems
+        
+        // MARK: - Large Title Style
+        if setting.useLargeTitleView {
+            
+            let container = makeLargeTitleView(title: setting.title)
+        
+            let titleItem = UIBarButtonItem(customView: container)
+            
+            leftItems.append(titleItem)
+            navigationItem.title = nil
+            
+        } else {
+            title = setting.title
+        }
+        navigationItem.leftBarButtonItems = leftItems
     }
 
     @objc func onBackPress() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    private func makeLargeTitleView(title: String?) -> UIView {
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 24, weight: .bold)
+        titleLabel.textColor = .white
+        return titleLabel
+    }
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldReceive touch: UITouch
+    ) -> Bool {
+        
+        // Ignore UIControls
+        if touch.view is UIControl {
+            return false
+        }
+        
+        // Ignore UITableViewCell
+        if touch.view?.superview is UITableViewCell {
+            return false
+        }
+        
+        // Ignore UICollectionViewCell
+        if touch.view?.superview is UICollectionViewCell {
+            return false
+        }
+        
+        return true
+    }
+    
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        return true
     }
 }
 

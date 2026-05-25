@@ -44,7 +44,7 @@ class FootballScreenViewController<VM: TIOViewModel<TIOLoadingTarget>>: TIOViewC
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
         appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        appearance.backgroundColor = FootballPalette.surface.withAlphaComponent(0.65)
+        appearance.backgroundColor = FootballPalette.background
         appearance.titleTextAttributes = [
             .foregroundColor: FootballPalette.textPrimary,
             .font: FootballPalette.title(17)
