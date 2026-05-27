@@ -34,6 +34,10 @@ final class TeamEditorViewModel: TIOViewModel<TIOLoadingTarget> {
         TeamStore.shared.setPitchSize(size)
     }
 
+    var canDeleteSavedTeam: Bool {
+        TeamStore.shared.teams.contains { $0.id == team.id }
+    }
+
     func save() {
         guard !team.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             presentError(message: L10n.Football.Teams.validationName)
@@ -41,5 +45,10 @@ final class TeamEditorViewModel: TIOViewModel<TIOLoadingTarget> {
         }
         TeamStore.shared.saveCurrentTeam()
         presentSuccess(L10n.Football.Teams.saved)
+    }
+
+    func deleteSavedTeam() {
+        guard canDeleteSavedTeam else { return }
+        TeamStore.shared.deleteTeam(id: team.id)
     }
 }

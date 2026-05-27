@@ -124,8 +124,10 @@
 "football.teams.validationName" = "チーム名を入力してください。";
 "football.teams.deleteTitle" = "チームを削除しますか？";
 "football.teams.deleteConfirm" = "削除";
+"football.teams.deleteAction" = "チームを削除";
 "football.teams.pickTitle" = "チームを選択";
 "football.teams.pickForMatch" = "保存したチームを選択";
+"football.teams.pickEmptyForMatch" = "保存されたチームがありません。マイチームで作成し「チームを保存」してから読み込んでください。";
 "football.teams.rosterCount" = "ピッチ %d / %d";
 "football.lineups.title" = "マイ編成";
 "football.lineups.premiumHint" = "プレミアム — 近日公開";
@@ -169,7 +171,15 @@
 "football.match.create.teamRosterProgress" = "ピッチ %d/%d · ベンチ %d/%d";
 "football.match.create.validationTeams" = "ホームとアウェイを入力してください";
 "football.match.create.validationPlayers" = "両チームの全ポジションに選手を割り当ててください。";
+"football.match.create.importIncomplete" = "「%@」は%d人制のメンバーが揃っていません。マイチームでこのピッチサイズの枠を埋めるか、次の画面で割り当ててください。";
+"football.match.create.teamImported" = "読み込み済み: %@";
+"football.match.create.removeImported" = "読み込んだチームを解除";
 "football.match.live.pickPlayer" = "選手を選択";
+"football.match.live.tab.events" = "イベント";
+"football.match.live.tab.lineups" = "メンバー";
+"football.match.live.finishMatch" = "試合終了";
+"football.match.live.finishConfirm" = "今すぐ試合を終了しますか？";
+"football.match.live.noSelectablePlayers" = "選択できる選手がいません（退場済み、または未登録）。";
 "football.match.phase.scheduled" = "キックオフ待ち";
 "football.match.phase.firstHalf" = "前半";
 "football.match.phase.firstHalfStoppage" = "前半アディショナル";
@@ -197,6 +207,7 @@
 "football.match.event.goal" = "ゴール";
 "football.match.event.yellowCard" = "イエローカード";
 "football.match.event.redCard" = "レッドカード";
+"football.match.event.twoYellowsRed" = "イエロー2枚→レッド";
 "football.match.event.substitution" = "交代";
 "football.match.event.varReview" = "VAR";
 "football.match.event.penalty" = "ペナルティ";

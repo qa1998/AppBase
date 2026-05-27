@@ -28,14 +28,25 @@ final class CreateMatchViewModel: TIOViewModel<TIOLoadingTarget> {
     }
 
     func setPitchSize(_ size: MatchPitchSize) {
+        guard pitchSize != size else { return }
         pitchSize = size
-        homeTeamTemplateId = nil
-        awayTeamTemplateId = nil
+        let homeTemplate = homeTeamTemplateId.flatMap { TeamStore.shared.team(id: $0) }
+        let awayTemplate = awayTeamTemplateId.flatMap { TeamStore.shared.team(id: $0) }
         refreshRostersForPitchSize()
+        if let team = homeTemplate {
+            applySavedTeam(team, side: .home, notifyIfIncomplete: false)
+        }
+        if let team = awayTemplate {
+            applySavedTeam(team, side: .away, notifyIfIncomplete: false)
+        }
     }
 
-    func applySavedTeam(_ team: FootballTeam, side: MatchTeamSide) {
-        var roster = team.toMatchRoster(for: pitchSize)
+    func applySavedTeam(
+        _ team: FootballTeam,
+        side: MatchTeamSide,
+        notifyIfIncomplete: Bool = true
+    ) {
+        let roster = team.toMatchRoster(for: pitchSize)
         if side == .home {
             homeTeam = team.name
             homeRoster = roster
@@ -44,6 +55,34 @@ final class CreateMatchViewModel: TIOViewModel<TIOLoadingTarget> {
             awayTeam = team.name
             awayRoster = roster
             awayTeamTemplateId = team.id
+        }
+        guard notifyIfIncomplete, !roster.isComplete else { return }
+        presentError(
+            message: L10n.Football.Match.Create.importIncomplete(team.name, pitchSize.playerCount)
+        )
+    }
+
+    func hasImportedTemplate(side: MatchTeamSide) -> Bool {
+        switch side {
+        case .home: return homeTeamTemplateId != nil
+        case .away: return awayTeamTemplateId != nil
+        case .neutral:
+            return false
+        }
+    }
+
+    func clearImportedTeam(side: MatchTeamSide) {
+        switch side {
+        case .home:
+            homeTeamTemplateId = nil
+            homeTeam = ""
+            homeRoster = MatchTeamRoster.empty(name: "", pitchSize: pitchSize)
+        case .away:
+            awayTeamTemplateId = nil
+            awayTeam = ""
+            awayRoster = MatchTeamRoster.empty(name: "", pitchSize: pitchSize)
+        case .neutral:
+            break
         }
     }
 

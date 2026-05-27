@@ -6,12 +6,11 @@
 import SnapKit
 import UIKit
 
-/// Card một hiệp: header (1ST HALF · 45:00) + các dòng timeline nối trục dọc.
+/// Header hiệp + các dòng timeline (trục giữa).
 final class MatchTimelineHalfCell: UITableViewCell {
 
     static let reuseId = "MatchTimelineHalfCell"
 
-    private let cardView = UIView()
     private let headerTitleLabel = UILabel()
     private let headerDurationLabel = UILabel()
     private let eventsStack = UIStackView()
@@ -21,10 +20,6 @@ final class MatchTimelineHalfCell: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .clear
         contentView.backgroundColor = .clear
-
-        cardView.backgroundColor = FootballPalette.surface
-        cardView.layer.cornerRadius = Radius.s16
-        cardView.clipsToBounds = true
 
         headerTitleLabel.font = FootballPalette.caption(12)
         headerTitleLabel.textColor = FootballPalette.textSecondary
@@ -36,30 +31,23 @@ final class MatchTimelineHalfCell: UITableViewCell {
         eventsStack.axis = .vertical
         eventsStack.spacing = 0
 
-        contentView.addSubview(cardView)
-        cardView.addSubview(headerTitleLabel)
-        cardView.addSubview(headerDurationLabel)
-        cardView.addSubview(eventsStack)
+        contentView.addSubview(headerTitleLabel)
+        contentView.addSubview(headerDurationLabel)
+        contentView.addSubview(eventsStack)
 
-        cardView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(
-                top: Spacing.s6,
-                left: Spacing.s16,
-                bottom: Spacing.s6,
-                right: Spacing.s16
-            ))
-        }
         headerTitleLabel.snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().inset(Spacing.s16)
+            make.top.equalToSuperview().offset(Spacing.s8)
+            make.leading.equalToSuperview().inset(Spacing.s20)
         }
         headerDurationLabel.snp.makeConstraints { make in
             make.centerY.equalTo(headerTitleLabel)
-            make.trailing.equalToSuperview().inset(Spacing.s16)
+            make.trailing.equalToSuperview().inset(Spacing.s20)
             make.leading.greaterThanOrEqualTo(headerTitleLabel.snp.trailing).offset(Spacing.s8)
         }
         eventsStack.snp.makeConstraints { make in
             make.top.equalTo(headerTitleLabel.snp.bottom).offset(Spacing.s12)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().inset(Spacing.s8)
         }
     }
 
@@ -88,15 +76,14 @@ final class MatchTimelineHalfCell: UITableViewCell {
             empty.text = L10n.Football.Match.Timeline.emptyHalf
             empty.textAlignment = .center
             eventsStack.addArrangedSubview(empty)
-            empty.snp.makeConstraints { make in
-                make.height.equalTo(44)
-            }
+            empty.snp.makeConstraints { $0.height.equalTo(48) }
             return
         }
 
         for row in section.rows {
             let rowView = MatchTimelineEventRowView()
             rowView.configure(row: row, settings: settings, homeName: homeName, awayName: awayName)
+            rowView.applyTheme()
             eventsStack.addArrangedSubview(rowView)
         }
     }

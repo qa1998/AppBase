@@ -5,278 +5,210 @@
 
 import BaseMVVM
 import Combine
+import JXSegmentedView
 import SnapKit
 import UIKit
 
-final class MatchLiveViewController: FootballScreenViewController<MatchLiveViewModel> {
+final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> {
 
-    private let headerCard = UIView()
-    private let homeLabel = UILabel()
-    private let awayLabel = UILabel()
-    private let scoreLabel = UILabel()
-    private let clockLabel = UILabel()
-    private let phaseLabel = UILabel()
-    private let primaryButton = UIButton(type: .system)
-    private let actionsScroll = UIScrollView()
-    private let actionsStack = UIStackView()
-    private let tableView = UITableView(frame: .zero, style: .grouped)
+    private enum LiveTab: Int {
+        case events = 0
+        case lineups = 1
+    }
 
-    private var actionsBarHeightConstraint: Constraint?
-    private var actionsTopSpacingConstraint: Constraint?
-    private var tableTopToActionsConstraint: Constraint?
-    private var tableTopToHeaderConstraint: Constraint?
-    private var primaryButtonHeightConstraint: Constraint?
-    private var primaryButtonTopConstraint: Constraint?
+    private let listHost = UIView()
+    private let expandedHeaderWrap = UIView()
+    private let scoreboard = MatchLiveScoreboardView()
+    private let phaseActionButton = UIButton(type: .system)
+    private let finishBar = MatchLiveFinishBarView()
+    private let segmentWrap = UIView()
+    private let navMinHeader = MatchLiveMinHeaderView()
+    private let filtersScroll = UIScrollView()
+    private let filtersStack = UIStackView()
+    private var filterChips: [MatchEventFilterChip] = []
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
+    private let tableView = UITableView(frame: .zero, style: .plain)
+    private let lineupsView = MatchLiveLineupsView()
+    private let lineupsScroll = UIScrollView()
+
+    private var segmentTopConstraint: Constraint?
+    private var filtersTopConstraint: Constraint?
+    private var filtersHeightConstraint: Constraint?
+    private var filtersStackHeightConstraint: Constraint?
+    private var lineupsWidthConstraint: Constraint?
+    private var lineupsHeightConstraint: Constraint?
+    private var expandedHeaderHeight: CGFloat = 220
+    private var timelineEventCount = 0
+    private var didCaptureInitialTimeline = false
+    private var didSetInitialScrollInset = false
+
+    private lazy var eventsList = MatchLiveEventsPagerList(tableView: tableView)
+    private lazy var lineupsList = MatchLiveLineupsPagerList(scrollView: lineupsScroll)
+
+    override var usesDefaultPagerLayout: Bool { false }
+
+    override var shimmerContentView: UIView { listHost }
+
+    override var navSetting: NavigationSetting {
+        var setting = super.navSetting
+        setting.title = nil
+        return setting
+    }
+
+    override var pagerTitles: [String] {
+        [
+            L10n.Football.Match.Live.Tab.events,
+            L10n.Football.Match.Live.Tab.lineups
+        ]
+    }
+
+    override var pagerStyle: TIOPagerStyle {
+        var style = TIOPagerStyle.default
+        style.barHeight = 44
+        style.contentEdgeInsetLeft = Spacing.s16
+        style.contentEdgeInsetRight = Spacing.s16
+        style.itemSpacing = 24
+        style.isItemSpacingAverageEnabled = false
+        style.titleFont = FootballPalette.body(15)
+        style.selectedTitleFont = FootballPalette.title(15)
+        style.titleColor = FootballPalette.textSecondary
+        style.selectedTitleColor = FootballPalette.textPrimary
+        style.indicatorColor = FootballPalette.textPrimary
+        style.indicatorLineHeight = 2
+        style.barBackgroundColor = FootballPalette.background
+        style.contentBackgroundColor = FootballPalette.background
+        return style
+    }
+
+    override func makePage(at index: Int) -> JXSegmentedListContainerViewListDelegate {
+        if index == LiveTab.events.rawValue {
+            return eventsList
+        }
+        return lineupsList
+    }
+
+    override func pagerDidSelect(index: Int) {
+        setFiltersVisible(viewModel.showQuickActions)
+        if index == LiveTab.lineups.rawValue {
+            reloadLineups()
+            relayoutLineupsPitchIfNeeded()
+        }
+        updateListContentInsets()
+        syncChromeToActiveList()
     }
 
     override func setupUI() {
-        super.setupUI()
-        let s = viewModel.match.settings
-        title = "\(s.homeTeam) vs \(s.awayTeam)"
-        buildHeader()
-        buildActions()
+        buildChrome()
+        installPager(segmentContainer: segmentWrap, listContainer: listHost)
+        buildFilters()
         buildTable()
-        layoutViews()
-        refreshMatchHeader()
-        setPrimaryButtonVisible(viewModel.primaryButtonTitle != nil)
-        setQuickActionsVisible(viewModel.showQuickActions)
+        buildLineupsScroll()
+        super.setupUI()
+        setupNavigationMinHeader()
+        refreshScoreboard()
+        refreshNavigationMinHeader()
+        refreshPhaseActionButton()
+        refreshFinishBar()
+        setFiltersVisible(viewModel.showQuickActions)
+        DispatchQueue.main.async { [weak self] in
+            self?.remeasureExpandedHeader()
+        }
     }
 
     override func refreshLocalization() {
-        refreshMatchHeader()
-        rebuildActionButtons()
+        super.refreshLocalization()
+        refreshScoreboard()
+        refreshNavigationMinHeader()
+        rebuildFilterChips()
+        refreshPhaseActionButton()
+        refreshFinishBar()
         tableView.reloadData()
+        reloadLineups()
+        remeasureExpandedHeader()
     }
 
-    override func refreshFootballTheme() {
-        super.refreshFootballTheme()
-        headerCard.backgroundColor = FootballPalette.surface
-        [homeLabel, awayLabel, clockLabel].forEach { $0.textColor = FootballPalette.textPrimary }
-        scoreLabel.textColor = FootballPalette.accentGreen
-        phaseLabel.textColor = FootballPalette.textSecondary
-        primaryButton.backgroundColor = FootballPalette.accentRed
-        rebuildActionButtons()
+    override func applyScreenTheme(_ colors: ThemeColors) {
+        super.applyScreenTheme(colors)
+        view.backgroundColor = FootballPalette.background
+        segmentWrap.backgroundColor = FootballPalette.background
+        expandedHeaderWrap.backgroundColor = FootballPalette.background
+        scoreboard.applyTheme()
+        navMinHeader.applyTheme()
+        finishBar.applyTheme()
+        applyPhaseActionTheme()
+        filterChips.forEach { $0.applyTheme() }
+        lineupsView.applyTheme()
         tableView.reloadData()
-    }
-
-    private func rebuildActionButtons() {
-        actionsStack.arrangedSubviews.forEach {
-            actionsStack.removeArrangedSubview($0)
-            $0.removeFromSuperview()
-        }
-        MatchEventType.allCases.forEach { type in
-            let button = UIButton(type: .system)
-            button.setTitle(actionTitle(type), for: .normal)
-            button.titleLabel?.font = FootballPalette.caption(12)
-            button.setTitleColor(FootballPalette.textPrimary, for: .normal)
-            button.backgroundColor = FootballPalette.surfaceElevated
-            button.layer.cornerRadius = Radius.s12
-            button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
-            button.tag = typeTag(type)
-            button.addTarget(self, action: #selector(actionTapped(_:)), for: .touchUpInside)
-            actionsStack.addArrangedSubview(button)
-        }
     }
 
     override func onBind() {
         super.onBind()
         viewModel.$clockText
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.clockLabel.text = $0 }
+            .sink { [weak self] _ in
+                self?.refreshScoreboard()
+                self?.refreshNavigationMinHeader()
+            }
             .store(in: &cancelBag)
         viewModel.$phaseTitle
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.phaseLabel.text = $0 }
+            .sink { [weak self] _ in
+                self?.refreshScoreboard()
+                self?.refreshNavigationMinHeader()
+            }
             .store(in: &cancelBag)
         viewModel.$primaryButtonTitle
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] title in
-                self?.primaryButton.setTitle(title, for: .normal)
-                self?.setPrimaryButtonVisible(title != nil)
-            }
+            .sink { [weak self] _ in self?.refreshPhaseActionButton() }
             .store(in: &cancelBag)
         viewModel.$showQuickActions
             .receive(on: DispatchQueue.main)
             .sink { [weak self] show in
-                self?.setQuickActionsVisible(show)
+                self?.setFiltersVisible(show)
+                self?.refreshFinishBar()
+                self?.updateListContentInsets()
             }
             .store(in: &cancelBag)
         viewModel.$timelineSections
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.tableView.reloadData()
+            .sink { [weak self] sections in
+                guard let self else { return }
+                let count = sections.reduce(0) { $0 + $1.rows.count }
+                let shouldScrollToNewEvent: Bool
+                if !self.didCaptureInitialTimeline {
+                    self.didCaptureInitialTimeline = true
+                    self.timelineEventCount = count
+                    shouldScrollToNewEvent = false
+                } else {
+                    shouldScrollToNewEvent = count > self.timelineEventCount
+                    self.timelineEventCount = count
+                }
+                self.tableView.reloadData()
+                self.reloadLineups()
+                if shouldScrollToNewEvent, self.selectedPageIndex == LiveTab.events.rawValue {
+                    self.scrollTimelineToBottom()
+                }
             }
             .store(in: &cancelBag)
         Publishers.CombineLatest(viewModel.$match, viewModel.$timelineSections)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _, _ in
-                self?.refreshMatchHeader()
+                self?.refreshScoreboard()
+                self?.refreshNavigationMinHeader()
+                self?.reloadLineups()
+                self?.refreshFinishBar()
+                self?.remeasureExpandedHeader()
             }
             .store(in: &cancelBag)
     }
 
-    private func buildHeader() {
-        headerCard.backgroundColor = FootballPalette.surface
-        headerCard.layer.cornerRadius = Radius.s16
-
-        homeLabel.font = FootballPalette.title(17)
-        homeLabel.textColor = FootballPalette.textPrimary
-        awayLabel.font = FootballPalette.title(17)
-        awayLabel.textColor = FootballPalette.textPrimary
-        awayLabel.textAlignment = .right
-
-        scoreLabel.font = FootballPalette.headline(28)
-        scoreLabel.textColor = FootballPalette.accentGreen
-        scoreLabel.textAlignment = .center
-
-        clockLabel.font = FootballPalette.headline(36)
-        clockLabel.textColor = FootballPalette.textPrimary
-        clockLabel.textAlignment = .center
-
-        phaseLabel.font = FootballPalette.caption()
-        phaseLabel.textColor = FootballPalette.textSecondary
-        phaseLabel.textAlignment = .center
-        phaseLabel.numberOfLines = 0
-
-        primaryButton.backgroundColor = FootballPalette.accentRed
-        primaryButton.setTitleColor(FootballPalette.onAccent, for: .normal)
-        primaryButton.titleLabel?.font = FootballPalette.title(16)
-        primaryButton.layer.cornerRadius = Radius.s12
-        primaryButton.addTarget(self, action: #selector(primaryTapped), for: .touchUpInside)
-
-        headerCard.addSubview(homeLabel)
-        headerCard.addSubview(scoreLabel)
-        headerCard.addSubview(awayLabel)
-        headerCard.addSubview(clockLabel)
-        headerCard.addSubview(phaseLabel)
-        headerCard.addSubview(primaryButton)
-        view.addSubview(headerCard)
-    }
-
-    private func buildActions() {
-        actionsStack.axis = .horizontal
-        actionsStack.spacing = Spacing.s8
-        actionsScroll.showsHorizontalScrollIndicator = false
-        actionsScroll.addSubview(actionsStack)
-        actionsStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: Spacing.s16, bottom: 0, right: Spacing.s16))
-            make.height.equalToSuperview()
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateNavigationMinHeaderLayout()
+        remeasureExpandedHeader()
+        if view.bounds.width > 0 {
+            updateLineupsContentSize()
         }
-
-        MatchEventType.allCases.forEach { type in
-            let button = UIButton(type: .system)
-            button.setTitle(actionTitle(type), for: .normal)
-            button.titleLabel?.font = FootballPalette.caption(12)
-            button.setTitleColor(FootballPalette.textPrimary, for: .normal)
-            button.backgroundColor = FootballPalette.surfaceElevated
-            button.layer.cornerRadius = Radius.s12
-            button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
-            button.tag = typeTag(type)
-            button.addTarget(self, action: #selector(actionTapped(_:)), for: .touchUpInside)
-            actionsStack.addArrangedSubview(button)
-        }
-        view.addSubview(actionsScroll)
-    }
-
-    private func buildTable() {
-        tableView.backgroundColor = .clear
-        tableView.separatorStyle = .none
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(MatchTimelineHalfCell.self, forCellReuseIdentifier: MatchTimelineHalfCell.reuseId)
-        view.addSubview(tableView)
-    }
-
-    private func layoutViews() {
-        headerCard.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s12)
-            make.leading.trailing.equalToSuperview().inset(Spacing.s16)
-        }
-        homeLabel.snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().inset(Spacing.s16)
-            make.trailing.lessThanOrEqualTo(scoreLabel.snp.leading).offset(-Spacing.s8)
-        }
-        scoreLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.top.equalToSuperview().offset(Spacing.s16)
-        }
-        awayLabel.snp.makeConstraints { make in
-            make.top.trailing.equalToSuperview().inset(Spacing.s16)
-            make.leading.greaterThanOrEqualTo(scoreLabel.snp.trailing).offset(Spacing.s8)
-        }
-        clockLabel.snp.makeConstraints { make in
-            make.top.equalTo(scoreLabel.snp.bottom).offset(Spacing.s16)
-            make.centerX.equalToSuperview()
-        }
-        phaseLabel.snp.makeConstraints { make in
-            make.top.equalTo(clockLabel.snp.bottom).offset(Spacing.s6)
-            make.leading.trailing.equalToSuperview().inset(Spacing.s16)
-        }
-        primaryButton.snp.makeConstraints { make in
-            primaryButtonTopConstraint = make.top.equalTo(phaseLabel.snp.bottom).offset(Spacing.s16).constraint
-            make.leading.trailing.equalToSuperview().inset(Spacing.s16)
-            make.bottom.equalToSuperview().inset(Spacing.s16)
-            primaryButtonHeightConstraint = make.height.equalTo(48).constraint
-        }
-        actionsScroll.snp.makeConstraints { make in
-            actionsTopSpacingConstraint = make.top.equalTo(headerCard.snp.bottom).offset(Spacing.s12).constraint
-            make.leading.trailing.equalToSuperview()
-            actionsBarHeightConstraint = make.height.equalTo(44).constraint
-        }
-        tableView.snp.makeConstraints { make in
-            tableTopToActionsConstraint = make.top.equalTo(actionsScroll.snp.bottom).offset(Spacing.s8).constraint
-            tableTopToHeaderConstraint = make.top.equalTo(headerCard.snp.bottom).offset(Spacing.s12).constraint
-            tableTopToHeaderConstraint?.deactivate()
-            make.leading.trailing.bottom.equalToSuperview()
-        }
-    }
-
-    private func setQuickActionsVisible(_ visible: Bool) {
-        actionsScroll.isHidden = !visible
-        actionsBarHeightConstraint?.update(offset: visible ? 44 : 0)
-        actionsTopSpacingConstraint?.update(offset: visible ? Spacing.s12 : 0)
-
-        if visible {
-            tableTopToHeaderConstraint?.deactivate()
-            tableTopToActionsConstraint?.activate()
-        } else {
-            tableTopToActionsConstraint?.deactivate()
-            tableTopToHeaderConstraint?.activate()
-        }
-        animateLayoutRefresh()
-    }
-
-    private func setPrimaryButtonVisible(_ visible: Bool) {
-        primaryButton.isHidden = !visible
-        primaryButtonHeightConstraint?.update(offset: visible ? 48 : 0)
-        primaryButtonTopConstraint?.update(offset: visible ? Spacing.s16 : 0)
-        animateLayoutRefresh()
-    }
-
-    private func animateLayoutRefresh() {
-        UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseInOut]) {
-            self.view.layoutIfNeeded()
-        }
-    }
-
-    private func refreshMatchHeader() {
-        let m = viewModel.match
-        homeLabel.text = m.settings.homeTeam
-        awayLabel.text = m.settings.awayTeam
-        scoreLabel.text = m.scoreLine
-    }
-
-    @objc private func primaryTapped() {
-        viewModel.performPrimaryAction()
-    }
-
-    @objc private func actionTapped(_ sender: UIButton) {
-        guard let type = typeFromTag(sender.tag) else { return }
-        pickTeam(for: type)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -286,8 +218,337 @@ final class MatchLiveViewController: FootballScreenViewController<MatchLiveViewM
         }
     }
 
-    private func pickTeam(for type: MatchEventType) {
-        let sheet = UIAlertController(title: actionTitle(type), message: nil, preferredStyle: .actionSheet)
+    // MARK: - Chrome
+
+    private func buildChrome() {
+        view.backgroundColor = FootballPalette.background
+
+        phaseActionButton.titleLabel?.font = FootballPalette.title(15)
+        phaseActionButton.layer.cornerRadius = Radius.s12
+        phaseActionButton.addTarget(self, action: #selector(phaseActionTapped), for: .touchUpInside)
+
+        finishBar.onTap = { [weak self] in
+            self?.finishMatchTapped()
+        }
+
+        let expandedStack = UIStackView(arrangedSubviews: [scoreboard, phaseActionButton, finishBar])
+        expandedStack.axis = .vertical
+        expandedStack.spacing = Spacing.s12
+        expandedStack.alignment = .fill
+        phaseActionButton.snp.makeConstraints { $0.height.equalTo(46) }
+
+        expandedHeaderWrap.addSubview(expandedStack)
+        expandedStack.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(Spacing.s8)
+            make.leading.trailing.equalToSuperview().inset(Spacing.s16)
+            make.bottom.equalToSuperview().inset(Spacing.s4)
+        }
+
+        view.addSubview(listHost)
+        view.addSubview(expandedHeaderWrap)
+        view.addSubview(filtersScroll)
+        view.addSubview(segmentWrap)
+
+        listHost.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+        expandedHeaderWrap.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.equalToSuperview()
+        }
+
+        segmentWrap.snp.makeConstraints { make in
+            segmentTopConstraint = make.top.equalTo(view.safeAreaLayoutGuide).offset(expandedHeaderHeight).constraint
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(pagerStyle.barHeight)
+        }
+
+        filtersScroll.snp.makeConstraints { make in
+            filtersTopConstraint = make.top.equalTo(segmentWrap.snp.bottom).constraint
+            make.leading.trailing.equalToSuperview()
+            filtersHeightConstraint = make.height.equalTo(44).constraint
+        }
+
+        segmentWrap.layer.zPosition = 9
+        filtersScroll.layer.zPosition = 8
+        expandedHeaderWrap.layer.zPosition = 7
+    }
+
+    private func buildFilters() {
+        filtersStack.axis = .horizontal
+        filtersStack.spacing = Spacing.s8
+        filtersStack.alignment = .center
+        filtersScroll.showsHorizontalScrollIndicator = false
+        filtersScroll.backgroundColor = FootballPalette.background
+        filtersScroll.addSubview(filtersStack)
+        filtersStack.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(UIEdgeInsets(top: 0, left: Spacing.s16, bottom: 0, right: Spacing.s16))
+            make.top.bottom.equalToSuperview()
+            filtersStackHeightConstraint = make.height.equalTo(44).constraint
+        }
+        rebuildFilterChips()
+    }
+
+    private func buildTable() {
+        tableView.backgroundColor = FootballPalette.background
+        tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = true
+        tableView.estimatedRowHeight = 280
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(MatchTimelineHalfCell.self, forCellReuseIdentifier: MatchTimelineHalfCell.reuseId)
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
+    }
+
+    private func buildLineupsScroll() {
+        lineupsScroll.showsVerticalScrollIndicator = true
+        lineupsScroll.alwaysBounceVertical = true
+        lineupsScroll.backgroundColor = FootballPalette.background
+        lineupsScroll.delegate = self
+        lineupsScroll.addSubview(lineupsView)
+        let initialWidth = max(view.bounds.width - Spacing.s32, 280)
+        lineupsView.snp.makeConstraints { make in
+            make.top.equalTo(lineupsScroll.contentLayoutGuide).offset(Spacing.s16)
+            make.leading.equalTo(lineupsScroll.contentLayoutGuide).offset(Spacing.s16)
+            make.bottom.equalTo(lineupsScroll.contentLayoutGuide).offset(-Spacing.s16)
+            lineupsWidthConstraint = make.width.equalTo(initialWidth).constraint
+            lineupsHeightConstraint = make.height.equalTo(1).constraint
+        }
+    }
+
+    // MARK: - Scroll / sticky
+
+    private var filtersBarHeight: CGFloat {
+        (filtersScroll.isHidden ? 0 : 44)
+    }
+
+    private var chromeInsetTop: CGFloat {
+        expandedHeaderHeight + pagerStyle.barHeight + filtersBarHeight
+    }
+
+    private func remeasureExpandedHeader() {
+        expandedHeaderWrap.setNeedsLayout()
+        expandedHeaderWrap.layoutIfNeeded()
+        let width = view.bounds.width
+        guard width > 0 else { return }
+        let measured = expandedHeaderWrap.systemLayoutSizeFitting(
+            CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+        guard measured > 0, abs(measured - expandedHeaderHeight) > 0.5 else {
+            updateListContentInsets()
+            return
+        }
+        expandedHeaderHeight = measured
+        segmentTopConstraint?.update(offset: expandedHeaderHeight)
+        updateListContentInsets()
+        syncChromeToActiveList()
+    }
+
+    private func updateListContentInsets() {
+        let inset = chromeInsetTop
+        let indicator = inset
+        tableView.contentInset = UIEdgeInsets(top: inset, left: 0, bottom: Spacing.s24, right: 0)
+        tableView.scrollIndicatorInsets = UIEdgeInsets(top: indicator, left: 0, bottom: 0, right: 0)
+
+        lineupsScroll.contentInset = UIEdgeInsets(top: inset, left: 0, bottom: Spacing.s24, right: 0)
+        lineupsScroll.scrollIndicatorInsets = UIEdgeInsets(top: indicator, left: 0, bottom: 0, right: 0)
+        updateLineupsContentSize()
+
+        if !didSetInitialScrollInset {
+            didSetInitialScrollInset = true
+            tableView.contentOffset = CGPoint(x: 0, y: -inset)
+            lineupsScroll.contentOffset = CGPoint(x: 0, y: -inset)
+        }
+    }
+
+    private func updateLineupsContentSize() {
+        guard lineupsView.superview === lineupsScroll else { return }
+        let contentWidth = view.bounds.width - Spacing.s32
+        guard contentWidth > 0 else { return }
+        let contentH = lineupsView.preferredHeight(forWidth: contentWidth)
+        lineupsWidthConstraint?.update(offset: contentWidth)
+        lineupsHeightConstraint?.update(offset: contentH)
+        lineupsView.setNeedsLayout()
+        lineupsView.layoutIfNeeded()
+        relayoutLineupsPitchIfNeeded()
+    }
+
+    private func relayoutLineupsPitchIfNeeded() {
+        lineupsView.relayoutPitchTokens()
+    }
+
+    private func activeScrollView() -> UIScrollView? {
+        selectedPageIndex == LiveTab.events.rawValue ? tableView : lineupsScroll
+    }
+
+    private func syncChromeToActiveList() {
+        guard let scroll = activeScrollView() else { return }
+        handleListScroll(scroll)
+    }
+
+    private func handleListScroll(_ scrollView: UIScrollView) {
+        let y = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        let collapse = max(expandedHeaderHeight, 1)
+
+        expandedHeaderWrap.transform = CGAffineTransform(
+            translationX: 0,
+            y: -min(y, collapse)
+        )
+
+        let segmentOffset = max(0, expandedHeaderHeight - y)
+        segmentTopConstraint?.update(offset: segmentOffset)
+
+        let navProgress = min(1, max(0, (y - (expandedHeaderHeight - 40)) / 40))
+        navMinHeader.alpha = navProgress
+        navigationItem.titleView = navProgress > 0.01 ? navMinHeader : nil
+
+        if selectedPageIndex == LiveTab.events.rawValue, !filtersScroll.isHidden {
+            filtersTopConstraint?.update(offset: 0)
+        }
+    }
+
+    private func setupNavigationMinHeader() {
+        navMinHeader.placement = .navigationBar
+        navMinHeader.alpha = 0
+        navigationItem.titleView = nil
+        updateNavigationMinHeaderLayout()
+    }
+
+    private func updateNavigationMinHeaderLayout() {
+        let width = max(160, view.bounds.width - 108)
+        navMinHeader.frame = CGRect(x: 0, y: 0, width: width, height: 36)
+        navMinHeader.setNeedsLayout()
+        navMinHeader.layoutIfNeeded()
+    }
+
+    private func refreshNavigationMinHeader() {
+        let settings = viewModel.match.settings
+        navMinHeader.configure(
+            homeName: settings.homeTeam,
+            awayName: settings.awayTeam,
+            scoreText: viewModel.match.scoreLine
+        )
+        navMinHeader.applyTheme()
+    }
+
+    // MARK: - Data refresh
+
+    private func rebuildFilterChips() {
+        filterChips.forEach {
+            filtersStack.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+        filterChips.removeAll()
+
+        MatchEventType.allCases.forEach { type in
+            let chip = MatchEventFilterChip(type: type, title: quickActionTitle(type))
+            chip.addTarget(self, action: #selector(quickActionTapped(_:)), for: .touchUpInside)
+            filtersStack.addArrangedSubview(chip)
+            filterChips.append(chip)
+        }
+    }
+
+    private func setFiltersVisible(_ visible: Bool) {
+        let onEvents = selectedPageIndex == LiveTab.events.rawValue
+        let show = visible && onEvents
+        filtersScroll.isHidden = !show
+        filtersStack.isHidden = !show
+        filtersHeightConstraint?.update(offset: show ? 44 : 0)
+        if show {
+            filtersStackHeightConstraint?.activate()
+        } else {
+            filtersStackHeightConstraint?.deactivate()
+        }
+        updateListContentInsets()
+        syncChromeToActiveList()
+    }
+
+    private func reloadLineups() {
+        lineupsView.configure(settings: viewModel.match.settings) { [weak self] playerId, side in
+            guard let self else { return MatchLivePlayerStatus() }
+            return self.viewModel.playerStatus(playerId: playerId, team: side)
+        }
+        lineupsView.applyTheme()
+        updateLineupsContentSize()
+    }
+
+    private func refreshFinishBar() {
+        let show = viewModel.showFinishMatchButton
+        finishBar.isHidden = !show
+        finishBar.setTitle(L10n.Football.Match.Live.finishMatch)
+        finishBar.applyTheme()
+        remeasureExpandedHeader()
+    }
+
+    private func refreshPhaseActionButton() {
+        let title = viewModel.primaryButtonTitle
+        phaseActionButton.isHidden = title == nil
+        phaseActionButton.setTitle(title, for: .normal)
+        applyPhaseActionTheme()
+        remeasureExpandedHeader()
+    }
+
+    private func applyPhaseActionTheme() {
+        phaseActionButton.backgroundColor = FootballPalette.accentGreen
+        phaseActionButton.setTitleColor(FootballPalette.onAccent, for: .normal)
+    }
+
+    private func refreshScoreboard() {
+        let m = viewModel.match
+        let settings = m.settings
+        let finished = m.phase == .finished
+        scoreboard.configure(
+            homeName: settings.homeTeam,
+            awayName: settings.awayTeam,
+            homeCount: settings.homeRoster.filledPitchSlots,
+            awayCount: settings.awayRoster.filledPitchSlots,
+            scoreText: m.scoreLine,
+            phaseText: viewModel.phaseTitle,
+            clockText: viewModel.clockText,
+            isFinished: finished
+        )
+        scoreboard.applyTheme()
+    }
+
+    private func scrollTimelineToBottom() {
+        guard selectedPageIndex == LiveTab.events.rawValue else { return }
+        let sections = viewModel.timelineSections.count
+        guard sections > 0 else { return }
+        tableView.layoutIfNeeded()
+        let indexPath = IndexPath(row: 0, section: sections - 1)
+        tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+    }
+
+    // MARK: - Actions
+
+    @objc private func phaseActionTapped() {
+        viewModel.performPrimaryAction()
+    }
+
+    @objc private func quickActionTapped(_ sender: MatchEventFilterChip) {
+        guard let type = sender.eventType else { return }
+        pickTeam(for: type, sourceView: sender)
+    }
+
+    @objc private func finishMatchTapped() {
+        let alert = UIAlertController(
+            title: L10n.Football.Match.Live.finishMatch,
+            message: L10n.Football.Match.Live.finishConfirm,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.Football.Match.Live.finishMatch, style: .destructive) { [weak self] _ in
+            self?.viewModel.endMatchNow()
+        })
+        present(alert, animated: true)
+    }
+
+    private func pickTeam(for type: MatchEventType, sourceView: UIView) {
+        let sheet = UIAlertController(title: quickActionTitle(type), message: nil, preferredStyle: .actionSheet)
         sheet.addAction(UIAlertAction(title: viewModel.match.settings.homeTeam, style: .default) { [weak self] _ in
             self?.pickPlayer(for: type, team: .home)
         })
@@ -301,15 +562,18 @@ final class MatchLiveViewController: FootballScreenViewController<MatchLiveViewM
         }
         sheet.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
         if let pop = sheet.popoverPresentationController {
-            pop.sourceView = view
-            pop.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
+            pop.sourceView = sourceView
+            pop.sourceRect = sourceView.bounds
         }
         present(sheet, animated: true)
     }
 
     private func pickPlayer(for type: MatchEventType, team: MatchTeamSide) {
-        let players = viewModel.rosterPlayers(for: team)
-        guard !players.isEmpty else { return }
+        let players = viewModel.selectablePlayers(for: team)
+        guard !players.isEmpty else {
+            viewModel.presentError(message: L10n.Football.Match.Live.noSelectablePlayers)
+            return
+        }
         let sheet = UIAlertController(
             title: L10n.Football.Match.Live.pickPlayer,
             message: nil,
@@ -328,7 +592,7 @@ final class MatchLiveViewController: FootballScreenViewController<MatchLiveViewM
         present(sheet, animated: true)
     }
 
-    private func actionTitle(_ type: MatchEventType) -> String {
+    private func quickActionTitle(_ type: MatchEventType) -> String {
         switch type {
         case .goal: return L10n.Football.Match.Event.goal
         case .yellowCard: return L10n.Football.Match.Event.yellow
@@ -338,15 +602,71 @@ final class MatchLiveViewController: FootballScreenViewController<MatchLiveViewM
         case .penalty: return L10n.Football.Match.Event.penaltyShort
         }
     }
+}
 
-    private func typeTag(_ type: MatchEventType) -> Int {
-        MatchEventType.allCases.firstIndex(of: type) ?? 0
+// MARK: - Pager lists
+
+private final class MatchLiveEventsPagerList: UIView, JXSegmentedListContainerViewListDelegate {
+
+    private let tableView: UITableView
+    private var didInstallConstraints = false
+
+    init(tableView: UITableView) {
+        self.tableView = tableView
+        super.init(frame: .zero)
     }
 
-    private func typeFromTag(_ tag: Int) -> MatchEventType? {
-        MatchEventType.allCases[safe: tag]
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func didMoveToSuperview() {
+        super.didMoveToSuperview()
+        installTableLayoutIfNeeded()
+    }
+
+    func listView() -> UIView { self }
+
+    private func installTableLayoutIfNeeded() {
+        guard superview != nil, !didInstallConstraints else { return }
+        if tableView.superview != self {
+            tableView.removeFromSuperview()
+            addSubview(tableView)
+        }
+        tableView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        didInstallConstraints = true
     }
 }
+
+private final class MatchLiveLineupsPagerList: UIView, JXSegmentedListContainerViewListDelegate {
+
+    private let scrollView: UIScrollView
+    private var didInstallConstraints = false
+
+    init(scrollView: UIScrollView) {
+        self.scrollView = scrollView
+        super.init(frame: .zero)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func didMoveToSuperview() {
+        super.didMoveToSuperview()
+        installScrollLayoutIfNeeded()
+    }
+
+    func listView() -> UIView { self }
+
+    private func installScrollLayoutIfNeeded() {
+        guard superview != nil, !didInstallConstraints else { return }
+        if scrollView.superview != self {
+            scrollView.removeFromSuperview()
+            addSubview(scrollView)
+        }
+        scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        didInstallConstraints = true
+    }
+}
+
+// MARK: - Table
 
 extension MatchLiveViewController: UITableViewDataSource, UITableViewDelegate {
 
@@ -359,7 +679,7 @@ extension MatchLiveViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        section == 0 ? Spacing.s4 : Spacing.s8
+        section == 0 ? Spacing.s4 : Spacing.s12
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -382,8 +702,12 @@ extension MatchLiveViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
-private extension Array {
-    subscript(safe index: Int) -> Element? {
-        indices.contains(index) ? self[index] : nil
+// MARK: - Scroll
+
+extension MatchLiveViewController: UIScrollViewDelegate {
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard scrollView === tableView || scrollView === lineupsScroll else { return }
+        handleListScroll(scrollView)
     }
 }

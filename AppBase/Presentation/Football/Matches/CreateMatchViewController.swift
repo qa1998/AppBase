@@ -16,9 +16,13 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
     private let scrollView = UIScrollView()
     private let formStack = UIStackView()
     private let homeField = MatchFormTextField()
+    private let homeTeamActionsRow = UIStackView()
     private let pickHomeTeamButton = UIButton(type: .system)
+    private let removeHomeTeamButton = UIButton(type: .system)
     private let awayField = MatchFormTextField()
+    private let awayTeamActionsRow = UIStackView()
     private let pickAwayTeamButton = UIButton(type: .system)
+    private let removeAwayTeamButton = UIButton(type: .system)
     private let datePicker = UIDatePicker()
     private let firstHalfStepper = MatchMinuteStepper(title: L10n.Football.Match.Create.firstHalf)
     private let secondHalfStepper = MatchMinuteStepper(title: L10n.Football.Match.Create.secondHalf)
@@ -37,7 +41,13 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        reloadFromViewModel()
+    }
+
+    /// Cập nhật form sau khi chọn đội đã lưu (modal team picker).
+    func reloadFromViewModel() {
         syncFromViewModel()
+        updatePickTeamButtonTitles()
     }
 
     override func setupUI() {
@@ -49,10 +59,20 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
 
         homeField.placeholder = L10n.Football.Match.Create.homeTeam
         awayField.placeholder = L10n.Football.Match.Create.awayTeam
-        stylePickTeamButton(pickHomeTeamButton, title: L10n.Football.Teams.pickForMatch)
-        stylePickTeamButton(pickAwayTeamButton, title: L10n.Football.Teams.pickForMatch)
-        pickHomeTeamButton.addTarget(self, action: #selector(pickHomeTeamTapped), for: .touchUpInside)
-        pickAwayTeamButton.addTarget(self, action: #selector(pickAwayTeamTapped), for: .touchUpInside)
+        configureTeamActionsRow(
+            stack: homeTeamActionsRow,
+            pickButton: pickHomeTeamButton,
+            removeButton: removeHomeTeamButton,
+            pickAction: #selector(pickHomeTeamTapped),
+            removeAction: #selector(removeHomeTeamTapped)
+        )
+        configureTeamActionsRow(
+            stack: awayTeamActionsRow,
+            pickButton: pickAwayTeamButton,
+            removeButton: removeAwayTeamButton,
+            pickAction: #selector(pickAwayTeamTapped),
+            removeAction: #selector(removeAwayTeamTapped)
+        )
 
         datePicker.datePickerMode = .dateAndTime
         datePicker.preferredDatePickerStyle = .compact
@@ -81,9 +101,9 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
         formStack.addArrangedSubview(pitchSizeStack)
         formStack.addArrangedSubview(sectionLabel(L10n.Football.Match.Create.teams))
         formStack.addArrangedSubview(homeField)
-        formStack.addArrangedSubview(pickHomeTeamButton)
+        formStack.addArrangedSubview(homeTeamActionsRow)
         formStack.addArrangedSubview(awayField)
-        formStack.addArrangedSubview(pickAwayTeamButton)
+        formStack.addArrangedSubview(awayTeamActionsRow)
         formStack.addArrangedSubview(sectionLabel(L10n.Football.Match.Create.kickoff))
         formStack.addArrangedSubview(datePicker)
         formStack.addArrangedSubview(sectionLabel(L10n.Football.Match.Create.duration))
@@ -110,21 +130,20 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
             make.height.equalTo(52)
         }
 
-        syncFromViewModel()
+        reloadFromViewModel()
     }
 
     override func refreshLocalization() {
         title = L10n.Football.Match.Create.title
         homeField.placeholder = L10n.Football.Match.Create.homeTeam
         awayField.placeholder = L10n.Football.Match.Create.awayTeam
-        stylePickTeamButton(pickHomeTeamButton, title: L10n.Football.Teams.pickForMatch)
-        stylePickTeamButton(pickAwayTeamButton, title: L10n.Football.Teams.pickForMatch)
         configureToggleRow(label: extraLabel, switchControl: extraSwitch, text: L10n.Football.Match.Create.extraTime)
         configureToggleRow(label: penaltyLabel, switchControl: penaltySwitch, text: L10n.Football.Match.Create.penalty)
         continueButton.setTitle(L10n.Football.Match.Create.continueSetup, for: .normal)
         firstHalfStepper.updateTitle(L10n.Football.Match.Create.firstHalf)
         secondHalfStepper.updateTitle(L10n.Football.Match.Create.secondHalf)
         pitchSizeButtons.forEach { $0.refreshTitle() }
+        updatePickTeamButtonTitles()
     }
 
     override func refreshFootballTheme() {
@@ -135,6 +154,8 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
         awayField.backgroundColor = FootballPalette.surface
         awayField.textColor = FootballPalette.textPrimary
         pitchSizeButtons.forEach { $0.refresh() }
+        removeHomeTeamButton.tintColor = FootballPalette.accentRed
+        removeAwayTeamButton.tintColor = FootballPalette.accentRed
     }
 
     private func syncFromViewModel() {
@@ -164,8 +185,10 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
     }
 
     @objc private func pitchSizeTapped(_ sender: MatchPitchSizeButton) {
+        syncToViewModel()
         viewModel.setPitchSize(sender.pitchSize)
         syncPitchSizeSelection()
+        reloadFromViewModel()
     }
 
     @objc private func continueTapped() {
@@ -185,10 +208,60 @@ final class CreateMatchViewController: FootballScreenViewController<CreateMatchV
         onPickAwayTeam?()
     }
 
-    private func stylePickTeamButton(_ button: UIButton, title: String) {
+    @objc private func removeHomeTeamTapped() {
+        viewModel.clearImportedTeam(side: .home)
+        reloadFromViewModel()
+    }
+
+    @objc private func removeAwayTeamTapped() {
+        viewModel.clearImportedTeam(side: .away)
+        reloadFromViewModel()
+    }
+
+    private func configureTeamActionsRow(
+        stack: UIStackView,
+        pickButton: UIButton,
+        removeButton: UIButton,
+        pickAction: Selector,
+        removeAction: Selector
+    ) {
+        stack.axis = .horizontal
+        stack.spacing = Spacing.s8
+        stack.alignment = .center
+
+        pickButton.addTarget(self, action: pickAction, for: .touchUpInside)
+
+        removeButton.setImage(
+            UIImage(systemName: "trash", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)),
+            for: .normal
+        )
+        removeButton.tintColor = FootballPalette.accentRed
+        removeButton.accessibilityLabel = L10n.Football.Match.Create.removeImported
+        removeButton.addTarget(self, action: removeAction, for: .touchUpInside)
+        removeButton.snp.makeConstraints { $0.size.equalTo(36) }
+
+        stack.addArrangedSubview(pickButton)
+        stack.addArrangedSubview(removeButton)
+    }
+
+    private func updatePickTeamButtonTitles() {
+        let homeTitle = viewModel.hasImportedTemplate(side: .home)
+            ? L10n.Football.Match.Create.teamImported(viewModel.homeTeam)
+            : L10n.Football.Teams.pickForMatch
+        let awayTitle = viewModel.hasImportedTemplate(side: .away)
+            ? L10n.Football.Match.Create.teamImported(viewModel.awayTeam)
+            : L10n.Football.Teams.pickForMatch
+        stylePickTeamButton(pickHomeTeamButton, title: homeTitle, linked: viewModel.hasImportedTemplate(side: .home))
+        stylePickTeamButton(pickAwayTeamButton, title: awayTitle, linked: viewModel.hasImportedTemplate(side: .away))
+        removeHomeTeamButton.isHidden = !viewModel.hasImportedTemplate(side: .home)
+        removeAwayTeamButton.isHidden = !viewModel.hasImportedTemplate(side: .away)
+    }
+
+    private func stylePickTeamButton(_ button: UIButton, title: String, linked: Bool = false) {
         button.setTitle(title, for: .normal)
         button.titleLabel?.font = FootballPalette.caption(13)
-        button.setTitleColor(FootballPalette.accentGreen, for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.setTitleColor(linked ? FootballPalette.accentGreen : FootballPalette.textSecondary, for: .normal)
         button.contentHorizontalAlignment = .leading
     }
 

@@ -148,6 +148,71 @@ enum PitchFormationGridLayout {
         )
     }
 
+    /// Đội hình trên **một nửa sân** (live match: nhà trên / khách dưới).
+    /// `goalAtTop` = true → GK sát mép trên nửa sân, các hàng dàn về giữa sân.
+    static func placementsForHalf(
+        lineCounts: [Int],
+        halfRect: CGRect,
+        totalPlayers: Int,
+        goalAtTop: Bool,
+        config: Config = Config()
+    ) -> [SlotPlacement] {
+        let lines = normalizedLineCounts(lineCounts, totalPlayers: totalPlayers)
+        guard halfRect.width > 0, halfRect.height > 0 else { return [] }
+
+        let horizontalPadding = halfRect.width * config.horizontalPaddingRatio
+        let goalInset = halfRect.height * 0.05
+        let innerInset = halfRect.height * 0.1
+        let gkBand = halfRect.height * 0.14
+
+        let goalY = goalAtTop ? halfRect.minY + goalInset : halfRect.maxY - goalInset
+        let innerY = goalAtTop ? halfRect.maxY - innerInset : halfRect.minY + innerInset
+        let span = abs(innerY - goalY)
+
+        var slots: [SlotPlacement] = []
+        var slotIndex = 0
+
+        let gkRowIndex = lines.count
+        let gkCenterY = goalAtTop
+            ? halfRect.minY + gkBand * config.gkDepthInBoxRatio
+            : halfRect.maxY - gkBand * config.gkDepthInBoxRatio
+
+        appendRow(
+            playersInRow: 1,
+            rowIndex: gkRowIndex,
+            centerY: gkCenterY,
+            isGoalkeeper: true,
+            fieldRect: halfRect,
+            horizontalPadding: horizontalPadding,
+            config: config,
+            slotIndex: &slotIndex,
+            into: &slots
+        )
+
+        let lineCount = max(lines.count, 1)
+        for (lineIndex, count) in lines.enumerated() {
+            let rowIndex = lines.count - 1 - lineIndex
+            let fraction = CGFloat(lineIndex + 1) / CGFloat(lineCount + 1)
+            let centerY = goalAtTop
+                ? goalY + span * fraction
+                : goalY - span * fraction
+
+            appendRow(
+                playersInRow: count,
+                rowIndex: rowIndex,
+                centerY: centerY,
+                isGoalkeeper: false,
+                fieldRect: halfRect,
+                horizontalPadding: horizontalPadding,
+                config: config,
+                slotIndex: &slotIndex,
+                into: &slots
+            )
+        }
+
+        return slots.sorted { $0.slotIndex < $1.slotIndex }
+    }
+
     /// Normalized slot centers (0…1) inside a unit field for persistence / mini previews.
     static func normalizedCenters(lineCounts: [Int], totalPlayers: Int) -> [CGPoint] {
         let field = CGRect(x: 0, y: 0, width: fieldWidthToHeightRatio, height: 1)

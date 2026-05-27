@@ -20,6 +20,7 @@ final class LineupListCell: UITableViewCell {
     private let styleTag = PaddingLabel()
     private let editedIcon = UIImageView()
     private let editedLabel = UILabel()
+    private var tacticalStyle: TacticalStyle = .balanced
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -37,7 +38,8 @@ final class LineupListCell: UITableViewCell {
         moreButton.tintColor = FootballPalette.textSecondary
         moreButton.addTarget(self, action: #selector(moreTapped), for: .touchUpInside)
 
-        [formationTag, styleTag].forEach { configureTag($0) }
+        configureFormationTag(formationTag)
+        configureStyleTag(styleTag)
 
         editedIcon.image = UIImage(systemName: "clock")
         editedIcon.tintColor = FootballPalette.textSecondary
@@ -96,11 +98,14 @@ final class LineupListCell: UITableViewCell {
     }
 
     func configure(with lineup: FootballLineup) {
+        tacticalStyle = lineup.tacticalStyle
         miniPitch.lineup = lineup
         titleLabel.text = lineup.displayTitle
         formationTag.text = lineup.formation.name
         styleTag.text = lineup.tacticalStyle.label
         editedLabel.text = lineup.relativeEditedText
+        applyFormationTagAppearance()
+        applyStyleTagAppearance()
         miniPitch.setNeedsDisplay()
     }
 
@@ -108,23 +113,38 @@ final class LineupListCell: UITableViewCell {
         card.backgroundColor = FootballPalette.surface
         titleLabel.textColor = FootballPalette.textPrimary
         moreButton.tintColor = FootballPalette.textSecondary
-        [formationTag, styleTag].forEach { tag in
-            tag.backgroundColor = FootballPalette.surfaceElevated
-            tag.textColor = FootballPalette.accentRed.withAlphaComponent(0.85)
-        }
+        applyFormationTagAppearance()
+        applyStyleTagAppearance()
         editedIcon.tintColor = FootballPalette.textSecondary
         editedLabel.textColor = FootballPalette.textSecondary
         miniPitch.backgroundColor = FootballPalette.surfaceElevated
         miniPitch.setNeedsDisplay()
     }
 
-    private func configureTag(_ label: UILabel) {
-        label.font = FootballPalette.caption(11)
-        label.textColor = FootballPalette.accentRed.withAlphaComponent(0.85)
-        label.backgroundColor = FootballPalette.surfaceElevated
+    private func configureFormationTag(_ label: UILabel) {
+        label.font = .systemFont(ofSize: 11, weight: .semibold)
         label.layer.cornerRadius = 10
         label.clipsToBounds = true
         label.textAlignment = .center
+    }
+
+    private func configureStyleTag(_ label: UILabel) {
+        label.font = .systemFont(ofSize: 11, weight: .semibold)
+        label.layer.cornerRadius = 10
+        label.clipsToBounds = true
+        label.textAlignment = .center
+    }
+
+    private func applyFormationTagAppearance() {
+        let colors = tacticalStyle.formationBadgeColors
+        formationTag.backgroundColor = colors.background
+        formationTag.textColor = colors.foreground
+    }
+
+    private func applyStyleTagAppearance() {
+        let colors = tacticalStyle.badgeColors
+        styleTag.backgroundColor = colors.background
+        styleTag.textColor = colors.foreground
     }
 
     override func layoutSubviews() {

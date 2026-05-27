@@ -33,17 +33,17 @@ final class LineupMiniPitchView: UIView {
         guard !slots.isEmpty else { return }
         let inset: CGFloat = 6
         let field = rect.insetBy(dx: inset, dy: inset)
+        let preview = lineup?.tacticalStyle.miniPitchPreviewColors
+            ?? TacticalStyle.balanced.miniPitchPreviewColors
 
-        FootballPalette.pitchGreen.setFill()
+        preview.pitch.setFill()
         UIBezierPath(roundedRect: field, cornerRadius: 4).fill()
 
-        for (index, assignment) in slots.enumerated() {
+        preview.outfield.setFill()
+        for assignment in slots {
             let point = assignment.normalizedPosition
             let x = field.minX + point.x * field.width
             let y = field.minY + point.y * field.height
-            let isGK = assignment.player?.position == .gk || index == 0
-            let color = isGK ? FootballPalette.accentRed : FootballPalette.accentGreen
-            color.setFill()
             UIBezierPath(
                 ovalIn: CGRect(x: x - 3, y: y - 3, width: 6, height: 6)
             ).fill()

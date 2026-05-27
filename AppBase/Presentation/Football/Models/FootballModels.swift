@@ -155,6 +155,75 @@ enum TacticalStyle: String, CaseIterable, Codable {
         case .defensive: return L10n.Football.Lineups.Style.defensive
         }
     }
+
+    /// Badge đội hình (vd. 4-3-3) — tông màu đôi với badge trạng thái.
+    var formationBadgeColors: (background: UIColor, foreground: UIColor) {
+        let isLight = ThemeManager.shared.mode == .light
+        switch self {
+        case .attacking:
+            return (
+                isLight ? UIColor(hex: 0xFFEDD5) : UIColor(hex: 0xF97316, alpha: 0.28),
+                isLight ? UIColor(hex: 0xC2410C) : UIColor(hex: 0xFDBA74)
+            )
+        case .balanced:
+            return (
+                isLight ? UIColor(hex: 0xCCFBF1) : UIColor(hex: 0x14B8A6, alpha: 0.28),
+                isLight ? UIColor(hex: 0x0F766E) : UIColor(hex: 0x5EEAD4)
+            )
+        case .defensive:
+            return (
+                isLight ? UIColor(hex: 0xEDE9FE) : UIColor(hex: 0x8B5CF6, alpha: 0.28),
+                isLight ? UIColor(hex: 0x5B21B6) : UIColor(hex: 0xC4B5FD)
+            )
+        }
+    }
+
+    /// Badge trạng thái (Tấn công / Cân bằng / Phòng thủ).
+    var badgeColors: (background: UIColor, foreground: UIColor) {
+        let isLight = ThemeManager.shared.mode == .light
+        switch self {
+        case .attacking:
+            return (
+                isLight ? UIColor(hex: 0xFFE0E8) : UIColor(hex: 0xFF2D55, alpha: 0.28),
+                isLight ? UIColor(hex: 0xC41E3A) : UIColor(hex: 0xFF6B8A)
+            )
+        case .balanced:
+            return (
+                isLight ? UIColor(hex: 0xDDF5E8) : UIColor(hex: 0x00D26A, alpha: 0.24),
+                FootballPalette.accentGreen
+            )
+        case .defensive:
+            return (
+                isLight ? UIColor(hex: 0xDCE8FF) : UIColor(hex: 0x3B82F6, alpha: 0.28),
+                isLight ? UIColor(hex: 0x1D4ED8) : UIColor(hex: 0x7CB8FF)
+            )
+        }
+    }
+
+    /// Màu sân + chấm cầu thủ trên thumbnail sơ đồ nhỏ.
+    var miniPitchPreviewColors: (pitch: UIColor, outfield: UIColor, goalkeeper: UIColor) {
+        let isLight = ThemeManager.shared.mode == .light
+        switch self {
+        case .attacking:
+            return (
+                isLight ? UIColor(hex: 0x3D6B4F) : UIColor(hex: 0x2A4D38),
+                isLight ? UIColor(hex: 0xEA580C) : UIColor(hex: 0xFB923C),
+                FootballPalette.accentRed
+            )
+        case .balanced:
+            return (
+                FootballPalette.pitchGreen,
+                FootballPalette.accentGreen,
+                FootballPalette.accentRed
+            )
+        case .defensive:
+            return (
+                isLight ? UIColor(hex: 0x3D5A7A) : UIColor(hex: 0x1E3348),
+                isLight ? UIColor(hex: 0x2563EB) : UIColor(hex: 0x60A5FA),
+                isLight ? UIColor(hex: 0x1D4ED8) : UIColor(hex: 0x93C5FD)
+            )
+        }
+    }
 }
 
 enum LineupListFilter: Int, CaseIterable {

@@ -49,7 +49,15 @@ final class TeamPickerViewController: FootballScreenViewController<TeamPickerVie
 
     override func refreshLocalization() {
         title = L10n.Football.Teams.pickTitle
-        emptyLabel.text = L10n.Football.Teams.empty
+        updateEmptyMessage()
+    }
+
+    private func updateEmptyMessage() {
+        if viewModel.teams.isEmpty {
+            emptyLabel.text = viewModel.pitchSize != nil
+                ? L10n.Football.Teams.pickEmptyForMatch
+                : L10n.Football.Teams.empty
+        }
     }
 
     override func refreshFootballTheme() {
@@ -65,12 +73,26 @@ final class TeamPickerViewController: FootballScreenViewController<TeamPickerVie
             .sink { [weak self] teams in
                 self?.tableView.reloadData()
                 self?.emptyLabel.isHidden = !teams.isEmpty
+                self?.updateEmptyMessage()
             }
             .store(in: &cancelBag)
     }
 
     @objc private func cancelTapped() {
         dismiss(animated: true)
+    }
+
+    private func confirmDelete(_ team: FootballTeam) {
+        let sheet = UIAlertController(
+            title: L10n.Football.Teams.deleteTitle,
+            message: team.name,
+            preferredStyle: .alert
+        )
+        sheet.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
+        sheet.addAction(UIAlertAction(title: L10n.Football.Teams.deleteConfirm, style: .destructive) { [weak self] _ in
+            self?.viewModel.deleteTeam(team)
+        })
+        present(sheet, animated: true)
     }
 }
 
@@ -83,8 +105,11 @@ extension TeamPickerViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: TeamListCell.reuseId, for: indexPath) as! TeamListCell
         let team = viewModel.teams[indexPath.row]
-        cell.configure(team, showsDelete: false)
+        cell.configure(team, showsDelete: true)
         cell.applyTheme()
+        cell.onDeleteTap = { [weak self] in
+            self?.confirmDelete(team)
+        }
         return cell
     }
 

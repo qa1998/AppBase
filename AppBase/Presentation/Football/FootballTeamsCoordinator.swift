@@ -43,6 +43,9 @@ final class FootballTeamsCoordinator: FootballTabNavigationCoordinator<VoidMeta>
         vc.onSaved = { [weak vc] in
             vc?.navigationController?.popViewController(animated: true)
         }
+        vc.onDeleted = { [weak vc] in
+            vc?.navigationController?.popViewController(animated: true)
+        }
         navigate(to: .push(vc))
     }
 

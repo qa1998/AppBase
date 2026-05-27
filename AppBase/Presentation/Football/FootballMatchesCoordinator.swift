@@ -34,14 +34,18 @@ final class FootballMatchesCoordinator: FootballTabNavigationCoordinator<VoidMet
         let viewModel = CreateMatchViewModel()
         let vc = CreateMatchViewController()
         vc.invoke(viewModel: viewModel)
-        vc.onPickHomeTeam = { [weak self] in
-            self?.presentTeamPicker { team in
+        vc.onPickHomeTeam = { [weak self, weak vc] in
+            guard let self, let vc else { return }
+            self.presentTeamPicker(from: vc, pitchSize: viewModel.pitchSize) { team in
                 viewModel.applySavedTeam(team, side: .home)
+                vc.reloadFromViewModel()
             }
         }
-        vc.onPickAwayTeam = { [weak self] in
-            self?.presentTeamPicker { team in
+        vc.onPickAwayTeam = { [weak self, weak vc] in
+            guard let self, let vc else { return }
+            self.presentTeamPicker(from: vc, pitchSize: viewModel.pitchSize) { team in
                 viewModel.applySavedTeam(team, side: .away)
+                vc.reloadFromViewModel()
             }
         }
         vc.onContinue = { [weak self] in
@@ -59,15 +63,19 @@ final class FootballMatchesCoordinator: FootballTabNavigationCoordinator<VoidMet
         navigate(to: .push(vc))
     }
 
-    private func presentTeamPicker(onSelect: @escaping (FootballTeam) -> Void) {
+    private func presentTeamPicker(
+        from presenter: UIViewController,
+        pitchSize: MatchPitchSize,
+        onSelect: @escaping (FootballTeam) -> Void
+    ) {
         let vc = TeamPickerViewController()
-        vc.invoke(viewModel: TeamPickerViewModel())
+        vc.invoke(viewModel: TeamPickerViewModel(pitchSize: pitchSize))
         vc.onSelect = { team in
             onSelect(team)
         }
         let nav = UINavigationController(rootViewController: vc)
         nav.applyFootballNavigationChrome()
-        navigate(to: .present(nav), animated: true)
+        presenter.present(nav, animated: true)
     }
 
     private func pushMatchTeamsSetup(viewModel: CreateMatchViewModel) {

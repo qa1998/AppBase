@@ -14,6 +14,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     var onPickPlayer: ((Int, @escaping (FootballPlayer) -> Void) -> Void)?
     var onPickFormation: (() -> Void)?
     var onSaved: (() -> Void)?
+    var onDeleted: (() -> Void)?
     
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -27,6 +28,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     private let benchTitleLabel = UILabel()
     private let benchRow = UIView()
     private let benchStack = UIStackView()
+    private let deleteButton = UIButton(type: .system)
     private let saveButton = UIButton(type: .system)
 
     private var playerTokens: [FootballPlayerTokenView] = []
@@ -55,8 +57,10 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         benchTitleLabel.text = L10n.Football.Editor.benchPlayers
         formationButton.setTitle(L10n.Football.Teams.pickFormation, for: .normal)
         saveButton.setTitle(L10n.Football.Teams.save.uppercased(), for: .normal)
+        deleteButton.setTitle(L10n.Football.Teams.deleteAction.uppercased(), for: .normal)
         nameField.placeholder = L10n.Football.Teams.namePlaceholder
         pitchSizeButtons.forEach { $0.refreshTitle() }
+        updateDeleteButtonVisibility()
     }
 
     override func refreshFootballTheme() {
@@ -64,6 +68,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         pitchSizeButtons.forEach { $0.refresh() }
         pitchView.setNeedsDisplay()
         reloadSquad()
+        updateDeleteButtonVisibility()
     }
 
     override func onBind() {
@@ -74,6 +79,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
                 self?.nameField.text = team.name
                 self?.syncPitchSizeSelection()
                 self?.reloadSquad()
+                self?.updateDeleteButtonVisibility()
             }
             .store(in: &cancelBag)
 
@@ -177,19 +183,40 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     }
 
     private func buildSave() {
+        deleteButton.setTitleColor(FootballPalette.accentRed, for: .normal)
+        deleteButton.titleLabel?.font = FootballPalette.title(16)
+        deleteButton.backgroundColor = FootballPalette.surface
+        deleteButton.layer.cornerRadius = Radius.s12
+        deleteButton.layer.borderWidth = 1
+        deleteButton.layer.borderColor = FootballPalette.accentRed.cgColor
+        deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
+        deleteButton.isHidden = true
+
         saveButton.backgroundColor = FootballPalette.accentRed
         saveButton.setTitleColor(FootballPalette.onAccent, for: .normal)
         saveButton.titleLabel?.font = FootballPalette.title(16)
         saveButton.layer.cornerRadius = Radius.s12
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
+
+        view.addSubview(deleteButton)
         view.addSubview(saveButton)
     }
 
     private func layoutChrome() {
+        saveButton.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Spacing.s16)
+            make.height.equalTo(52)
+        }
+        deleteButton.snp.makeConstraints { make in
+            make.leading.trailing.equalTo(saveButton)
+            make.bottom.equalTo(saveButton.snp.top).offset(-Spacing.s10)
+            make.height.equalTo(52)
+        }
         scrollView.snp.makeConstraints { make in
-            make.top.equalTo(self.view.safeAreaLayoutGuide).offset(Spacing.s8)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(Spacing.s8)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(saveButton.snp.top).offset(-Spacing.s12)
+            make.bottom.equalTo(deleteButton.snp.top).offset(-Spacing.s12)
         }
         contentStack.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(UIEdgeInsets(
@@ -200,11 +227,10 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
             ))
             make.width.equalTo(scrollView.frameLayoutGuide).offset(-Spacing.s32)
         }
-        saveButton.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(Spacing.s20)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(Spacing.s16)
-            make.height.equalTo(52)
-        }
+    }
+
+    private func updateDeleteButtonVisibility() {
+        deleteButton.isHidden = !viewModel.canDeleteSavedTeam
     }
 
     // MARK: - Squad
@@ -281,6 +307,21 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     @objc private func saveTapped() {
         viewModel.save()
         onSaved?()
+    }
+
+    @objc private func deleteTapped() {
+        let sheet = UIAlertController(
+            title: L10n.Football.Teams.deleteTitle,
+            message: viewModel.team.name,
+            preferredStyle: .alert
+        )
+        sheet.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
+        sheet.addAction(UIAlertAction(title: L10n.Football.Teams.deleteConfirm, style: .destructive) { [weak self] _ in
+            guard let self else { return }
+            self.viewModel.deleteSavedTeam()
+            self.onDeleted?()
+        })
+        present(sheet, animated: true)
     }
 }
 

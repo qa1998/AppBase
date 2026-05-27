@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 73;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,6 +11,7 @@
 		0F24E0E42FAC7A1100C48B33 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 0F24E0E32FAC7A1100C48B33 /* Alamofire */; };
 		0F24E0E92FAC7A2800C48B33 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 0F24E0E82FAC7A2800C48B33 /* Kingfisher */; };
 		0F24EF092FADBCC500C48B33 /* TIOPagingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0F24EF082FADBCC500C48B33 /* TIOPagingKit */; };
+		0F59A5D02FC6E57600ACFDC7 /* JXSegmentedView in Frameworks */ = {isa = PBXBuildFile; productRef = 0F59A5CF2FC6E57600ACFDC7 /* JXSegmentedView */; };
 		0F8863442FBEB7D800599A9E /* SwiftEntryKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0F8863432FBEB7D800599A9E /* SwiftEntryKit */; };
 		0F8868A62FBFFF7200599A9E /* AdsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0F8868A52FBFFF7200599A9E /* AdsKit */; };
 		0FE2BEFD2FADC08C006641DB /* BaseMVVM in Frameworks */ = {isa = PBXBuildFile; productRef = 0FE2BEFC2FADC08C006641DB /* BaseMVVM */; };
@@ -23,7 +24,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		0F24E07B2FAC49C400C48B33 /* Exceptions for "AppBase" folder in "AppBase" target */ = {
+		0F24E07B2FAC49C400C48B33 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				SupportingFiles/Info.plist,
@@ -34,7 +35,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		0F24E0D12FAC767F00C48B33 /* Exceptions for "AppBase" folder in "Copy Bundle Resources" phase from "AppBase" target */ = {
+		0F24E0D12FAC767F00C48B33 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			buildPhase = 0F24E0672FAC49C300C48B33 /* Resources */;
 			membershipExceptions = (
@@ -44,15 +45,7 @@
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		0F24E06B2FAC49C300C48B33 /* AppBase */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				0F24E07B2FAC49C400C48B33 /* Exceptions for "AppBase" folder in "AppBase" target */,
-				0F24E0D12FAC767F00C48B33 /* Exceptions for "AppBase" folder in "Copy Bundle Resources" phase from "AppBase" target */,
-			);
-			path = AppBase;
-			sourceTree = "<group>";
-		};
+		0F24E06B2FAC49C300C48B33 /* AppBase */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (0F24E07B2FAC49C400C48B33 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 0F24E0D12FAC767F00C48B33 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = AppBase; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F59A5D02FC6E57600ACFDC7 /* JXSegmentedView in Frameworks */,
 				0F8863442FBEB7D800599A9E /* SwiftEntryKit in Frameworks */,
 				0F8868A62FBFFF7200599A9E /* AdsKit in Frameworks */,
 				0F24E0E42FAC7A1100C48B33 /* Alamofire in Frameworks */,
@@ -127,6 +121,7 @@
 				0FE2BEFC2FADC08C006641DB /* BaseMVVM */,
 				0F8863432FBEB7D800599A9E /* SwiftEntryKit */,
 				0F8868A52FBFFF7200599A9E /* AdsKit */,
+				0F59A5CF2FC6E57600ACFDC7 /* JXSegmentedView */,
 			);
 			productName = AppBase;
 			productReference = 0F24E0692FAC49C300C48B33 /* AppBase.app */;
@@ -165,8 +160,9 @@
 				0F24E0E72FAC7A2800C48B33 /* XCRemoteSwiftPackageReference "kingfisher" */,
 				0F24EF072FADBCC500C48B33 /* XCRemoteSwiftPackageReference "TIOPagingKit" */,
 				0F8863422FBEB7D800599A9E /* XCRemoteSwiftPackageReference "SwiftEntryKit" */,
+				0F59A5CE2FC6E57600ACFDC7 /* XCRemoteSwiftPackageReference "JXSegmentedView" */,
 			);
-			preferredProjectObjectVersion = 77;
+			preferredProjectObjectVersion = 56;
 			productRefGroup = 0F24E06A2FAC49C300C48B33 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -478,6 +474,14 @@
 				kind = branch;
 			};
 		};
+		0F59A5CE2FC6E57600ACFDC7 /* XCRemoteSwiftPackageReference "JXSegmentedView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pujiaxin33/JXSegmentedView";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.1;
+			};
+		};
 		0F8863422FBEB7D800599A9E /* XCRemoteSwiftPackageReference "SwiftEntryKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/huri000/SwiftEntryKit";
@@ -508,6 +512,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0F24EF072FADBCC500C48B33 /* XCRemoteSwiftPackageReference "TIOPagingKit" */;
 			productName = TIOPagingKit;
+		};
+		0F59A5CF2FC6E57600ACFDC7 /* JXSegmentedView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0F59A5CE2FC6E57600ACFDC7 /* XCRemoteSwiftPackageReference "JXSegmentedView" */;
+			productName = JXSegmentedView;
 		};
 		0F8863432FBEB7D800599A9E /* SwiftEntryKit */ = {
 			isa = XCSwiftPackageProductDependency;

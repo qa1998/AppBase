@@ -215,6 +215,10 @@ internal enum L10n {
         internal static var firstHalf: String { return L10n.tr("Localizable", "football.match.create.firstHalf", fallback: "1st half (min)") }
         /// Home team
         internal static var homeTeam: String { return L10n.tr("Localizable", "football.match.create.homeTeam", fallback: "Home team") }
+        /// “%@” is missing players for %d-a-side. Fill every slot in My Teams for this pitch size, or assign players in the next step.
+        internal static func importIncomplete(_ p1: Any, _ p2: Int) -> String {
+          return L10n.tr("Localizable", "football.match.create.importIncomplete", String(describing: p1), p2, fallback: "“%@” is missing players for %d-a-side. Fill every slot in My Teams for this pitch size, or assign players in the next step.")
+        }
         /// Kick-off time
         internal static var kickoff: String { return L10n.tr("Localizable", "football.match.create.kickoff", fallback: "Kick-off time") }
         /// Penalty shootout
@@ -225,6 +229,8 @@ internal enum L10n {
         }
         /// Pitch size
         internal static var pitchSize: String { return L10n.tr("Localizable", "football.match.create.pitchSize", fallback: "Pitch size") }
+        /// Remove imported team
+        internal static var removeImported: String { return L10n.tr("Localizable", "football.match.create.removeImported", fallback: "Remove imported team") }
         /// Home %d/%d · Away %d/%d
         internal static func rosterProgress(_ p1: Int, _ p2: Int, _ p3: Int, _ p4: Int) -> String {
           return L10n.tr("Localizable", "football.match.create.rosterProgress", p1, p2, p3, p4, fallback: "Home %d/%d · Away %d/%d")
@@ -235,6 +241,10 @@ internal enum L10n {
         internal static var setupTeams: String { return L10n.tr("Localizable", "football.match.create.setupTeams", fallback: "Team lineups") }
         /// Tap a position on the pitch or bench to assign a player.
         internal static var tapSlotHint: String { return L10n.tr("Localizable", "football.match.create.tapSlotHint", fallback: "Tap a position on the pitch or bench to assign a player.") }
+        /// Imported: %@
+        internal static func teamImported(_ p1: Any) -> String {
+          return L10n.tr("Localizable", "football.match.create.teamImported", String(describing: p1), fallback: "Imported: %@")
+        }
         /// Pitch %d/%d · Bench %d/%d
         internal static func teamRosterProgress(_ p1: Int, _ p2: Int, _ p3: Int, _ p4: Int) -> String {
           return L10n.tr("Localizable", "football.match.create.teamRosterProgress", p1, p2, p3, p4, fallback: "Pitch %d/%d · Bench %d/%d")
@@ -265,6 +275,8 @@ internal enum L10n {
         internal static var sub: String { return L10n.tr("Localizable", "football.match.event.sub", fallback: "Sub") }
         /// Substitution
         internal static var substitution: String { return L10n.tr("Localizable", "football.match.event.substitution", fallback: "Substitution") }
+        /// 2 yellows → red
+        internal static var twoYellowsRed: String { return L10n.tr("Localizable", "football.match.event.twoYellowsRed", fallback: "2 yellows → red") }
         /// VAR check
         internal static var varReview: String { return L10n.tr("Localizable", "football.match.event.varReview", fallback: "VAR check") }
         /// VAR
@@ -287,8 +299,20 @@ internal enum L10n {
         internal static var second: String { return L10n.tr("Localizable", "football.match.half.second", fallback: "2ND HALF") }
       }
       internal enum Live {
+        /// End this match now?
+        internal static var finishConfirm: String { return L10n.tr("Localizable", "football.match.live.finishConfirm", fallback: "End this match now?") }
+        /// End match
+        internal static var finishMatch: String { return L10n.tr("Localizable", "football.match.live.finishMatch", fallback: "End match") }
+        /// No players available (sent off or empty squad).
+        internal static var noSelectablePlayers: String { return L10n.tr("Localizable", "football.match.live.noSelectablePlayers", fallback: "No players available (sent off or empty squad).") }
         /// Select player
         internal static var pickPlayer: String { return L10n.tr("Localizable", "football.match.live.pickPlayer", fallback: "Select player") }
+        internal enum Tab {
+          /// Events
+          internal static var events: String { return L10n.tr("Localizable", "football.match.live.tab.events", fallback: "Events") }
+          /// Lineups
+          internal static var lineups: String { return L10n.tr("Localizable", "football.match.live.tab.lineups", fallback: "Lineups") }
+        }
       }
       internal enum Phase {
         /// Extra time — 1st half
@@ -484,6 +508,8 @@ internal enum L10n {
     internal enum Teams {
       /// New team
       internal static var defaultName: String { return L10n.tr("Localizable", "football.teams.defaultName", fallback: "New team") }
+      /// Delete team
+      internal static var deleteAction: String { return L10n.tr("Localizable", "football.teams.deleteAction", fallback: "Delete team") }
       /// Delete
       internal static var deleteConfirm: String { return L10n.tr("Localizable", "football.teams.deleteConfirm", fallback: "Delete") }
       /// Delete team?
@@ -494,6 +520,8 @@ internal enum L10n {
       internal static var empty: String { return L10n.tr("Localizable", "football.teams.empty", fallback: "No saved teams yet. Tap + to create a squad.") }
       /// Team name
       internal static var namePlaceholder: String { return L10n.tr("Localizable", "football.teams.namePlaceholder", fallback: "Team name") }
+      /// No saved teams yet. Create a squad in My Teams and tap Save team before importing here.
+      internal static var pickEmptyForMatch: String { return L10n.tr("Localizable", "football.teams.pickEmptyForMatch", fallback: "No saved teams yet. Create a squad in My Teams and tap Save team before importing here.") }
       /// Pick saved team
       internal static var pickForMatch: String { return L10n.tr("Localizable", "football.teams.pickForMatch", fallback: "Pick saved team") }
       /// Choose formation

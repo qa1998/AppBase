@@ -124,8 +124,10 @@
 "football.teams.validationName" = "Nhập tên đội.";
 "football.teams.deleteTitle" = "Xóa đội?";
 "football.teams.deleteConfirm" = "Xóa";
+"football.teams.deleteAction" = "Xóa đội";
 "football.teams.pickTitle" = "Chọn đội";
 "football.teams.pickForMatch" = "Chọn đội đã lưu";
+"football.teams.pickEmptyForMatch" = "Chưa có đội đã lưu. Tạo đội trong Đội của tôi và bấm Lưu đội trước khi nhập vào trận.";
 "football.teams.rosterCount" = "%d / %d trên sân";
 "football.lineups.title" = "Sơ đồ của tôi";
 "football.lineups.premiumHint" = "Premium — sắp ra mắt.";
@@ -169,7 +171,15 @@
 "football.match.create.teamRosterProgress" = "Sân %d/%d · Dự bị %d/%d";
 "football.match.create.validationTeams" = "Nhập tên đội nhà và đội khách.";
 "football.match.create.validationPlayers" = "Gán đủ cầu thủ cho mọi vị trí của cả hai đội.";
+"football.match.create.importIncomplete" = "Đội «%@» chưa đủ cầu thủ cho sân %d người. Hãy gán đủ vị trí trong Đội của tôi cho cỡ sân này, hoặc gán ở bước tiếp theo.";
+"football.match.create.teamImported" = "Đã nhập: %@";
+"football.match.create.removeImported" = "Gỡ đội đã nhập";
 "football.match.live.pickPlayer" = "Chọn cầu thủ";
+"football.match.live.tab.events" = "Sự kiện";
+"football.match.live.tab.lineups" = "Đội hình";
+"football.match.live.finishMatch" = "Kết thúc trận đấu";
+"football.match.live.finishConfirm" = "Kết thúc trận đấu ngay?";
+"football.match.live.noSelectablePlayers" = "Không còn cầu thủ hợp lệ (đã bị đuổi hoặc chưa gán đội hình).";
 "football.match.phase.scheduled" = "Sẵn sàng bắt đầu";
 "football.match.phase.firstHalf" = "Hiệp 1";
 "football.match.phase.firstHalfStoppage" = "Đá bù giờ hiệp 1";
@@ -197,6 +207,7 @@
 "football.match.event.goal" = "Bàn thắng";
 "football.match.event.yellowCard" = "Thẻ vàng";
 "football.match.event.redCard" = "Thẻ đỏ";
+"football.match.event.twoYellowsRed" = "2 thẻ vàng → thẻ đỏ";
 "football.match.event.substitution" = "Thay người";
 "football.match.event.varReview" = "VAR";
 "football.match.event.penalty" = "Penalty";

@@ -124,8 +124,10 @@
 "football.teams.validationName" = "Enter a team name.";
 "football.teams.deleteTitle" = "Delete team?";
 "football.teams.deleteConfirm" = "Delete";
+"football.teams.deleteAction" = "Delete team";
 "football.teams.pickTitle" = "Pick a team";
 "football.teams.pickForMatch" = "Pick saved team";
+"football.teams.pickEmptyForMatch" = "No saved teams yet. Create a squad in My Teams and tap Save team before importing here.";
 "football.teams.rosterCount" = "%d / %d on pitch";
 "football.lineups.title" = "My Lineups";
 "football.lineups.premiumHint" = "Premium — coming soon.";
@@ -169,7 +171,15 @@
 "football.match.create.teamRosterProgress" = "Pitch %d/%d · Bench %d/%d";
 "football.match.create.validationTeams" = "Enter home and away team names.";
 "football.match.create.validationPlayers" = "Assign a player to every position for both teams.";
+"football.match.create.importIncomplete" = "“%@” is missing players for %d-a-side. Fill every slot in My Teams for this pitch size, or assign players in the next step.";
+"football.match.create.teamImported" = "Imported: %@";
+"football.match.create.removeImported" = "Remove imported team";
 "football.match.live.pickPlayer" = "Select player";
+"football.match.live.tab.events" = "Events";
+"football.match.live.tab.lineups" = "Lineups";
+"football.match.live.finishMatch" = "End match";
+"football.match.live.finishConfirm" = "End this match now?";
+"football.match.live.noSelectablePlayers" = "No players available (sent off or empty squad).";
 "football.match.phase.scheduled" = "Ready to kick off";
 "football.match.phase.firstHalf" = "1st half";
 "football.match.phase.firstHalfStoppage" = "1st half stoppage time";
@@ -197,6 +207,7 @@
 "football.match.event.goal" = "Goal";
 "football.match.event.yellowCard" = "Yellow card";
 "football.match.event.redCard" = "Red card";
+"football.match.event.twoYellowsRed" = "2 yellows → red";
 "football.match.event.substitution" = "Substitution";
 "football.match.event.varReview" = "VAR check";
 "football.match.event.penalty" = "Penalty";
