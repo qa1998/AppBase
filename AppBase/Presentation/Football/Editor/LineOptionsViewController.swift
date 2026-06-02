@@ -313,6 +313,8 @@ private final class LineOptionChoiceRow: UIControl {
         radioInner.layer.cornerRadius = 5
         radioInner.backgroundColor = FootballPalette.accentGreen
         radioInner.isHidden = true
+        radioInner.isUserInteractionEnabled = false
+        radioView.isUserInteractionEnabled = false
         radioView.addSubview(radioInner)
         radioInner.snp.makeConstraints { make in
             make.center.equalToSuperview()
@@ -320,11 +322,14 @@ private final class LineOptionChoiceRow: UIControl {
         }
 
         previewView.strokeColor = .white
+        previewView.backgroundColor = .clear
+        previewView.isUserInteractionEnabled = false
 
         let chevronConfig = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
         chevronView.image = UIImage(systemName: "chevron.right", withConfiguration: chevronConfig)
         chevronView.tintColor = FootballPalette.textSecondary
         chevronView.contentMode = .scaleAspectFit
+        chevronView.isUserInteractionEnabled = false
 
         addSubview(radioView)
         addSubview(previewView)
@@ -432,9 +437,12 @@ private final class LinePointerOptionButton: UIControl {
 
         iconView.contentMode = .scaleAspectFit
         iconView.tintColor = .white
+        iconView.isUserInteractionEnabled = false
 
         preview.pointer = pointer
         preview.strokeColor = .white
+        preview.backgroundColor = .clear
+        preview.isUserInteractionEnabled = false
 
         addSubview(iconView)
         addSubview(preview)

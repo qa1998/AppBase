@@ -10,7 +10,8 @@ import UIKit
 final class MatchLiveLineupsView: UIView {
 
     /// Sân dọc hơn màn setup (GK mép trên/dưới, tiền đạo hướng về giữa sân).
-    static let combinedPitchWidthToHeightRatio: CGFloat = 0.48
+    /// Thấp hơn = sân cao hơn → đủ chỗ trải 5 hàng / đội.
+    static let combinedPitchWidthToHeightRatio: CGFloat = 0.38
 
     private let content = UIView()
     private let headerCard = UIView()

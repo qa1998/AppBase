@@ -250,6 +250,10 @@ struct FootballMatch: Identifiable, Equatable, Codable {
     var clockBaseSeconds: Int
     var segmentStartedAt: Date?
     var createdAt: Date
+    /// Chỉ nhập tỉ số (không live / timeline).
+    var usesManualScore: Bool
+    var manualHomeGoals: Int
+    var manualAwayGoals: Int
 
     init(
         id: String = UUID().uuidString,
@@ -259,7 +263,10 @@ struct FootballMatch: Identifiable, Equatable, Codable {
         elapsedSeconds: Int = 0,
         clockBaseSeconds: Int = 0,
         segmentStartedAt: Date? = nil,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        usesManualScore: Bool = false,
+        manualHomeGoals: Int = 0,
+        manualAwayGoals: Int = 0
     ) {
         self.id = id
         self.settings = settings
@@ -269,6 +276,9 @@ struct FootballMatch: Identifiable, Equatable, Codable {
         self.clockBaseSeconds = clockBaseSeconds
         self.segmentStartedAt = segmentStartedAt
         self.createdAt = createdAt
+        self.usesManualScore = usesManualScore
+        self.manualHomeGoals = manualHomeGoals
+        self.manualAwayGoals = manualAwayGoals
     }
 
     func roster(for side: MatchTeamSide) -> MatchTeamRoster {
@@ -280,9 +290,64 @@ struct FootballMatch: Identifiable, Equatable, Codable {
     }
 
     var scoreLine: String {
+        if usesManualScore {
+            return "\(manualHomeGoals) - \(manualAwayGoals)"
+        }
         let homeGoals = events.filter { $0.type == .goal && $0.team == .home }.count
         let awayGoals = events.filter { $0.type == .goal && $0.team == .away }.count
         return "\(homeGoals) - \(awayGoals)"
+    }
+
+    var displayHomeGoals: Int {
+        usesManualScore
+            ? manualHomeGoals
+            : events.filter { $0.type == .goal && $0.team == .home }.count
+    }
+
+    var displayAwayGoals: Int {
+        usesManualScore
+            ? manualAwayGoals
+            : events.filter { $0.type == .goal && $0.team == .away }.count
+    }
+}
+
+// MARK: - Codable (manual score migration)
+
+extension FootballMatch {
+
+    enum CodingKeys: String, CodingKey {
+        case id, settings, phase, events, elapsedSeconds, clockBaseSeconds
+        case segmentStartedAt, createdAt, usesManualScore, manualHomeGoals, manualAwayGoals
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        settings = try container.decode(FootballMatchSettings.self, forKey: .settings)
+        phase = try container.decode(MatchPhase.self, forKey: .phase)
+        events = try container.decode([MatchEvent].self, forKey: .events)
+        elapsedSeconds = try container.decode(Int.self, forKey: .elapsedSeconds)
+        clockBaseSeconds = try container.decode(Int.self, forKey: .clockBaseSeconds)
+        segmentStartedAt = try container.decodeIfPresent(Date.self, forKey: .segmentStartedAt)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        usesManualScore = try container.decodeIfPresent(Bool.self, forKey: .usesManualScore) ?? false
+        manualHomeGoals = try container.decodeIfPresent(Int.self, forKey: .manualHomeGoals) ?? 0
+        manualAwayGoals = try container.decodeIfPresent(Int.self, forKey: .manualAwayGoals) ?? 0
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(settings, forKey: .settings)
+        try container.encode(phase, forKey: .phase)
+        try container.encode(events, forKey: .events)
+        try container.encode(elapsedSeconds, forKey: .elapsedSeconds)
+        try container.encode(clockBaseSeconds, forKey: .clockBaseSeconds)
+        try container.encodeIfPresent(segmentStartedAt, forKey: .segmentStartedAt)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(usesManualScore, forKey: .usesManualScore)
+        try container.encode(manualHomeGoals, forKey: .manualHomeGoals)
+        try container.encode(manualAwayGoals, forKey: .manualAwayGoals)
     }
 }
 

@@ -12,7 +12,6 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     
     var onPickPlayer: ((Int) -> Void)?
     var onPickBenchPlayer: ((Int) -> Void)?
-    var onPickFormation: (() -> Void)?
     var onPickPitchOptions: (() -> Void)?
     var onPickLineOptions: (() -> Void)?
     var onSaveLineup: (() -> Void)?
@@ -144,11 +143,6 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
             .sink { [weak self] index in
                 self?.onPickBenchPlayer?(index)
             }
-            .store(in: &cancelBag)
-        
-        formationButton.publisher(for: .touchUpInside)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.onPickFormation?()}
             .store(in: &cancelBag)
         
         arrowsButton.publisher(for: .touchUpInside)
@@ -435,7 +429,7 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
         guard presentOptions else { return }
         switch mode {
         case .formation:
-            onPickFormation?()
+            break
         case .fields:
             onPickPitchOptions?()
         case .arrows:
@@ -495,6 +489,13 @@ final class LineupEditorViewController: FootballScreenViewController<LineupEdito
     
     func reloadFormation(_ lineup: FootballLineup) {
         formationButton.configuration?.title = lineup.formation.name
+        FormationContextMenu.attach(
+            to: formationButton,
+            playerCount: lineup.playerCount,
+            selectedFormationId: lineup.formationId
+        ) { formation in
+            LineupStore.shared.applyFormation(formation)
+        }
     }
     
     private func reloadPitch(_ lineup: FootballLineup) {

@@ -34,11 +34,11 @@ final class FootballTeamsCoordinator: FootballTabNavigationCoordinator<VoidMeta>
         let vc = TeamEditorViewController()
         vc.hidesBottomBarWhenPushed = true
         vc.invoke(viewModel: TeamEditorViewModel())
-        vc.onPickPlayer = { [weak self, weak vc] _, handler in
-            self?.pushPlayerPicker(onPicked: handler, from: vc)
+        vc.onPickPitchPlayer = { [weak self, weak vc] slot in
+            self?.pushPlayerPicker(target: .teamPitch(slot: slot), from: vc)
         }
-        vc.onPickFormation = { [weak self, weak vc] in
-            self?.presentFormationPicker(from: vc)
+        vc.onPickBenchPlayer = { [weak self, weak vc] index in
+            self?.pushPlayerPicker(target: .teamBench(index: index), from: vc)
         }
         vc.onSaved = { [weak vc] in
             vc?.navigationController?.popViewController(animated: true)
@@ -49,27 +49,18 @@ final class FootballTeamsCoordinator: FootballTabNavigationCoordinator<VoidMeta>
         navigate(to: .push(vc))
     }
 
-    private func presentFormationPicker(from presenter: UIViewController?) {
-        guard let presenter else { return }
-        let team = TeamStore.shared.currentTeam
-        let picker = FormationPickerViewController(
-            selectedFormationId: team.formationId,
-            playerCount: team.pitchSize.playerCount
-        )
-        picker.onSelect = { formation in
-            TeamStore.shared.applyFormation(formation)
-        }
-        presenter.present(picker, animated: true)
-    }
-
     private func pushPlayerPicker(
-        onPicked: @escaping (FootballPlayer) -> Void,
+        target: PlayerPickerTarget,
         from presenter: UIViewController?
     ) {
         guard let nav = presenter?.navigationController else { return }
         let vc = PlayerPickerViewController()
         vc.hidesBottomBarWhenPushed = true
-        vc.invoke(viewModel: PlayerPickerViewModel(slotIndex: 0, onPlayerSelected: onPicked))
+        vc.invoke(viewModel: PlayerPickerViewModel(target: target))
+        vc.onCreatePlayer = { [weak vc] in
+            guard let vc, let nav = vc.navigationController else { return }
+            FootballPlayerEditorRouting.pushNewPlayer(from: vc, navigationController: nav)
+        }
         nav.pushViewController(vc, animated: true)
     }
 

@@ -149,65 +149,72 @@ enum PitchFormationGridLayout {
     }
 
     /// Đội hình trên **một nửa sân** (live match: nhà trên / khách dưới).
-    /// `goalAtTop` = true → GK sát mép trên nửa sân, các hàng dàn về giữa sân.
+    /// `goalAtTop` = true → GK sát mép trên, các hàng trải đều về phía giữa sân.
     static func placementsForHalf(
         lineCounts: [Int],
         halfRect: CGRect,
         totalPlayers: Int,
         goalAtTop: Bool,
+        tokenHeight: CGFloat = FootballPlayerTokenSize.pitch.fixedTokenHeight,
         config: Config = Config()
     ) -> [SlotPlacement] {
         let lines = normalizedLineCounts(lineCounts, totalPlayers: totalPlayers)
         guard halfRect.width > 0, halfRect.height > 0 else { return [] }
 
-        let horizontalPadding = halfRect.width * config.horizontalPaddingRatio
-        let goalInset = halfRect.height * 0.05
-        let innerInset = halfRect.height * 0.1
-        let gkBand = halfRect.height * 0.14
+        var halfConfig = config
+        halfConfig.horizontalPaddingRatio = 0.04
+        halfConfig.maxPlayerSize = 44
+        halfConfig.labelWidthFactor = 0.85
 
-        let goalY = goalAtTop ? halfRect.minY + goalInset : halfRect.maxY - goalInset
-        let innerY = goalAtTop ? halfRect.maxY - innerInset : halfRect.minY + innerInset
-        let span = abs(innerY - goalY)
+        let horizontalPadding = halfRect.width * halfConfig.horizontalPaddingRatio
+        let edgeInset = halfRect.height * 0.04
+        let innerInset = halfRect.height * 0.06
+
+        let topEdge = goalAtTop ? halfRect.minY + edgeInset : halfRect.minY + innerInset
+        let bottomEdge = goalAtTop ? halfRect.maxY - innerInset : halfRect.maxY - edgeInset
+        let usable = max(bottomEdge - topEdge, tokenHeight)
+        let rowCount = lines.count + 1
+        let rowStride = rowCount > 1
+            ? max((usable - tokenHeight) / CGFloat(rowCount - 1), tokenHeight * 0.55)
+            : 0
+
+        func centerY(forRowOrder order: Int) -> CGFloat {
+            let offset = CGFloat(order) * rowStride + tokenHeight / 2
+            return goalAtTop ? topEdge + offset : bottomEdge - offset
+        }
 
         var slots: [SlotPlacement] = []
         var slotIndex = 0
+        var rowOrder = 0
 
         let gkRowIndex = lines.count
-        let gkCenterY = goalAtTop
-            ? halfRect.minY + gkBand * config.gkDepthInBoxRatio
-            : halfRect.maxY - gkBand * config.gkDepthInBoxRatio
-
         appendRow(
             playersInRow: 1,
             rowIndex: gkRowIndex,
-            centerY: gkCenterY,
+            centerY: centerY(forRowOrder: rowOrder),
             isGoalkeeper: true,
             fieldRect: halfRect,
             horizontalPadding: horizontalPadding,
-            config: config,
+            config: halfConfig,
             slotIndex: &slotIndex,
             into: &slots
         )
+        rowOrder += 1
 
-        let lineCount = max(lines.count, 1)
         for (lineIndex, count) in lines.enumerated() {
             let rowIndex = lines.count - 1 - lineIndex
-            let fraction = CGFloat(lineIndex + 1) / CGFloat(lineCount + 1)
-            let centerY = goalAtTop
-                ? goalY + span * fraction
-                : goalY - span * fraction
-
             appendRow(
                 playersInRow: count,
                 rowIndex: rowIndex,
-                centerY: centerY,
+                centerY: centerY(forRowOrder: rowOrder),
                 isGoalkeeper: false,
                 fieldRect: halfRect,
                 horizontalPadding: horizontalPadding,
-                config: config,
+                config: halfConfig,
                 slotIndex: &slotIndex,
                 into: &slots
             )
+            rowOrder += 1
         }
 
         return slots.sorted { $0.slotIndex < $1.slotIndex }

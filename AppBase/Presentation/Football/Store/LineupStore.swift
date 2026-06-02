@@ -34,6 +34,8 @@ final class LineupStore {
     var canUndoStroke: Bool { !strokeUndoStack.isEmpty }
     var canRedoStroke: Bool { !strokeRedoStack.isEmpty }
 
+    private static let sampleSeedRemovedKey = "football.lineups.sampleRemoved.v1"
+
     private init() {
         let didLoadSnapshot: Bool
         if let snapshot = DataStore.shared.value(
@@ -48,11 +50,12 @@ final class LineupStore {
             strokeRedoStack = snapshot.strokeRedoStack
             tacticalLineOptions = snapshot.tacticalLineOptions
             pitchDisplayOptions = snapshot.pitchDisplayOptions
+            applyDrawingState(from: currentLineup)
         } else {
             didLoadSnapshot = false
-            savedLineups = LineupStore.sampleLineups()
-            currentLineup = savedLineups[0]
-            applyDrawingState(from: currentLineup)
+            savedLineups = []
+            currentLineup = LineupStore.makeLineup(title: "", formation: .default)
+            applyDrawingState(from: TacticalDrawingState.empty)
         }
 
         if didLoadSnapshot {
@@ -60,29 +63,34 @@ final class LineupStore {
         } else {
             persist()
         }
+        removeBundledSampleLineupsIfNeeded()
     }
 
-    static func sampleLineups() -> [FootballLineup] {
-        let eleven = FootballFormation.formations(playerCount: 11)
-        let formations: [FootballFormation] = [
-            eleven.first { $0.name == "4-3-3" } ?? .default,
-            eleven.first { $0.name == "4-4-2" } ?? .default,
-            eleven.first { $0.name == "3-5-2" } ?? .default,
-        ]
-        let styles: [TacticalStyle] = [.attacking, .balanced, .defensive]
-        let titles = [
-            L10n.Football.Lineups.Sample.dreamTeam,
-            L10n.Football.Lineups.Sample.uclFinal,
-            L10n.Football.Lineups.Sample.counterAttack,
-        ]
-        let offsets: [TimeInterval] = [-7200, -86_400, -259_200]
-        return zip(titles.indices, titles).map { index, title in
-            var lineup = makeSampleLineup(title: title, formation: formations[index])
-            lineup.tacticalStyle = styles[index]
-            lineup.isFavorite = index == 0
-            lineup.isDraft = index == 2
-            lineup.updatedAt = Date().addingTimeInterval(offsets[index])
-            return lineup
+    /// Xóa bộ 3 sơ đồ demo cũ (Dream Team / UCL / Counter Attack) đã lưu trên máy.
+    private func removeBundledSampleLineupsIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: Self.sampleSeedRemovedKey) else { return }
+        UserDefaults.standard.set(true, forKey: Self.sampleSeedRemovedKey)
+        guard Self.looksLikeBundledSampleSeed(savedLineups) else { return }
+        savedLineups = []
+        currentLineup = LineupStore.makeLineup(title: "", formation: .default)
+        undoStack.removeAll()
+        redoStack.removeAll()
+        applyDrawingState(from: TacticalDrawingState.empty)
+        persist()
+        notify()
+    }
+
+    private static func looksLikeBundledSampleSeed(_ lineups: [FootballLineup]) -> Bool {
+        guard lineups.count == 3 else { return false }
+        guard lineups.filter(\.isFavorite).count == 1,
+              lineups.filter(\.isDraft).count == 1 else { return false }
+        let formationNames = Set(lineups.compactMap { lineup in
+            FootballFormation.catalog.first { $0.id == lineup.formationId }?.name
+        })
+        guard formationNames == Set(["4-3-3", "4-4-2", "3-5-2"]) else { return false }
+        return lineups.allSatisfy { lineup in
+            !lineup.assignments.isEmpty
+                && lineup.assignments.allSatisfy { $0.player != nil }
         }
     }
 
@@ -153,6 +161,41 @@ final class LineupStore {
             guard lineup.assignments.indices.contains(slotIndex) else { return }
             lineup.assignments[slotIndex].player = player
         }
+    }
+
+    /// Gán vào ô đích; gỡ khỏi ô khác nếu trùng — không hoán đổi cầu thủ bị thay.
+    func assignPlayerToSlot(_ player: FootballPlayer, pitchSlot targetSlot: Int) {
+        mutate { lineup in
+            guard lineup.assignments.indices.contains(targetSlot) else { return }
+            for index in lineup.assignments.indices where lineup.assignments[index].player?.id == player.id {
+                lineup.assignments[index].player = nil
+            }
+            var ids = Self.normalizedBenchIds(lineup.benchPlayerIds)
+            for index in ids.indices where ids[index] == player.id {
+                ids[index] = ""
+            }
+            lineup.benchPlayerIds = ids
+            lineup.assignments[targetSlot].player = player
+        }
+    }
+
+    func assignPlayerToBench(_ player: FootballPlayer, benchIndex targetIndex: Int) {
+        guard targetIndex >= 0, targetIndex < MatchTeamRoster.benchSlotCount else { return }
+        mutate { lineup in
+            for index in lineup.assignments.indices where lineup.assignments[index].player?.id == player.id {
+                lineup.assignments[index].player = nil
+            }
+            var ids = Self.normalizedBenchIds(lineup.benchPlayerIds)
+            for index in ids.indices where ids[index] == player.id {
+                ids[index] = ""
+            }
+            ids[targetIndex] = player.id
+            lineup.benchPlayerIds = ids
+        }
+    }
+
+    func clearPitchSlot(_ slotIndex: Int) {
+        assignPlayer(nil, toSlot: slotIndex)
     }
 
     func moveSlot(_ slotIndex: Int, to normalized: CGPoint) {
@@ -397,22 +440,6 @@ final class LineupStore {
         )
     }
 
-    /// Demo lineups in My Lineups seed data only.
-    private static func makeSampleLineup(title: String, formation: FootballFormation) -> FootballLineup {
-        let players = FootballPlayer.catalog
-        var lineup = makeLineup(title: title, formation: formation)
-        lineup.assignments = formation.slots.enumerated().map { index, point in
-            PitchSlotAssignment(
-                slotIndex: index,
-                normalizedPosition: point,
-                player: index < players.count ? players[index] : nil
-            )
-        }
-        lineup.benchPlayerIds = normalizedBenchIds(
-            Array(players.dropFirst(formation.slots.count).prefix(MatchTeamRoster.benchSlotCount).map(\.id))
-        )
-        return lineup
-    }
 }
 
 private extension Array {

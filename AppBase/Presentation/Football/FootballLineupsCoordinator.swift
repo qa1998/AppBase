@@ -55,9 +55,6 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
         vc.onPickBenchPlayer = { [weak self, weak vc] index in
             self?.pushBenchPlayerPicker(benchIndex: index, from: vc)
         }
-        vc.onPickFormation = { [weak self, weak vc] in
-            self?.presentFormationPicker(from: vc)
-        }
         vc.onPickPitchOptions = { [weak self, weak vc] in
             self?.presentPitchOptions(from: vc)
         }
@@ -107,19 +104,6 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
         navigate(to: .present(nav), animated: true)
     }
 
-    private func presentFormationPicker(from presenter: UIViewController?) {
-        guard let presenter else { return }
-        let lineup = LineupStore.shared.currentLineup
-        let picker = FormationPickerViewController(
-            selectedFormationId: lineup.formationId,
-            playerCount: lineup.playerCount
-        )
-        picker.onSelect = { formation in
-            LineupStore.shared.applyFormation(formation)
-        }
-        presenter.present(picker, animated: true)
-    }
-
     private func presentPitchOptions(from presenter: UIViewController?) {
         guard let presenter else { return }
         let sheet = PitchOptionsViewController(options: LineupStore.shared.pitchDisplayOptions)
@@ -144,16 +128,23 @@ final class FootballLineupsCoordinator: FootballTabNavigationCoordinator<VoidMet
     private func pushPlayerPicker(slot: Int, from presenter: UIViewController?) {
         let vc = PlayerPickerViewController()
         vc.hidesBottomBarWhenPushed = true
-        vc.invoke(viewModel: PlayerPickerViewModel(slotIndex: slot))
+        vc.invoke(viewModel: PlayerPickerViewModel(target: .lineupPitch(slot: slot)))
+        wirePlayerPicker(vc)
         navigate(to: .push(vc))
     }
 
     private func pushBenchPlayerPicker(benchIndex: Int, from presenter: UIViewController?) {
         let vc = PlayerPickerViewController()
         vc.hidesBottomBarWhenPushed = true
-        vc.invoke(viewModel: PlayerPickerViewModel(slotIndex: benchIndex) { player in
-            LineupStore.shared.setBenchPlayer(player, at: benchIndex)
-        })
+        vc.invoke(viewModel: PlayerPickerViewModel(target: .lineupBench(index: benchIndex)))
+        wirePlayerPicker(vc)
         navigate(to: .push(vc))
+    }
+
+    private func wirePlayerPicker(_ picker: PlayerPickerViewController) {
+        picker.onCreatePlayer = { [weak self, weak picker] in
+            guard let self, let picker, let nav = picker.navigationController else { return }
+            FootballPlayerEditorRouting.pushNewPlayer(from: picker, navigationController: nav)
+        }
     }
 }

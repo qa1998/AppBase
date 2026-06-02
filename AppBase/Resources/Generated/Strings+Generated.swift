@@ -299,6 +299,8 @@ internal enum L10n {
         internal static var second: String { return L10n.tr("Localizable", "football.match.half.second", fallback: "2ND HALF") }
       }
       internal enum Live {
+        /// Add event
+        internal static var addEvent: String { return L10n.tr("Localizable", "football.match.live.addEvent", fallback: "Add event") }
         /// End this match now?
         internal static var finishConfirm: String { return L10n.tr("Localizable", "football.match.live.finishConfirm", fallback: "End this match now?") }
         /// End match
@@ -348,12 +350,12 @@ internal enum L10n {
       }
     }
     internal enum Matches {
-      /// No matches yet. Tap + to create a match.
-      internal static var empty: String { return L10n.tr("Localizable", "football.matches.empty", fallback: "No matches yet. Tap + to create a match.") }
-      /// Track fixtures and lineups for each match — coming soon.
-      internal static var subtitle: String { return L10n.tr("Localizable", "football.matches.subtitle", fallback: "Track fixtures and lineups for each match — coming soon.") }
-      /// Matches
-      internal static var title: String { return L10n.tr("Localizable", "football.matches.title", fallback: "Matches") }
+      /// No scores yet. Tap + to enter a result.
+      internal static var empty: String { return L10n.tr("Localizable", "football.matches.empty", fallback: "No scores yet. Tap + to enter a result.") }
+      /// Record match results.
+      internal static var subtitle: String { return L10n.tr("Localizable", "football.matches.subtitle", fallback: "Record match results.") }
+      /// Scores
+      internal static var title: String { return L10n.tr("Localizable", "football.matches.title", fallback: "Scores") }
     }
     internal enum PitchOptions {
       /// Save
@@ -374,6 +376,8 @@ internal enum L10n {
     internal enum Players {
       /// Tap to choose a photo
       internal static var avatarHint: String { return L10n.tr("Localizable", "football.players.avatarHint", fallback: "Tap to choose a photo") }
+      /// Create new player
+      internal static var create: String { return L10n.tr("Localizable", "football.players.create", fallback: "Create new player") }
       /// Delete
       internal static var deleteConfirm: String { return L10n.tr("Localizable", "football.players.deleteConfirm", fallback: "Delete") }
       /// Create player
@@ -412,6 +416,16 @@ internal enum L10n {
         /// Rating
         internal static var rating: String { return L10n.tr("Localizable", "football.players.filter.rating", fallback: "Rating") }
       }
+      internal enum Picker {
+        /// Remove from this position
+        internal static var clearPosition: String { return L10n.tr("Localizable", "football.players.picker.clearPosition", fallback: "Remove from this position") }
+        /// On bench
+        internal static var onBench: String { return L10n.tr("Localizable", "football.players.picker.onBench", fallback: "On bench") }
+        /// On field
+        internal static var onPitch: String { return L10n.tr("Localizable", "football.players.picker.onPitch", fallback: "On field") }
+        /// This slot
+        internal static var thisPosition: String { return L10n.tr("Localizable", "football.players.picker.thisPosition", fallback: "This slot") }
+      }
       internal enum Position {
         /// DEF
         internal static var def: String { return L10n.tr("Localizable", "football.players.position.def", fallback: "DEF") }
@@ -422,6 +436,22 @@ internal enum L10n {
         /// MID
         internal static var mid: String { return L10n.tr("Localizable", "football.players.position.mid", fallback: "MID") }
       }
+    }
+    internal enum Score {
+      /// Away goals
+      internal static var awayGoals: String { return L10n.tr("Localizable", "football.score.awayGoals", fallback: "Away goals") }
+      /// Edit score
+      internal static var editTitle: String { return L10n.tr("Localizable", "football.score.editTitle", fallback: "Edit score") }
+      /// Home goals
+      internal static var homeGoals: String { return L10n.tr("Localizable", "football.score.homeGoals", fallback: "Home goals") }
+      /// Save
+      internal static var save: String { return L10n.tr("Localizable", "football.score.save", fallback: "Save") }
+      /// Score
+      internal static var scoreSection: String { return L10n.tr("Localizable", "football.score.scoreSection", fallback: "Score") }
+      /// Enter score
+      internal static var title: String { return L10n.tr("Localizable", "football.score.title", fallback: "Enter score") }
+      /// Enter home and away team names.
+      internal static var validationTeams: String { return L10n.tr("Localizable", "football.score.validationTeams", fallback: "Enter home and away team names.") }
     }
     internal enum Settings {
       /// Appearance
@@ -482,8 +512,8 @@ internal enum L10n {
     internal enum Tab {
       /// Lineups
       internal static var lineups: String { return L10n.tr("Localizable", "football.tab.lineups", fallback: "Lineups") }
-      /// Matches
-      internal static var matches: String { return L10n.tr("Localizable", "football.tab.matches", fallback: "Matches") }
+      /// Scores
+      internal static var matches: String { return L10n.tr("Localizable", "football.tab.matches", fallback: "Scores") }
       /// Players
       internal static var players: String { return L10n.tr("Localizable", "football.tab.players", fallback: "Players") }
       /// Settings

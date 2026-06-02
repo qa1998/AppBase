@@ -11,8 +11,8 @@ import UIKit
 /// Sơ đồ đội (sân + dự bị), không vẽ chiến thuật.
 final class TeamEditorViewController: FootballScreenViewController<TeamEditorViewModel> {
 
-    var onPickPlayer: ((Int, @escaping (FootballPlayer) -> Void) -> Void)?
-    var onPickFormation: (() -> Void)?
+    var onPickPitchPlayer: ((Int) -> Void)?
+    var onPickBenchPlayer: ((Int) -> Void)?
     var onSaved: (() -> Void)?
     var onDeleted: (() -> Void)?
     
@@ -55,7 +55,6 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
     override func refreshLocalization() {
         hintLabel.text = L10n.Football.Teams.tapSlotHint
         benchTitleLabel.text = L10n.Football.Editor.benchPlayers
-        formationButton.setTitle(L10n.Football.Teams.pickFormation, for: .normal)
         saveButton.setTitle(L10n.Football.Teams.save.uppercased(), for: .normal)
         deleteButton.setTitle(L10n.Football.Teams.deleteAction.uppercased(), for: .normal)
         nameField.placeholder = L10n.Football.Teams.namePlaceholder
@@ -86,18 +85,14 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         viewModel.slotTap
             .receive(on: DispatchQueue.main)
             .sink { [weak self] index in
-                self?.onPickPlayer?(index) { player in
-                    TeamStore.shared.assignPlayer(player, pitchSlot: index)
-                }
+                self?.onPickPitchPlayer?(index)
             }
             .store(in: &cancelBag)
 
         viewModel.benchTap
             .receive(on: DispatchQueue.main)
             .sink { [weak self] index in
-                self?.onPickPlayer?(index) { player in
-                    TeamStore.shared.setBenchPlayer(player, at: index)
-                }
+                self?.onPickBenchPlayer?(index)
             }
             .store(in: &cancelBag)
     }
@@ -135,7 +130,7 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         formationButton.backgroundColor = FootballPalette.surface
         formationButton.layer.cornerRadius = Radius.s12
         formationButton.contentEdgeInsets = UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16)
-        formationButton.addTarget(self, action: #selector(formationTapped), for: .touchUpInside)
+        formationButton.showsMenuAsPrimaryAction = true
 
         contentStack.addArrangedSubview(nameField)
         contentStack.addArrangedSubview(pitchSizeStack)
@@ -245,6 +240,15 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
         }
 
         let team = viewModel.team
+        formationButton.setTitle(team.formation.name, for: .normal)
+        FormationContextMenu.attach(
+            to: formationButton,
+            playerCount: team.pitchSize.playerCount,
+            selectedFormationId: team.formationId
+        ) { formation in
+            TeamStore.shared.applyFormation(formation)
+        }
+
         for assignment in team.assignments {
             let token = FootballPlayerTokenView(
                 slotIndex: assignment.slotIndex,
@@ -298,10 +302,6 @@ final class TeamEditorViewController: FootballScreenViewController<TeamEditorVie
 
     @objc private func pitchSizeTapped(_ sender: MatchPitchSizeButton) {
         viewModel.setPitchSize(sender.pitchSize)
-    }
-
-    @objc private func formationTapped() {
-        onPickFormation?()
     }
 
     @objc private func saveTapped() {

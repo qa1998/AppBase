@@ -33,7 +33,7 @@ enum PitchPlayerTokenLayout {
         awayTokens: [FootballPlayerTokenView],
         awayFormation: FootballFormation,
         in pitchView: FootballPitchView,
-        centerGapRatio: CGFloat = 0.06
+        centerGapRatio: CGFloat = 0.05
     ) {
         let pitchBounds = pitchView.bounds
         guard pitchBounds.width > 0, pitchBounds.height > 0 else { return }
@@ -102,7 +102,8 @@ enum PitchPlayerTokenLayout {
             placements: placements,
             pitchView: pitchView,
             fieldRect: halfRect,
-            mirrorVertically: false
+            mirrorVertically: false,
+            spreadRowsAcrossWidth: true
         )
     }
 
@@ -111,7 +112,8 @@ enum PitchPlayerTokenLayout {
         placements: [PitchFormationGridLayout.SlotPlacement],
         pitchView: FootballPitchView,
         fieldRect: CGRect,
-        mirrorVertically: Bool
+        mirrorVertically: Bool,
+        spreadRowsAcrossWidth: Bool = false
     ) {
         guard fieldRect.width > 0, fieldRect.height > 0, !tokens.isEmpty else { return }
 
@@ -130,33 +132,51 @@ enum PitchPlayerTokenLayout {
         let horizontalPadding = fieldRect.width * PitchFormationGridLayout.Config.default.horizontalPaddingRatio
         let verticalPadding = fieldRect.height * 0.04
 
-        for rowItems in rowGroups.values {
+        let sortedRowKeys = rowGroups.keys.sorted()
+        for rowKey in sortedRowKeys {
+            guard var rowItems = rowGroups[rowKey] else { continue }
+            rowItems.sort { $0.placement.columnIndex < $1.placement.columnIndex }
+
             let sizes = rowItems.map { item -> CGSize in
                 item.token.setNeedsLayout()
                 item.token.layoutIfNeeded()
                 return item.token.preferredTokenSize
             }
 
-            for (item, size) in zip(rowItems, sizes) {
+            let centersX: [CGFloat]
+            if spreadRowsAcrossWidth {
+                centersX = spreadRowCentersX(
+                    tokenWidths: sizes.map(\.width),
+                    in: fieldRect,
+                    horizontalPadding: horizontalPadding
+                )
+            } else {
+                centersX = rowItems.map(\.placement.center.x)
+            }
+
+            for (index, item) in rowItems.enumerated() {
+                let size = sizes[index]
                 let halfW = size.width / 2
                 let halfH = rowHeight / 2
 
-                let clampedCenter = clampCenter(
-                    proposed: item.placement.center,
-                    halfWidth: halfW,
-                    halfHeight: halfH,
-                    field: fieldRect,
-                    isGoalkeeper: item.placement.isGoalkeeper,
-                    horizontalPadding: horizontalPadding,
-                    verticalPadding: verticalPadding
+                var centerX = centersX[index]
+                var centerY = item.placement.center.y
+
+                centerX = min(
+                    max(centerX, fieldRect.minX + horizontalPadding + halfW),
+                    fieldRect.maxX - horizontalPadding - halfW
+                )
+                centerY = min(
+                    max(centerY, fieldRect.minY + verticalPadding + halfH),
+                    fieldRect.maxY - verticalPadding - halfH
                 )
 
                 let center = mirrorVertically
                     ? CGPoint(
-                        x: clampedCenter.x,
-                        y: fieldRect.minY + fieldRect.maxY - clampedCenter.y
+                        x: centerX,
+                        y: fieldRect.minY + fieldRect.maxY - centerY
                     )
-                    : clampedCenter
+                    : CGPoint(x: centerX, y: centerY)
 
                 item.token.snp.remakeConstraints { make in
                     make.width.equalTo(size.width)
@@ -168,33 +188,33 @@ enum PitchPlayerTokenLayout {
         }
     }
 
-    // MARK: - Private
+    /// Trải token một hàng từ mép trái → phải nửa sân (có gap tối thiểu).
+    private static func spreadRowCentersX(
+        tokenWidths: [CGFloat],
+        in fieldRect: CGRect,
+        horizontalPadding: CGFloat
+    ) -> [CGFloat] {
+        let count = tokenWidths.count
+        guard count > 0 else { return [] }
+        if count == 1 { return [fieldRect.midX] }
 
-    private static func clampCenter(
-        proposed: CGPoint,
-        halfWidth: CGFloat,
-        halfHeight: CGFloat,
-        field: CGRect,
-        isGoalkeeper: Bool,
-        horizontalPadding: CGFloat,
-        verticalPadding: CGFloat
-    ) -> CGPoint {
-        let minX = field.minX + horizontalPadding + halfWidth
-        let maxX = field.maxX - horizontalPadding - halfWidth
+        let minGap: CGFloat = 8
+        let available = fieldRect.width - horizontalPadding * 2
+        let totalWidth = tokenWidths.reduce(0, +) + minGap * CGFloat(count - 1)
 
-        let minY: CGFloat
-        let maxY: CGFloat
-        if isGoalkeeper {
-            minY = field.minY + verticalPadding + halfHeight
-            maxY = field.maxY - verticalPadding - halfHeight
-        } else {
-            minY = field.minY + verticalPadding + halfHeight
-            maxY = field.maxY - verticalPadding - halfHeight
+        if totalWidth <= available {
+            var leading = fieldRect.minX + horizontalPadding + (available - totalWidth) / 2
+            return tokenWidths.map { width in
+                let center = leading + width / 2
+                leading += width + minGap
+                return center
+            }
         }
 
-        return CGPoint(
-            x: min(max(proposed.x, minX), maxX),
-            y: min(max(proposed.y, minY), maxY)
-        )
+        return (0..<count).map { index in
+            let slot = available / CGFloat(count)
+            return fieldRect.minX + horizontalPadding + slot * (CGFloat(index) + 0.5)
+        }
     }
+
 }

@@ -83,7 +83,12 @@ final class MatchListCell: UITableViewCell {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         dateLabel.text = formatter.string(from: match.settings.kickoffDate)
-        phaseLabel.text = phaseShort(match.phase)
+        if match.usesManualScore {
+            phaseLabel.isHidden = true
+        } else {
+            phaseLabel.isHidden = false
+            phaseLabel.text = phaseShort(match.phase)
+        }
     }
 
     func applyTheme() {

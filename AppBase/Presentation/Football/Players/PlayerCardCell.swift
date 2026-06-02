@@ -16,6 +16,7 @@ final class PlayerCardCell: UITableViewCell {
     private let nameLabel = UILabel()
     private let metaLabel = UILabel()
     private let ratingLabel = UILabel()
+    private var highlight: PlayerPickerHighlight = .none
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -65,7 +66,12 @@ final class PlayerCardCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(player: FootballPlayer, showsRating: Bool = true) {
+    func configure(
+        player: FootballPlayer,
+        showsRating: Bool = true,
+        highlight: PlayerPickerHighlight = .none
+    ) {
+        self.highlight = highlight
         nameLabel.text = player.name
         if let image = player.avatarImage {
             avatarView.image = image
@@ -81,6 +87,16 @@ final class PlayerCardCell: UITableViewCell {
         if let jersey = player.jerseyDisplay { parts.append("#\(jersey)") }
         parts.append(player.position.label)
         if !player.club.isEmpty { parts.append(player.club) }
+        switch highlight {
+        case .currentTarget:
+            parts.append(L10n.Football.Players.Picker.thisPosition)
+        case .assignedOnPitch:
+            parts.append(L10n.Football.Players.Picker.onPitch)
+        case .assignedOnBench:
+            parts.append(L10n.Football.Players.Picker.onBench)
+        case .none:
+            break
+        }
         metaLabel.text = parts.joined(separator: " · ")
         ratingLabel.isHidden = !showsRating || player.rating == 0
         ratingLabel.text = player.rating > 0 ? "\(player.rating)" : ""
@@ -94,5 +110,20 @@ final class PlayerCardCell: UITableViewCell {
         avatarView.backgroundColor = FootballPalette.surfaceElevated
         avatarLabel.backgroundColor = FootballPalette.surfaceElevated
         avatarLabel.textColor = FootballPalette.textPrimary
+        applyHighlightStyle()
+    }
+
+    private func applyHighlightStyle() {
+        switch highlight {
+        case .none:
+            card.layer.borderWidth = 0
+            card.layer.borderColor = nil
+        case .assignedOnPitch, .assignedOnBench:
+            card.layer.borderWidth = 2
+            card.layer.borderColor = FootballPalette.accentGreen.withAlphaComponent(0.45).cgColor
+        case .currentTarget:
+            card.layer.borderWidth = 2
+            card.layer.borderColor = FootballPalette.accentGreen.cgColor
+        }
     }
 }

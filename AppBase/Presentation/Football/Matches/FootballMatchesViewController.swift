@@ -10,7 +10,7 @@ import UIKit
 
 final class FootballMatchesViewController: FootballScreenViewController<FootballMatchesViewModel> {
 
-    var onCreateMatch: (() -> Void)?
+    var onAddScore: (() -> Void)?
     var onOpenMatch: ((FootballMatch) -> Void)?
 
 
@@ -99,7 +99,7 @@ final class FootballMatchesViewController: FootballScreenViewController<Football
     }
 
     @objc private func fabTapped() {
-        onCreateMatch?()
+        onAddScore?()
     }
 }
 

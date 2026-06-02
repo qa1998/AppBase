@@ -28,6 +28,65 @@ final class MatchStore {
         return match
     }
 
+    @discardableResult
+    func saveScoreEntry(
+        id: String?,
+        homeTeam: String,
+        awayTeam: String,
+        homeGoals: Int,
+        awayGoals: Int
+    ) -> FootballMatch? {
+        let home = homeTeam.trimmingCharacters(in: .whitespacesAndNewlines)
+        let away = awayTeam.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !home.isEmpty, !away.isEmpty else { return nil }
+
+        let clampedHome = max(0, min(99, homeGoals))
+        let clampedAway = max(0, min(99, awayGoals))
+
+        if let id, var existing = matches.first(where: { $0.id == id }) {
+            existing.settings.homeTeam = home
+            existing.settings.awayTeam = away
+            existing.settings.homeRoster.name = home
+            existing.settings.awayRoster.name = away
+            existing.usesManualScore = true
+            existing.manualHomeGoals = clampedHome
+            existing.manualAwayGoals = clampedAway
+            existing.phase = .finished
+            existing.events = []
+            updateCurrent(existing)
+            return existing
+        }
+
+        var homeRoster = MatchTeamRoster.empty(name: home, pitchSize: .five)
+        var awayRoster = MatchTeamRoster.empty(name: away, pitchSize: .five)
+        homeRoster.name = home
+        awayRoster.name = away
+        let settings = FootballMatchSettings(
+            homeTeam: home,
+            awayTeam: away,
+            pitchSize: .five,
+            kickoffDate: Date(),
+            firstHalfMinutes: FootballMatchSettings.defaultFirstHalf,
+            secondHalfMinutes: FootballMatchSettings.defaultSecondHalf,
+            extraTimeHalfMinutes: FootballMatchSettings.defaultExtraHalf,
+            hasExtraTime: false,
+            hasPenaltyShootout: false,
+            homeRoster: homeRoster,
+            awayRoster: awayRoster
+        )
+        let match = FootballMatch(
+            settings: settings,
+            phase: .finished,
+            usesManualScore: true,
+            manualHomeGoals: clampedHome,
+            manualAwayGoals: clampedAway
+        )
+        upsert(match)
+        persist()
+        notify()
+        return match
+    }
+
     func saveCurrentMatch() {
         guard let match = currentMatch else { return }
         upsert(match)

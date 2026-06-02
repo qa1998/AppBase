@@ -23,9 +23,7 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
     private let finishBar = MatchLiveFinishBarView()
     private let segmentWrap = UIView()
     private let navMinHeader = MatchLiveMinHeaderView()
-    private let filtersScroll = UIScrollView()
-    private let filtersStack = UIStackView()
-    private var filterChips: [MatchEventFilterChip] = []
+    private let quickActionsView = MatchLiveQuickActionsView()
 
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let lineupsView = MatchLiveLineupsView()
@@ -34,7 +32,6 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
     private var segmentTopConstraint: Constraint?
     private var filtersTopConstraint: Constraint?
     private var filtersHeightConstraint: Constraint?
-    private var filtersStackHeightConstraint: Constraint?
     private var lineupsWidthConstraint: Constraint?
     private var lineupsHeightConstraint: Constraint?
     private var expandedHeaderHeight: CGFloat = 220
@@ -119,7 +116,7 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
         super.refreshLocalization()
         refreshScoreboard()
         refreshNavigationMinHeader()
-        rebuildFilterChips()
+        rebuildQuickActionChips()
         refreshPhaseActionButton()
         refreshFinishBar()
         tableView.reloadData()
@@ -136,7 +133,7 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
         navMinHeader.applyTheme()
         finishBar.applyTheme()
         applyPhaseActionTheme()
-        filterChips.forEach { $0.applyTheme() }
+        quickActionsView.applyTheme()
         lineupsView.applyTheme()
         tableView.reloadData()
     }
@@ -246,7 +243,7 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
 
         view.addSubview(listHost)
         view.addSubview(expandedHeaderWrap)
-        view.addSubview(filtersScroll)
+        view.addSubview(quickActionsView)
         view.addSubview(segmentWrap)
 
         listHost.snp.makeConstraints { $0.edges.equalToSuperview() }
@@ -262,30 +259,22 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
             make.height.equalTo(pagerStyle.barHeight)
         }
 
-        filtersScroll.snp.makeConstraints { make in
+        quickActionsView.snp.makeConstraints { make in
             filtersTopConstraint = make.top.equalTo(segmentWrap.snp.bottom).constraint
             make.leading.trailing.equalToSuperview()
-            filtersHeightConstraint = make.height.equalTo(44).constraint
+            filtersHeightConstraint = make.height.equalTo(0).constraint
+        }
+        quickActionsView.onChipTap = { [weak self] chip in
+            self?.quickActionTapped(chip)
         }
 
         segmentWrap.layer.zPosition = 9
-        filtersScroll.layer.zPosition = 8
+        quickActionsView.layer.zPosition = 8
         expandedHeaderWrap.layer.zPosition = 7
     }
 
     private func buildFilters() {
-        filtersStack.axis = .horizontal
-        filtersStack.spacing = Spacing.s8
-        filtersStack.alignment = .center
-        filtersScroll.showsHorizontalScrollIndicator = false
-        filtersScroll.backgroundColor = FootballPalette.background
-        filtersScroll.addSubview(filtersStack)
-        filtersStack.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(UIEdgeInsets(top: 0, left: Spacing.s16, bottom: 0, right: Spacing.s16))
-            make.top.bottom.equalToSuperview()
-            filtersStackHeightConstraint = make.height.equalTo(44).constraint
-        }
-        rebuildFilterChips()
+        rebuildQuickActionChips()
     }
 
     private func buildTable() {
@@ -321,7 +310,7 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
     // MARK: - Scroll / sticky
 
     private var filtersBarHeight: CGFloat {
-        (filtersScroll.isHidden ? 0 : 44)
+        quickActionsView.isHidden ? 0 : MatchLiveQuickActionsView.preferredPanelHeight
     }
 
     private var chromeInsetTop: CGFloat {
@@ -406,7 +395,7 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
         navMinHeader.alpha = navProgress
         navigationItem.titleView = navProgress > 0.01 ? navMinHeader : nil
 
-        if selectedPageIndex == LiveTab.events.rawValue, !filtersScroll.isHidden {
+        if selectedPageIndex == LiveTab.events.rawValue, !quickActionsView.isHidden {
             filtersTopConstraint?.update(offset: 0)
         }
     }
@@ -437,32 +426,18 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
 
     // MARK: - Data refresh
 
-    private func rebuildFilterChips() {
-        filterChips.forEach {
-            filtersStack.removeArrangedSubview($0)
-            $0.removeFromSuperview()
-        }
-        filterChips.removeAll()
-
-        MatchEventType.allCases.forEach { type in
-            let chip = MatchEventFilterChip(type: type, title: quickActionTitle(type))
-            chip.addTarget(self, action: #selector(quickActionTapped(_:)), for: .touchUpInside)
-            filtersStack.addArrangedSubview(chip)
-            filterChips.append(chip)
-        }
+    private func rebuildQuickActionChips() {
+        let items = MatchEventType.allCases.map { ($0, quickActionTitle($0)) }
+        quickActionsView.configure(types: items)
     }
 
     private func setFiltersVisible(_ visible: Bool) {
         let onEvents = selectedPageIndex == LiveTab.events.rawValue
         let show = visible && onEvents
-        filtersScroll.isHidden = !show
-        filtersStack.isHidden = !show
-        filtersHeightConstraint?.update(offset: show ? 44 : 0)
-        if show {
-            filtersStackHeightConstraint?.activate()
-        } else {
-            filtersStackHeightConstraint?.deactivate()
-        }
+        quickActionsView.isHidden = !show
+        quickActionsView.isUserInteractionEnabled = show
+        let panelHeight = show ? MatchLiveQuickActionsView.preferredPanelHeight : 0
+        filtersHeightConstraint?.update(offset: panelHeight)
         updateListContentInsets()
         syncChromeToActiveList()
     }
@@ -529,7 +504,7 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
         viewModel.performPrimaryAction()
     }
 
-    @objc private func quickActionTapped(_ sender: MatchEventFilterChip) {
+    private func quickActionTapped(_ sender: MatchEventFilterChip) {
         guard let type = sender.eventType else { return }
         pickTeam(for: type, sourceView: sender)
     }
@@ -595,11 +570,11 @@ final class MatchLiveViewController: TIOPagerViewController<MatchLiveViewModel> 
     private func quickActionTitle(_ type: MatchEventType) -> String {
         switch type {
         case .goal: return L10n.Football.Match.Event.goal
-        case .yellowCard: return L10n.Football.Match.Event.yellow
-        case .redCard: return L10n.Football.Match.Event.red
-        case .substitution: return L10n.Football.Match.Event.sub
-        case .varReview: return L10n.Football.Match.Event.varShort
-        case .penalty: return L10n.Football.Match.Event.penaltyShort
+        case .yellowCard: return L10n.Football.Match.Event.yellowCard
+        case .redCard: return L10n.Football.Match.Event.redCard
+        case .substitution: return L10n.Football.Match.Event.substitution
+        case .varReview: return L10n.Football.Match.Event.varReview
+        case .penalty: return L10n.Football.Match.Event.penalty
         }
     }
 }

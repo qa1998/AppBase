@@ -126,10 +126,58 @@ final class TeamStore {
     }
 
     func assignPlayer(_ player: FootballPlayer, pitchSlot index: Int) {
+        assignPlayerToSlot(player, pitchSlot: index)
+    }
+
+    func assignPlayerToSlot(_ player: FootballPlayer, pitchSlot targetSlot: Int) {
         var team = currentTeam
         var setup = team.activeSetup
-        guard setup.assignments.indices.contains(index) else { return }
-        setup.assignments[index].player = player
+        guard setup.assignments.indices.contains(targetSlot) else { return }
+
+        for index in setup.assignments.indices where setup.assignments[index].player?.id == player.id {
+            setup.assignments[index].player = nil
+        }
+        while setup.benchPlayerIds.count < MatchTeamRoster.benchSlotCount {
+            setup.benchPlayerIds.append("")
+        }
+        var ids = setup.benchPlayerIds
+        for index in ids.indices where ids[index] == player.id {
+            ids[index] = ""
+        }
+        setup.benchPlayerIds = ids
+        setup.assignments[targetSlot].player = player
+
+        team.writeActiveSetup(setup)
+        currentTeam = team
+        notify()
+    }
+
+    func assignPlayerToBench(_ player: FootballPlayer, benchIndex targetIndex: Int) {
+        guard targetIndex >= 0, targetIndex < MatchTeamRoster.benchSlotCount else { return }
+        var team = currentTeam
+        var setup = team.activeSetup
+        while setup.benchPlayerIds.count < MatchTeamRoster.benchSlotCount {
+            setup.benchPlayerIds.append("")
+        }
+        for index in setup.assignments.indices where setup.assignments[index].player?.id == player.id {
+            setup.assignments[index].player = nil
+        }
+        var ids = setup.benchPlayerIds
+        for index in ids.indices where ids[index] == player.id {
+            ids[index] = ""
+        }
+        ids[targetIndex] = player.id
+        setup.benchPlayerIds = ids
+        team.writeActiveSetup(setup)
+        currentTeam = team
+        notify()
+    }
+
+    func clearPitchSlot(_ slotIndex: Int) {
+        var team = currentTeam
+        var setup = team.activeSetup
+        guard setup.assignments.indices.contains(slotIndex) else { return }
+        setup.assignments[slotIndex].player = nil
         team.writeActiveSetup(setup)
         currentTeam = team
         notify()
